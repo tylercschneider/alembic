@@ -5,5 +5,13 @@ module Alembic
     test "reports its slot" do
       assert Result.new(slot: :tier).tier?
     end
+
+    test "orders a diagnostic's results by position" do
+      diagnostic = Diagnostic.create!(slug: "result-ordering", kind: :guide, status: :draft)
+      diagnostic.results.create!(slot: :tier, key: "b", position: 2)
+      diagnostic.results.create!(slot: :tier, key: "a", position: 1)
+
+      assert_equal [ "a", "b" ], diagnostic.results.ordered.map(&:key)
+    end
   end
 end
