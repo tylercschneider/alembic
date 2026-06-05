@@ -10,7 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_023308) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_05_025623) do
+  create_table "alembic_bands", force: :cascade do |t|
+    t.integer "ceiling"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.integer "diagnostic_id", null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.index ["diagnostic_id"], name: "index_alembic_bands_on_diagnostic_id"
+  end
+
   create_table "alembic_conditions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "depends_on"
@@ -53,6 +63,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_023308) do
     t.index ["diagnostic_id"], name: "index_alembic_questions_on_diagnostic_id"
   end
 
+  add_foreign_key "alembic_bands", "alembic_diagnostics", column: "diagnostic_id"
   add_foreign_key "alembic_conditions", "alembic_questions", column: "question_id"
   add_foreign_key "alembic_options", "alembic_questions", column: "question_id"
   add_foreign_key "alembic_questions", "alembic_diagnostics", column: "diagnostic_id"
