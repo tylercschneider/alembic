@@ -16,5 +16,11 @@ module Alembic
 
       assert_select "a[href=?]", alembic.diagnostic_step_path(slug)
     end
+
+    test "an unknown slug is not found" do
+      get alembic.diagnostic_path("does-not-exist")
+
+      assert_response :not_found
+    end
   end
 end
