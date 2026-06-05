@@ -7,10 +7,14 @@ module Alembic
     OPTIONAL_COPY_KEYS = %w[headline kicker blurb start_label].freeze
 
     def build
-      Guide.new(slug: @definition["slug"], questions: questions, **optional_copy)
+      Guide.new(slug: @definition["slug"], questions: questions, warnings: warnings, **optional_copy)
     end
 
     private
+
+    def warnings
+      Hash(@definition["warnings"]).transform_keys(&:to_sym)
+    end
 
     def questions
       Array(@definition["questions"]).map do |question|

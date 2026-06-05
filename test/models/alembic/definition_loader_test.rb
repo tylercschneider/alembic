@@ -55,5 +55,11 @@ module Alembic
 
       assert loader.build.questions.first.applies?({ need: "audit" })
     end
+
+    test "builds a warning carrying its text keyed by symbol" do
+      loader = DefinitionLoader.new({ "warnings" => { "insight_pairing" => "Insight-grade." } })
+
+      assert_equal "Insight-grade.", loader.build.warning_text(:insight_pairing)
+    end
   end
 end
