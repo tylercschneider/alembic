@@ -67,5 +67,11 @@ module Alembic
 
       assert_equal "Live query", loader.build.tier(1).name
     end
+
+    test "builds a level node keyed by symbol carrying its name" do
+      loader = DefinitionLoader.new({ "levels" => { "l3" => { "name" => "Outbox" } } })
+
+      assert_equal "Outbox", loader.build.level(:l3).name
+    end
   end
 end
