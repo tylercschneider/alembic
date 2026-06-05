@@ -13,5 +13,11 @@ module Alembic
 
       assert_equal [ "a", "b" ], diagnostic.results.ordered.map(&:key)
     end
+
+    test "is invalid without a key" do
+      result = Result.new(diagnostic: alembic_diagnostics(:stats_ladder), key: nil)
+
+      assert_not result.valid?
+    end
   end
 end
