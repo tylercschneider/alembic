@@ -5,7 +5,7 @@ module Alembic
     end
 
     def build
-      Guide.new(slug: @definition["slug"], questions: [], headline: @definition["headline"], kicker: @definition["kicker"])
+      Guide.new(slug: @definition["slug"], questions: [], headline: @definition["headline"], kicker: @definition["kicker"], blurb: @definition["blurb"])
     end
   end
 end
