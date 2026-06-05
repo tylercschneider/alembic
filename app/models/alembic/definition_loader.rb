@@ -27,7 +27,13 @@ module Alembic
     NODE_TEXT_KEYS = %w[tagline complexity setup maintenance captures why pains avoid avoid_pain].freeze
 
     def node_from(node, id:)
-      Guide::Node.new(id: id, name: node["name"], **node.slice(*NODE_TEXT_KEYS).transform_keys(&:to_sym))
+      Guide::Node.new(id: id, name: node["name"], build_steps: build_steps_for(node), **node.slice(*NODE_TEXT_KEYS).transform_keys(&:to_sym))
+    end
+
+    def build_steps_for(node)
+      Array(node["build_steps"]).map do |step|
+        Guide::BuildStep.new(title: step["title"], code: step["code"])
+      end
     end
 
     def warnings

@@ -79,5 +79,11 @@ module Alembic
 
       assert_equal "The current value.", loader.build.tier(1).captures
     end
+
+    test "a node carries its build steps with code" do
+      loader = DefinitionLoader.new({ "tiers" => { "1" => { "name" => "Live query", "build_steps" => [ { "title" => "Index", "code" => "add_index :contacts, :status" } ] } } })
+
+      assert_equal "add_index :contacts, :status", loader.build.tier(1).build_steps.first.code
+    end
   end
 end
