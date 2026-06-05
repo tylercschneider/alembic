@@ -1,0 +1,20 @@
+<% content_for(:title, @guide.headline) %>
+
+<section class="py-20 md:py-28">
+  <div class="max-w-2xl mx-auto px-6">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-widest text-accent-600 mb-3"><%= @guide.kicker %></p>
+      <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-3"><%= @guide.headline %></h1>
+      <p class="text-lg text-gray-600 mb-8"><%= @guide.blurb %></p>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <%= form_with url: diagnostic_step_path(@guide.slug), method: :get, data: { turbo: false } do %>
+          <%= ui_button(label: @guide.start_label, type: :submit) %>
+        <% end %>
+        <%= ui_button(label: "Explore the ladder", href: "#ladder", variant: :secondary) %>
+      </div>
+    </div>
+
+    <%= render "ladder", guide: @guide %>
+  </div>
+</section>

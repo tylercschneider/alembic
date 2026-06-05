@@ -1,0 +1,19 @@
+<section id="ladder" class="mt-16 scroll-mt-8 border-t border-gray-100 pt-12">
+  <h2 class="text-2xl font-bold tracking-tight text-gray-900 mb-2">The ladder</h2>
+  <p class="text-gray-600 mb-6">Climb by ambition (the tier); branch by plumbing (the event level). Open any rung to see what it costs, why it works, and how to build it.</p>
+  <div class="space-y-3">
+    <% guide.tiers.each do |number, node| %>
+      <%= render "node", node: node, eyebrow: "Tier #{number}", anchor: "tier-#{number}" %>
+    <% end %>
+  </div>
+
+  <h2 class="text-2xl font-bold tracking-tight text-gray-900 mt-14 mb-2">Event levels</h2>
+  <p class="text-gray-600 mb-6">How durably events are collected — these only matter from Tier 4 up.</p>
+  <div class="space-y-3">
+    <% guide.levels.each_value do |node| %>
+      <%= render "node", node: node, eyebrow: "Level", anchor: "level-#{node.id}" %>
+    <% end %>
+  </div>
+
+  <%= render "matrix" %>
+</section>

@@ -22,5 +22,13 @@ module Alembic
 
       assert_response :not_found
     end
+
+    test "a registered guide renders its explorable ladder" do
+      get alembic.diagnostic_path("stats-system-ladder")
+
+      assert_response :success
+      assert_select "h1", text: /actually need to be/
+      assert_select "summary", text: /Event log \+ rollups/
+    end
   end
 end
