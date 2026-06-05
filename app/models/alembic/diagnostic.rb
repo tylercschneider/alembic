@@ -7,6 +7,7 @@ module Alembic
 
     has_many :questions, dependent: :destroy
     has_many :bands, dependent: :destroy
+    has_many :results, dependent: :destroy
 
     def band_for(score)
       bands.sort_by { |band| band.ceiling || Float::INFINITY }
