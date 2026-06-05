@@ -14,6 +14,10 @@ module Alembic
       questions.ordered.find { |question| question.applies?(answers) && !answers.key?(question.key) }
     end
 
+    def complete?(answers)
+      next_question(answers).nil?
+    end
+
     def place(answers)
       rules.ordered.select { |rule| rule.fires?(answers) }
         .each_with_object({}) do |rule, placement|
