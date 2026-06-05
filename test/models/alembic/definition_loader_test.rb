@@ -49,5 +49,11 @@ module Alembic
 
       assert_not loader.build.questions.first.applies?({ need: "now" })
     end
+
+    test "an in condition leaves a question applicable when the answer is in the set" do
+      loader = DefinitionLoader.new({ "questions" => [ { "id" => "origin", "text" => "?", "condition" => { "answer" => "need", "in" => [ "rates", "audit" ] } } ] })
+
+      assert loader.build.questions.first.applies?({ need: "audit" })
+    end
   end
 end

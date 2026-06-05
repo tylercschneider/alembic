@@ -23,6 +23,8 @@ module Alembic
       return nil unless condition
 
       answer_key = condition["answer"].to_sym
+      return ->(answers) { condition["in"].include?(answers[answer_key]) } if condition.key?("in")
+
       ->(answers) { answers[answer_key] == condition["equals"] }
     end
 
