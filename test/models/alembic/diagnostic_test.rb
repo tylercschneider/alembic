@@ -18,6 +18,10 @@ module Alembic
       assert_equal "need", alembic_diagnostics(:stats_ladder).next_question({}).key
     end
 
+    test "the next question follows the branch the answers open" do
+      assert_equal "read", alembic_diagnostics(:stats_ladder).next_question({ "need" => "now" }).key
+    end
+
     test "selects the band whose ceiling the score falls under" do
       assert_equal "Flying blind", alembic_diagnostics(:business_scorecard).band_for(30).name
     end
