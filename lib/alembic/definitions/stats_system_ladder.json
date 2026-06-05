@@ -3,5 +3,11 @@
   "kicker": "Diagnose · Place · Build",
   "headline": "Where does your system actually need to be?",
   "blurb": "Most stats feel wrong because they're built one tier too low — or one tier too high. Answer a few questions, find your rung on the ladder, then see what it costs, why it works, the pain that tells you to climb, and how to build it.",
-  "start_label": "Start the quiz →"
+  "start_label": "Start the quiz →",
+  "questions": [
+    { "id": "need", "text": "What is the most advanced question you need to answer about this number?" },
+    { "id": "read", "text": "How heavily is this number read versus how often the data changes?" },
+    { "id": "loss", "text": "If a single underlying event were silently lost, what is the impact?" },
+    { "id": "origin", "text": "Where do the events come from / who needs them?" }
+  ]
 }

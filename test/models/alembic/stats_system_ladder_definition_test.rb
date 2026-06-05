@@ -22,5 +22,9 @@ module Alembic
       assert_equal [ reference.kicker, reference.headline, reference.blurb, reference.start_label ],
         [ loaded.kicker, loaded.headline, loaded.blurb, loaded.start_label ]
     end
+
+    test "matches the reference question ids in order" do
+      assert_equal reference.questions.map(&:id), loaded.questions.map(&:id)
+    end
   end
 end
