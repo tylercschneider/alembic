@@ -1,5 +1,6 @@
 {
   "slug": "stats-system-ladder",
+  "placement": { "resolver_key": "stats_ladder" },
   "kicker": "Diagnose · Place · Build",
   "headline": "Where does your system actually need to be?",
   "blurb": "Most stats feel wrong because they're built one tier too low — or one tier too high. Answer a few questions, find your rung on the ladder, then see what it costs, why it works, the pain that tells you to climb, and how to build it.",

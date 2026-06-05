@@ -58,5 +58,23 @@ module Alembic
     test "matches every reference level node" do
       assert_equal LEVEL_KEYS.map { |key| reference.level(key) }, LEVEL_KEYS.map { |key| loaded.level(key) }
     end
+
+    PLACEMENT_PATHS = [
+      { need: "now", read: "light" },
+      { need: "now", read: "hot" },
+      { need: "trend" },
+      { need: "rates", loss: "insight", origin: "app" },
+      { need: "rates", loss: "money", origin: "app" },
+      { need: "rates", loss: "money", origin: "anon" },
+      { need: "rates", loss: "insight", origin: "anon" },
+      { need: "rates", loss: "insight", origin: "svc" },
+      { need: "audit", origin: "app" },
+      { need: "audit", origin: "anon" }
+    ].freeze
+
+    test "places identically to the reference across answer paths" do
+      assert_equal PLACEMENT_PATHS.map { |answers| reference.place(answers) },
+        PLACEMENT_PATHS.map { |answers| loaded.place(answers) }
+    end
   end
 end
