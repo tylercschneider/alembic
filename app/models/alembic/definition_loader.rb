@@ -5,12 +5,17 @@ module Alembic
     end
 
     OPTIONAL_COPY_KEYS = %w[headline kicker blurb start_label].freeze
+    RESOLVERS = { "stats_ladder" => StatsLadderPlacement }.freeze
 
     def build
-      Guide.new(slug: @definition["slug"], questions: questions, tiers: tiers, levels: levels, warnings: warnings, **optional_copy)
+      Guide.new(slug: @definition["slug"], questions: questions, resolver: resolver, tiers: tiers, levels: levels, warnings: warnings, **optional_copy)
     end
 
     private
+
+    def resolver
+      RESOLVERS[@definition.dig("placement", "resolver_key")]&.new
+    end
 
     def tiers
       Hash(@definition["tiers"]).to_h do |key, node|
