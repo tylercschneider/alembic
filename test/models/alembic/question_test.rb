@@ -15,5 +15,9 @@ module Alembic
 
       assert_not question.valid?
     end
+
+    test "a question with no conditions applies to any answers" do
+      assert alembic_questions(:ladder_need).applies?({})
+    end
   end
 end
