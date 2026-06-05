@@ -35,6 +35,10 @@ module Alembic
       assert_equal 2, diagnostic.score({ "q1" => "yes" })
     end
 
+    test "the scored result is the band for the total" do
+      assert_equal "Flying blind", alembic_diagnostics(:business_scorecard).result_for({}).name
+    end
+
     test "selects the band whose ceiling the score falls under" do
       assert_equal "Flying blind", alembic_diagnostics(:business_scorecard).band_for(30).name
     end

@@ -18,6 +18,10 @@ module Alembic
       end
     end
 
+    def result_for(answers)
+      band_for(score(answers))
+    end
+
     def next_question(answers)
       questions.ordered.find { |question| question.applies?(answers) && !answers.key?(question.key) }
     end
