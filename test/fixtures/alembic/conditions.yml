@@ -1,4 +1,3 @@
 read_needs_current_state:
-  question: ladder_read
-  depends_on: need
-  values: [ "now" ]
+  subject: ladder_read (Alembic::Question)
+  tested_question: ladder_need
