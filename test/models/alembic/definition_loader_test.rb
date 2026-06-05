@@ -31,5 +31,29 @@ module Alembic
 
       assert_equal "Start the quiz →", loader.build.start_label
     end
+
+    test "builds a question carrying its id as a symbol" do
+      loader = DefinitionLoader.new({ "questions" => [ { "id" => "need", "text" => "Need?" } ] })
+
+      assert_equal :need, loader.build.questions.first.id
+    end
+
+    test "builds a question's option carrying its value" do
+      loader = DefinitionLoader.new({ "questions" => [ { "id" => "need", "text" => "Need?", "options" => [ { "value" => "now" } ] } ] })
+
+      assert_equal "now", loader.build.questions.first.options.first.value
+    end
+
+    test "an equals condition leaves a question inapplicable when the answer differs" do
+      loader = DefinitionLoader.new({ "questions" => [ { "id" => "loss", "text" => "?", "condition" => { "answer" => "need", "equals" => "rates" } } ] })
+
+      assert_not loader.build.questions.first.applies?({ need: "now" })
+    end
+
+    test "an in condition leaves a question applicable when the answer is in the set" do
+      loader = DefinitionLoader.new({ "questions" => [ { "id" => "origin", "text" => "?", "condition" => { "answer" => "need", "in" => [ "rates", "audit" ] } } ] })
+
+      assert loader.build.questions.first.applies?({ need: "audit" })
+    end
   end
 end
