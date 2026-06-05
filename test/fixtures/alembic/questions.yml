@@ -1,0 +1,11 @@
+ladder_need:
+  diagnostic: stats_ladder
+  position: 1
+  key: need
+  text: What is the most advanced question you need to answer about this number?
+
+ladder_read:
+  diagnostic: stats_ladder
+  position: 2
+  key: read
+  text: How heavily is this number read versus how often the data changes?
