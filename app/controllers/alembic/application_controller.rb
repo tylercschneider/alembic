@@ -1,5 +1,5 @@
 module Alembic
-  class ApplicationController < ActionController::Base
+  class ApplicationController < Alembic.base_controller.constantize
     layout -> { Alembic.layout }
     helper KeystoneUiHelper
   end
