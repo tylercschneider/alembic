@@ -1,0 +1,87 @@
+module Alembic
+  class Guide
+    Option = Data.define(:value, :label, :hint)
+
+    Question = Data.define(:id, :text, :options, :condition) do
+      def initialize(id:, text:, options: [], condition: nil)
+        super
+      end
+
+      def applies?(answers)
+        condition.nil? || condition.call(answers)
+      end
+    end
+
+    Placement = Data.define(:tier, :grade, :level, :warning, :warning_ok)
+
+    BuildStep = Data.define(:title, :code)
+    Resource = Data.define(:kind, :label, :sublabel, :href) do
+      def initialize(kind:, label:, href:, sublabel: nil)
+        super
+      end
+    end
+
+    Node = Data.define(:id, :name, :tagline, :complexity, :setup, :maintenance, :captures, :why, :pains, :avoid, :avoid_pain, :build_steps, :resources) do
+      def initialize(id:, name:, tagline: nil, complexity: nil, setup: nil, maintenance: nil, captures: nil, why: nil, pains: nil, avoid: nil, avoid_pain: nil, build_steps: [], resources: [])
+        super
+      end
+    end
+
+    attr_reader :slug, :questions, :resolver, :kicker, :headline, :blurb, :start_label, :tiers, :levels, :warnings
+
+    def initialize(slug:, questions:, resolver: nil, kicker: nil, headline: nil, blurb: nil, start_label: "Start →", tiers: {}, levels: {}, warnings: {})
+      @slug = slug
+      @questions = questions
+      @resolver = resolver
+      @kicker = kicker
+      @headline = headline
+      @blurb = blurb
+      @start_label = start_label
+      @tiers = tiers
+      @levels = levels
+      @warnings = warnings
+    end
+
+    def warning_text(key)
+      warnings[key]
+    end
+
+    def tier(number)
+      tiers[number]
+    end
+
+    def level(key)
+      levels[key]
+    end
+
+    def place(answers)
+      resolver.call(answers)
+    end
+
+    def next_question(answers)
+      questions.find { |question| question.applies?(answers) && !answers.key?(question.id) }
+    end
+
+    def applicable_questions(answers)
+      questions.select { |question| question.applies?(answers) }
+    end
+
+    def complete?(answers)
+      next_question(answers).nil?
+    end
+
+    GUIDES = [ StatsSystemLadder ].freeze
+
+    def self.find(slug)
+      registry[slug]
+    end
+
+    def self.all
+      registry.values
+    end
+
+    def self.registry
+      @registry ||= GUIDES.map(&:build).to_h { |guide| [ guide.slug, guide ] }
+    end
+  end
+end
