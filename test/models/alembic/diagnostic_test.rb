@@ -21,5 +21,12 @@ module Alembic
     test "falls through to the open-ended band for high scores" do
       assert_equal "Well instrumented", alembic_diagnostics(:business_scorecard).band_for(90).name
     end
+
+    test "places by applying the results of firing rules" do
+      diagnostic = alembic_diagnostics(:stats_ladder)
+      diagnostic.rules.create!(position: 1).results << alembic_results(:tier_event_log)
+
+      assert_equal "Event log + rollups", diagnostic.place({})["tier"].title
+    end
   end
 end
