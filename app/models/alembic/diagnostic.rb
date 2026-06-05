@@ -10,6 +10,10 @@ module Alembic
     has_many :results, dependent: :destroy
     has_many :rules, dependent: :destroy
 
+    def to_guide
+      DefinitionLoader.new(definition).build
+    end
+
     def score(answers)
       answers.sum do |question_key, option_value|
         question = questions.find { |candidate| candidate.key == question_key }
