@@ -17,5 +17,10 @@ module Alembic
     test "matches the reference slug" do
       assert_equal reference.slug, loaded.slug
     end
+
+    test "matches the reference intro copy" do
+      assert_equal [ reference.kicker, reference.headline, reference.blurb, reference.start_label ],
+        [ loaded.kicker, loaded.headline, loaded.blurb, loaded.start_label ]
+    end
   end
 end
