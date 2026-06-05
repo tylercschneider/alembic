@@ -31,5 +31,11 @@ module Alembic
 
       assert_equal "Start the quiz →", loader.build.start_label
     end
+
+    test "builds a question carrying its id as a symbol" do
+      loader = DefinitionLoader.new({ "questions" => [ { "id" => "need", "text" => "Need?" } ] })
+
+      assert_equal :need, loader.build.questions.first.id
+    end
   end
 end
