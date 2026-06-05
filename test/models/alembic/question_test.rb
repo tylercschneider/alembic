@@ -15,5 +15,13 @@ module Alembic
 
       assert_not question.valid?
     end
+
+    test "a question with no conditions applies to any answers" do
+      assert alembic_questions(:ladder_need).applies?({})
+    end
+
+    test "a question with an unmet condition does not apply" do
+      assert_not alembic_questions(:ladder_read).applies?({ "need" => "rates" })
+    end
   end
 end
