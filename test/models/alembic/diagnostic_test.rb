@@ -9,5 +9,9 @@ module Alembic
     test "reports its kind" do
       assert Diagnostic.new(kind: :scored).scored?
     end
+
+    test "is invalid without a slug" do
+      assert_not Diagnostic.new(slug: nil).valid?
+    end
   end
 end
