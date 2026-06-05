@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_015051) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_05_021526) do
   create_table "alembic_diagnostics", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "kind"
@@ -20,6 +20,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_015051) do
     t.string "title"
     t.datetime "updated_at", null: false
     t.index ["slug"], name: "index_alembic_diagnostics_on_slug", unique: true
+  end
+
+  create_table "alembic_options", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "hint"
+    t.string "label"
+    t.integer "position"
+    t.integer "question_id", null: false
+    t.datetime "updated_at", null: false
+    t.string "value"
+    t.integer "weight"
+    t.index ["question_id"], name: "index_alembic_options_on_question_id"
   end
 
   create_table "alembic_questions", force: :cascade do |t|
@@ -32,5 +44,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_015051) do
     t.index ["diagnostic_id"], name: "index_alembic_questions_on_diagnostic_id"
   end
 
+  add_foreign_key "alembic_options", "alembic_questions", column: "question_id"
   add_foreign_key "alembic_questions", "alembic_diagnostics", column: "diagnostic_id"
 end
