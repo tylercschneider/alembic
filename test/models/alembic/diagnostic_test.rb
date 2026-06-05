@@ -14,6 +14,10 @@ module Alembic
       assert_not Diagnostic.new(slug: nil).valid?
     end
 
+    test "the next question is the first applicable unanswered one" do
+      assert_equal "need", alembic_diagnostics(:stats_ladder).next_question({}).key
+    end
+
     test "selects the band whose ceiling the score falls under" do
       assert_equal "Flying blind", alembic_diagnostics(:business_scorecard).band_for(30).name
     end
