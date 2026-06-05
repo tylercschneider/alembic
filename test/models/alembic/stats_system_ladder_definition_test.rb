@@ -30,5 +30,19 @@ module Alembic
     test "matches the reference question options" do
       assert_equal reference.questions.map(&:options), loaded.questions.map(&:options)
     end
+
+    BRANCH_PATHS = [
+      {},
+      { need: "now" },
+      { need: "trend" },
+      { need: "rates" },
+      { need: "rates", loss: "money" },
+      { need: "audit" }
+    ].freeze
+
+    test "branches identically to the reference across answer paths" do
+      assert_equal BRANCH_PATHS.map { |answers| reference.next_question(answers)&.id },
+        BRANCH_PATHS.map { |answers| loaded.next_question(answers)&.id }
+    end
   end
 end

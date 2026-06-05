@@ -18,6 +18,7 @@
     {
       "id": "read",
       "text": "How heavily is this number read versus how often the data changes?",
+      "condition": { "answer": "need", "equals": "now" },
       "options": [
         { "value": "light", "label": "Read occasionally — fine to compute live", "hint": "no performance pressure" },
         { "value": "hot", "label": "Read constantly / on hot pages / under load", "hint": "it shows up in latency or DB load" }
@@ -26,6 +27,7 @@
     {
       "id": "loss",
       "text": "If a single underlying event were silently lost, what is the impact?",
+      "condition": { "answer": "need", "equals": "rates" },
       "options": [
         { "value": "insight", "label": "Negligible — it is directional", "hint": "a glance, a trend, a vanity funnel" },
         { "value": "money", "label": "It would throw off money, commissions, or a real decision", "hint": "must be exact and reconcilable" }
@@ -34,6 +36,7 @@
     {
       "id": "origin",
       "text": "Where do the events come from / who needs them?",
+      "condition": { "answer": "need", "in": [ "rates", "audit" ] },
       "options": [
         { "value": "app", "label": "My own app, handled in-process", "hint": "the common case" },
         { "value": "anon", "label": "High-volume anonymous web signals", "hint": "page views, clicks, A/B — marketing" },
