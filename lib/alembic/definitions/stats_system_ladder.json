@@ -5,9 +5,40 @@
   "blurb": "Most stats feel wrong because they're built one tier too low — or one tier too high. Answer a few questions, find your rung on the ladder, then see what it costs, why it works, the pain that tells you to climb, and how to build it.",
   "start_label": "Start the quiz →",
   "questions": [
-    { "id": "need", "text": "What is the most advanced question you need to answer about this number?" },
-    { "id": "read", "text": "How heavily is this number read versus how often the data changes?" },
-    { "id": "loss", "text": "If a single underlying event were silently lost, what is the impact?" },
-    { "id": "origin", "text": "Where do the events come from / who needs them?" }
+    {
+      "id": "need",
+      "text": "What is the most advanced question you need to answer about this number?",
+      "options": [
+        { "value": "now", "label": "Just its value right now", "hint": "how many contacts / open jobs / current pipeline" },
+        { "value": "trend", "label": "How it has changed over time", "hint": "trends, vs last month, charts over months" },
+        { "value": "rates", "label": "Rates, conversion, flow — or attribution that survives edits", "hint": "close rate, time-to-close, profit by source" },
+        { "value": "audit", "label": "What any record looked like at an arbitrary past moment", "hint": "full audit, replay, \"what did we believe at time T\"" }
+      ]
+    },
+    {
+      "id": "read",
+      "text": "How heavily is this number read versus how often the data changes?",
+      "options": [
+        { "value": "light", "label": "Read occasionally — fine to compute live", "hint": "no performance pressure" },
+        { "value": "hot", "label": "Read constantly / on hot pages / under load", "hint": "it shows up in latency or DB load" }
+      ]
+    },
+    {
+      "id": "loss",
+      "text": "If a single underlying event were silently lost, what is the impact?",
+      "options": [
+        { "value": "insight", "label": "Negligible — it is directional", "hint": "a glance, a trend, a vanity funnel" },
+        { "value": "money", "label": "It would throw off money, commissions, or a real decision", "hint": "must be exact and reconcilable" }
+      ]
+    },
+    {
+      "id": "origin",
+      "text": "Where do the events come from / who needs them?",
+      "options": [
+        { "value": "app", "label": "My own app, handled in-process", "hint": "the common case" },
+        { "value": "anon", "label": "High-volume anonymous web signals", "hint": "page views, clicks, A/B — marketing" },
+        { "value": "svc", "label": "Other services need to consume them", "hint": "cross-service integration" }
+      ]
+    }
   ]
 }

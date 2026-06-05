@@ -26,5 +26,9 @@ module Alembic
     test "matches the reference question ids in order" do
       assert_equal reference.questions.map(&:id), loaded.questions.map(&:id)
     end
+
+    test "matches the reference question options" do
+      assert_equal reference.questions.map(&:options), loaded.questions.map(&:options)
+    end
   end
 end
