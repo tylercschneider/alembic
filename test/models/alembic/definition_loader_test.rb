@@ -25,5 +25,11 @@ module Alembic
 
       assert_equal "Answer a few questions.", loader.build.blurb
     end
+
+    test "builds a guide carrying the definition's start label" do
+      loader = DefinitionLoader.new({ "start_label" => "Start the quiz →" })
+
+      assert_equal "Start the quiz →", loader.build.start_label
+    end
   end
 end
