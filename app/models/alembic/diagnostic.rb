@@ -10,6 +10,18 @@ module Alembic
     has_many :results, dependent: :destroy
     has_many :rules, dependent: :destroy
 
+    def score(answers)
+      answers.sum do |question_key, option_value|
+        question = questions.find { |candidate| candidate.key == question_key }
+        option = question&.options&.find { |candidate| candidate.value == option_value }
+        option&.weight || 0
+      end
+    end
+
+    def result_for(answers)
+      band_for(score(answers))
+    end
+
     def next_question(answers)
       questions.ordered.find { |question| question.applies?(answers) && !answers.key?(question.key) }
     end

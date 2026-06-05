@@ -26,6 +26,19 @@ module Alembic
       assert alembic_diagnostics(:stats_ladder).complete?({ "need" => "trend" })
     end
 
+    test "scores by summing the weights of the selected options" do
+      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
+      question = diagnostic.questions.create!(key: "q1", position: 1)
+      question.options.create!(value: "yes", weight: 2)
+      question.options.create!(value: "no", weight: 0)
+
+      assert_equal 2, diagnostic.score({ "q1" => "yes" })
+    end
+
+    test "the scored result is the band for the total" do
+      assert_equal "Flying blind", alembic_diagnostics(:business_scorecard).result_for({}).name
+    end
+
     test "selects the band whose ceiling the score falls under" do
       assert_equal "Flying blind", alembic_diagnostics(:business_scorecard).band_for(30).name
     end
