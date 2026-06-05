@@ -10,5 +10,11 @@ module Alembic
 
       assert_equal [ "a", "b" ], question.options.ordered.map(&:value)
     end
+
+    test "is invalid without a value" do
+      option = Option.new(question: alembic_questions(:ladder_need), value: nil)
+
+      assert_not option.valid?
+    end
   end
 end
