@@ -43,5 +43,11 @@
         { "value": "svc", "label": "Other services need to consume them", "hint": "cross-service integration" }
       ]
     }
-  ]
+  ],
+  "warnings": {
+    "insight_pairing": "Insight-grade — you can keep collection light and fast; approximate is fine here.",
+    "money_pairing": "Money-grade on a durable level — your numbers will be exact and recoverable. Good pairing.",
+    "sourcing_floor": "Event sourcing needs a durable floor — Level 3 minimum. Lossy collection can't be the source of truth.",
+    "money_vs_lossy": "Money-grade events can't live on the lossy telemetry sink — it silently drops data you'd need to reconcile. Route them through the durable outbox (Level 3), and keep anonymous telemetry as a separate sink that stitches to your business events at conversion."
+  }
 }

@@ -44,5 +44,9 @@ module Alembic
       assert_equal BRANCH_PATHS.map { |answers| reference.next_question(answers)&.id },
         BRANCH_PATHS.map { |answers| loaded.next_question(answers)&.id }
     end
+
+    test "matches the reference warnings" do
+      assert_equal reference.warnings, loaded.warnings
+    end
   end
 end
