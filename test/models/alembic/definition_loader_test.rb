@@ -55,5 +55,35 @@ module Alembic
 
       assert loader.build.questions.first.applies?({ need: "audit" })
     end
+
+    test "builds a warning carrying its text keyed by symbol" do
+      loader = DefinitionLoader.new({ "warnings" => { "insight_pairing" => "Insight-grade." } })
+
+      assert_equal "Insight-grade.", loader.build.warning_text(:insight_pairing)
+    end
+
+    test "builds a tier node keyed by integer carrying its name" do
+      loader = DefinitionLoader.new({ "tiers" => { "1" => { "name" => "Live query" } } })
+
+      assert_equal "Live query", loader.build.tier(1).name
+    end
+
+    test "builds a level node keyed by symbol carrying its name" do
+      loader = DefinitionLoader.new({ "levels" => { "l3" => { "name" => "Outbox" } } })
+
+      assert_equal "Outbox", loader.build.level(:l3).name
+    end
+
+    test "a node carries its optional descriptive text" do
+      loader = DefinitionLoader.new({ "tiers" => { "1" => { "name" => "Live query", "captures" => "The current value." } } })
+
+      assert_equal "The current value.", loader.build.tier(1).captures
+    end
+
+    test "a node carries its build steps with code" do
+      loader = DefinitionLoader.new({ "tiers" => { "1" => { "name" => "Live query", "build_steps" => [ { "title" => "Index", "code" => "add_index :contacts, :status" } ] } } })
+
+      assert_equal "add_index :contacts, :status", loader.build.tier(1).build_steps.first.code
+    end
   end
 end
