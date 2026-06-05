@@ -14,8 +14,16 @@ module Alembic
 
     def questions
       Array(@definition["questions"]).map do |question|
-        Guide::Question.new(id: question["id"].to_sym, text: question["text"], options: options_for(question))
+        Guide::Question.new(id: question["id"].to_sym, text: question["text"], options: options_for(question), condition: condition_for(question))
       end
+    end
+
+    def condition_for(question)
+      condition = question["condition"]
+      return nil unless condition
+
+      answer_key = condition["answer"].to_sym
+      ->(answers) { answers[answer_key] == condition["equals"] }
     end
 
     def options_for(question)

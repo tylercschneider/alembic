@@ -43,5 +43,11 @@ module Alembic
 
       assert_equal "now", loader.build.questions.first.options.first.value
     end
+
+    test "an equals condition leaves a question inapplicable when the answer differs" do
+      loader = DefinitionLoader.new({ "questions" => [ { "id" => "loss", "text" => "?", "condition" => { "answer" => "need", "equals" => "rates" } } ] })
+
+      assert_not loader.build.questions.first.applies?({ need: "now" })
+    end
   end
 end
