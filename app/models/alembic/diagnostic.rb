@@ -6,5 +6,11 @@ module Alembic
     validates :slug, presence: true
 
     has_many :questions, dependent: :destroy
+    has_many :bands, dependent: :destroy
+
+    def band_for(score)
+      bands.sort_by { |band| band.ceiling || Float::INFINITY }
+        .find { |band| band.ceiling.nil? || score < band.ceiling }
+    end
   end
 end
