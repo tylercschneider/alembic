@@ -8,7 +8,7 @@ module Alembic
     end
 
     def step
-      @guide = Alembic::Guide.find(params[:slug])
+      @guide = guide
       raise ActiveRecord::RecordNotFound unless @guide
 
       @answers = submitted_answers

@@ -38,6 +38,13 @@ module Alembic
       assert_select "h1", text: /A guide defined in the database/
     end
 
+    test "the stepper for a database guide renders its first question" do
+      get alembic.diagnostic_step_path("db-guide")
+
+      assert_response :success
+      assert_select "legend", text: /Pick one option/
+    end
+
     test "the stepper renders the first question" do
       get alembic.diagnostic_step_path("stats-system-ladder")
 
