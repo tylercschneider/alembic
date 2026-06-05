@@ -52,5 +52,11 @@ module Alembic
     test "matches every reference tier node" do
       assert_equal (1..5).map { |number| reference.tier(number) }, (1..5).map { |number| loaded.tier(number) }
     end
+
+    LEVEL_KEYS = [ :l12, :l3, :l4, :l0 ].freeze
+
+    test "matches every reference level node" do
+      assert_equal LEVEL_KEYS.map { |key| reference.level(key) }, LEVEL_KEYS.map { |key| loaded.level(key) }
+    end
   end
 end

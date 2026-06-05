@@ -189,5 +189,95 @@
         }
       ]
     }
+  },
+  "levels": {
+    "l12": {
+      "name": "In-process · sync / async",
+      "tagline": "Emit in code, or enqueue a job.",
+      "complexity": "trivial",
+      "setup": "a method call / an ActiveJob",
+      "maintenance": "low",
+      "captures": "Events handled inside your app, synchronously or in a background job.",
+      "why": "Cheapest possible event handling. Right when losing one is genuinely fine (directional, insight-grade metrics).",
+      "pains": "Events lost on crash or job failure, silently. No dedup, no dead-letter, can't bind the event to the business transaction.",
+      "avoid": "Naive retries with no idempotency.",
+      "avoid_pain": "Duplicate or lost events and no way to know what you missed.",
+      "build_steps": [
+        {
+          "title": "Sync (Level 1)",
+          "code": "subscribers.each { |s| s.handle(event) }  # in the request"
+        },
+        {
+          "title": "Async (Level 2)",
+          "code": "HandleEventJob.perform_later(event)  # survives the request, not a crash"
+        }
+      ]
+    },
+    "l3": {
+      "name": "Outbox · durable",
+      "tagline": "Committed in the same transaction as the change.",
+      "complexity": "medium",
+      "setup": "outbox table · relay/publisher · idempotency keys",
+      "maintenance": "monitor outbox · dead-letter · retention pruning",
+      "captures": "Events that cannot be lost and are atomic with the business write.",
+      "why": "Solves the dual-write problem: the event and the state change commit together or not at all. The floor for money-grade and for event sourcing.",
+      "pains": "Real machinery to run and monitor. The outbox is a queue — mutable, pruned — so it is not your permanent record (project to an events table for that).",
+      "avoid": "Dual-write — write the DB, then publish separately.",
+      "avoid_pain": "The classic failure: DB commits but publish fails (or the reverse), and state and events silently diverge.",
+      "build_steps": [
+        {
+          "title": "Write event in the same txn as the change",
+          "code": "transaction do\n  deal.update!(state: :won)\n  Outbox.create!(event_id: SecureRandom.uuid, name: \"deal_closed\", payload: {...})\nend"
+        },
+        {
+          "title": "A relay ships committed rows, then marks them",
+          "code": "# background loop\nOutbox.unpublished.find_each { |o| deliver(o); o.update!(published_at: Time.now) }"
+        }
+      ]
+    },
+    "l4": {
+      "name": "Broker · cross-service",
+      "tagline": "Events must reach another service.",
+      "complexity": "high (ops)",
+      "setup": "Kafka/broker · consumers · schema registry · partitioning",
+      "maintenance": "broker ops · consumer lag · ordering · replay",
+      "captures": "Durable delivery to consumers outside your process.",
+      "why": "Decouples services through an event stream; supports replay and many independent consumers.",
+      "pains": "Operational weight: a broker to run, ordering and lag to reason about, schema evolution across teams.",
+      "avoid": "Services poll each other's databases or share one DB.",
+      "avoid_pain": "Tight coupling, brittle integrations, no replay — a distributed monolith.",
+      "build_steps": [
+        {
+          "title": "Outbox relays to the broker",
+          "code": "producer.produce(topic: \"deals\", key: deal_id, payload: event.to_json)"
+        }
+      ]
+    },
+    "l0": {
+      "name": "Telemetry sink · fire-and-forget",
+      "tagline": "High-volume anonymous signals (page views, clicks).",
+      "complexity": "medium",
+      "setup": "collector endpoint · batching · columnar sink · pre-aggregation",
+      "maintenance": "the ingest pipeline + columnar store",
+      "captures": "Pre-identity, high-frequency web signals feeding top-of-funnel marketing stats.",
+      "why": "Built for volume the outbox could never carry. Lossy by design — one page view is worthless, the aggregate is everything. Stitches to business events at lead capture.",
+      "pains": "A whole second store to operate. Never your system of record. Must not share the business-events table.",
+      "avoid": "Stuff page views into the same events/outbox table.",
+      "avoid_pain": "Outbox and DB overwhelmed; billions of near-worthless rows drown your business events; retention becomes a nightmare.",
+      "build_steps": [
+        {
+          "title": "Thin collector: accept, validate, enqueue, 202",
+          "code": "# POST /collect\ndef collect\n  validate!(params)        # against the shared schema\n  Buffer.push(params)      # fire-and-forget\n  head :accepted           # 202, no inline work\nend"
+        },
+        {
+          "title": "Batch-flush to the columnar store, pre-aggregate",
+          "code": "# worker drains Buffer -> ClickHouse/lake in batches\n# pre-roll sessions, landing-page CVR, A/B variant lift on ingest"
+        },
+        {
+          "title": "Stitch to a business event at conversion",
+          "code": "# form_submitted -> lead_created, freezing utm/variant/anonymous_id\nemit :lead_created, source_id:, variant_id:, anonymous_id:"
+        }
+      ]
+    }
   }
 }
