@@ -1,0 +1,13 @@
+business_scorecard:
+  slug: business-scorecard
+  title: Business Blind-Spot Scorecard
+  summary: A quick diagnostic of what your business is not measuring.
+  kind: scored
+  status: published
+
+stats_ladder:
+  slug: stats-system-ladder
+  title: The Stats System Ladder
+  summary: A branching field guide to where your metrics system needs to be.
+  kind: guide
+  status: draft
