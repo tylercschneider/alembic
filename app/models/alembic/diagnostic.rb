@@ -10,6 +10,12 @@ module Alembic
     has_many :results, dependent: :destroy
     has_many :rules, dependent: :destroy
 
+    def self.upsert_definition(definition)
+      find_or_initialize_by(slug: definition["slug"]).tap do |diagnostic|
+        diagnostic.update!(definition: definition)
+      end
+    end
+
     def to_guide
       DefinitionLoader.new(definition).build
     end

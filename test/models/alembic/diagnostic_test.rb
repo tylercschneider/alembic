@@ -22,6 +22,18 @@ module Alembic
       assert_equal "demo", Diagnostic.new(definition: { "slug" => "demo" }).to_guide.slug
     end
 
+    test "upserts a diagnostic storing the definition keyed by its slug" do
+      Diagnostic.upsert_definition({ "slug" => "seeded", "headline" => "Hi" })
+
+      assert_equal({ "slug" => "seeded", "headline" => "Hi" }, Diagnostic.find_by(slug: "seeded").definition)
+    end
+
+    test "upserting the same slug twice keeps a single diagnostic" do
+      2.times { Diagnostic.upsert_definition({ "slug" => "seeded" }) }
+
+      assert_equal 1, Diagnostic.where(slug: "seeded").count
+    end
+
     test "the next question is the first applicable unanswered one" do
       assert_equal "need", alembic_diagnostics(:stats_ladder).next_question({}).key
     end
