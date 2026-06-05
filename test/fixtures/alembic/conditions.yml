@@ -1,0 +1,4 @@
+read_needs_current_state:
+  question: ladder_read
+  depends_on: need
+  values: [ "now" ]
