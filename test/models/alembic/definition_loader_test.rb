@@ -85,5 +85,11 @@ module Alembic
 
       assert_equal "add_index :contacts, :status", loader.build.tier(1).build_steps.first.code
     end
+
+    test "selects the resolver named by the definition's placement key" do
+      loader = DefinitionLoader.new({ "placement" => { "resolver_key" => "stats_ladder" } })
+
+      assert_instance_of StatsLadderPlacement, loader.build.resolver
+    end
   end
 end
