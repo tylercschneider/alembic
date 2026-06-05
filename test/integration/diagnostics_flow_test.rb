@@ -30,5 +30,25 @@ module Alembic
       assert_select "h1", text: /actually need to be/
       assert_select "summary", text: /Event log \+ rollups/
     end
+
+    test "the stepper renders the first question" do
+      get alembic.diagnostic_step_path("stats-system-ladder")
+
+      assert_response :success
+      assert_select "legend", text: /most advanced question/
+    end
+
+    test "answering a current-state need branches to the read question" do
+      get alembic.diagnostic_step_path("stats-system-ladder"), params: { answers: { need: "now" } }
+
+      assert_select "legend", text: /read.*versus how often/
+    end
+
+    test "completing the quiz reveals the tier placement" do
+      get alembic.diagnostic_step_path("stats-system-ladder"), params: { answers: { need: "rates", loss: "money", origin: "app" } }
+
+      assert_response :success
+      assert_select "h1", text: /Event log \+ rollups/
+    end
   end
 end

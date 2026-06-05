@@ -4,6 +4,7 @@ require "alembic/engine"
 module Alembic
   class << self
     attr_writer :layout, :base_controller
+    attr_accessor :lead_partial
 
     # The host app sets this to render the engine inside its own layout
     # (e.g. "marketing"). Defaults to the engine's own layout.
