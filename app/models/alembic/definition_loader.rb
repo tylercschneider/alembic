@@ -7,10 +7,20 @@ module Alembic
     OPTIONAL_COPY_KEYS = %w[headline kicker blurb start_label].freeze
 
     def build
-      Guide.new(slug: @definition["slug"], questions: questions, warnings: warnings, **optional_copy)
+      Guide.new(slug: @definition["slug"], questions: questions, tiers: tiers, warnings: warnings, **optional_copy)
     end
 
     private
+
+    def tiers
+      Hash(@definition["tiers"]).to_h do |key, node|
+        [ key.to_i, node_from(node, id: key.to_i) ]
+      end
+    end
+
+    def node_from(node, id:)
+      Guide::Node.new(id: id, name: node["name"])
+    end
 
     def warnings
       Hash(@definition["warnings"]).transform_keys(&:to_sym)

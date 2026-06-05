@@ -61,5 +61,11 @@ module Alembic
 
       assert_equal "Insight-grade.", loader.build.warning_text(:insight_pairing)
     end
+
+    test "builds a tier node keyed by integer carrying its name" do
+      loader = DefinitionLoader.new({ "tiers" => { "1" => { "name" => "Live query" } } })
+
+      assert_equal "Live query", loader.build.tier(1).name
+    end
   end
 end
