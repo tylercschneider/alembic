@@ -2,7 +2,7 @@ module Alembic
   class Question < ApplicationRecord
     belongs_to :diagnostic
     has_many :options, dependent: :destroy
-    has_many :conditions, dependent: :destroy
+    has_many :conditions, as: :subject, dependent: :destroy
 
     validates :key, presence: true
 

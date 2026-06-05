@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_025623) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_05_032900) do
   create_table "alembic_bands", force: :cascade do |t|
     t.integer "ceiling"
     t.datetime "created_at", null: false
@@ -21,13 +21,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_025623) do
     t.index ["diagnostic_id"], name: "index_alembic_bands_on_diagnostic_id"
   end
 
+  create_table "alembic_condition_options", force: :cascade do |t|
+    t.integer "condition_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "option_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["condition_id"], name: "index_alembic_condition_options_on_condition_id"
+    t.index ["option_id"], name: "index_alembic_condition_options_on_option_id"
+  end
+
   create_table "alembic_conditions", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.string "depends_on"
-    t.integer "question_id", null: false
+    t.integer "subject_id", null: false
+    t.string "subject_type", null: false
+    t.integer "tested_question_id", null: false
     t.datetime "updated_at", null: false
-    t.json "values"
-    t.index ["question_id"], name: "index_alembic_conditions_on_question_id"
+    t.index ["subject_type", "subject_id"], name: "index_alembic_conditions_on_subject"
+    t.index ["tested_question_id"], name: "index_alembic_conditions_on_tested_question_id"
   end
 
   create_table "alembic_diagnostics", force: :cascade do |t|
@@ -64,7 +74,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_025623) do
   end
 
   add_foreign_key "alembic_bands", "alembic_diagnostics", column: "diagnostic_id"
-  add_foreign_key "alembic_conditions", "alembic_questions", column: "question_id"
+  add_foreign_key "alembic_condition_options", "alembic_conditions", column: "condition_id"
+  add_foreign_key "alembic_condition_options", "alembic_options", column: "option_id"
+  add_foreign_key "alembic_conditions", "alembic_questions", column: "tested_question_id"
   add_foreign_key "alembic_options", "alembic_questions", column: "question_id"
   add_foreign_key "alembic_questions", "alembic_diagnostics", column: "diagnostic_id"
 end
