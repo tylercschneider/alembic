@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_130339) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_05_210714) do
   create_table "alembic_bands", force: :cascade do |t|
     t.integer "ceiling"
     t.datetime "created_at", null: false
@@ -42,6 +42,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_130339) do
 
   create_table "alembic_diagnostics", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.json "definition"
     t.string "kind"
     t.string "slug"
     t.string "status"

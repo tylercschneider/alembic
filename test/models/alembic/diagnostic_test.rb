@@ -14,6 +14,10 @@ module Alembic
       assert_not Diagnostic.new(slug: nil).valid?
     end
 
+    test "stores a definition document" do
+      assert_equal({ "slug" => "x" }, Diagnostic.new(definition: { "slug" => "x" }).definition)
+    end
+
     test "the next question is the first applicable unanswered one" do
       assert_equal "need", alembic_diagnostics(:stats_ladder).next_question({}).key
     end
