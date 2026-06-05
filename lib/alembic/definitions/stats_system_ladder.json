@@ -49,5 +49,145 @@
     "money_pairing": "Money-grade on a durable level — your numbers will be exact and recoverable. Good pairing.",
     "sourcing_floor": "Event sourcing needs a durable floor — Level 3 minimum. Lossy collection can't be the source of truth.",
     "money_vs_lossy": "Money-grade events can't live on the lossy telemetry sink — it silently drops data you'd need to reconcile. Route them through the durable outbox (Level 3), and keep anonymous telemetry as a separate sink that stitches to your business events at conversion."
+  },
+  "tiers": {
+    "1": {
+      "name": "Live query on current state",
+      "tagline": "Compute it on demand from rows as they exist now.",
+      "complexity": "trivial",
+      "setup": "DB + the right index",
+      "maintenance": "none",
+      "captures": "The current value, exact to the second. \"How many contacts,\" \"open jobs,\" \"current pipeline.\"",
+      "why": "Always correct, zero infrastructure, nothing to invalidate. The right answer far more often than people think.",
+      "pains": "No history — the table only knows now. Deletes and edits erase the past. Cannot answer \"how many last March.\"",
+      "avoid": "Raise timeouts, throw hardware at the DB, sprinkle ad-hoc view caching.",
+      "avoid_pain": "Mystery slow pages and a count query that quietly becomes the app bottleneck.",
+      "build_steps": [
+        {
+          "title": "Index what you filter on",
+          "code": "# migration\nadd_index :contacts, :status"
+        },
+        {
+          "title": "Just ask the database",
+          "code": "Contact.where(status: :active).count\nJob.where(state: :open).sum(:value_cents)"
+        },
+        {
+          "title": "That is the whole tier",
+          "code": "# no job, no table, no cache. climb only when a trigger below fires."
+        }
+      ]
+    },
+    "2": {
+      "name": "Cached current state",
+      "tagline": "The same value, memoized so the read is cheap.",
+      "complexity": "low",
+      "setup": "counter_cache / Redis / matview",
+      "maintenance": "keeping the cache correct (invalidation)",
+      "captures": "Same questions as Tier 1, at scale or on hot paths.",
+      "why": "Fast reads. counter_cache is the clean form — the framework keeps the number current as rows come and go, so reads are free.",
+      "pains": "Still no history. New risk: a cache that drifts if invalidation is wrong. Freshness becomes a choice, not a guarantee.",
+      "avoid": "Cache it manually in fifty places with no single invalidation path.",
+      "avoid_pain": "Stale numbers nobody trusts and bugs you can never reproduce.",
+      "build_steps": [
+        {
+          "title": "counter_cache — the clean version",
+          "code": "class Job < ApplicationRecord\n  belongs_to :contact, counter_cache: true\nend\n# migration: add_column :contacts, :jobs_count, :integer, default: 0\n# backfill: Contact.find_each { |c| Contact.reset_counters(c.id, :jobs) }"
+        },
+        {
+          "title": "Or a Redis counter for cross-cutting totals",
+          "code": "# on write\n$redis.incr(\"open_jobs\")   # decr on close\n# on read\n$redis.get(\"open_jobs\").to_i"
+        },
+        {
+          "title": "Or a materialized view on a refresh schedule",
+          "code": "CREATE MATERIALIZED VIEW pipeline_now AS ...;\n-- refresh nightly / on demand\nREFRESH MATERIALIZED VIEW CONCURRENTLY pipeline_now;"
+        }
+      ]
+    },
+    "3": {
+      "name": "Periodic snapshot",
+      "tagline": "A scheduled job writes the current value to a history table.",
+      "complexity": "low–med",
+      "setup": "a scheduled job + a metrics table",
+      "maintenance": "the cron job; backfilling gaps when a run fails",
+      "captures": "Trends of a level over time: \"contacts at each month-end,\" \"pipeline over the year.\"",
+      "why": "First tier that creates history the current-state tables can't reconstruct. Deleting a contact never touches yesterday's snapshot.",
+      "pains": "Granularity is fixed by cadence — daily means no hourly, ever. Captures levels, lies about flow: 3 created + 2 deleted shows as +1, and the 3 and 2 are gone.",
+      "avoid": "Keep soft-deleted rows forever to reconstruct history; track numbers by hand in a spreadsheet.",
+      "avoid_pain": "Bloated tables, \"deleted\" data leaking into live queries, and a spreadsheet that becomes the real (always-stale) source of truth.",
+      "build_steps": [
+        {
+          "title": "A history table keyed by date",
+          "code": "create_table :daily_metrics do |t|\n  t.date :as_of, null: false\n  t.integer :contacts, :open_jobs\n  t.bigint :pipeline_cents\nend\nadd_index :daily_metrics, :as_of, unique: true"
+        },
+        {
+          "title": "A nightly job that samples current state",
+          "code": "class SnapshotJob\n  def perform\n    DailyMetric.upsert({\n      as_of: Date.today,\n      contacts: Contact.count,\n      open_jobs: Job.open.count,\n      pipeline_cents: Job.open.sum(:value_cents)\n    }, unique_by: :as_of)\n  end\nend"
+        },
+        {
+          "title": "Schedule it (sidekiq-cron / whenever)",
+          "code": "# every day at 00:05\nSnapshotJob.perform_at(\"5 0 * * *\")"
+        }
+      ]
+    },
+    "4": {
+      "name": "Event log + rollups",
+      "tagline": "Record every occurrence as an immutable event; aggregate from it.",
+      "complexity": "high — the big jump",
+      "setup": "event defs · emission at each change · events table · rollups · registry",
+      "maintenance": "rollup correctness + reconciliation · event versioning",
+      "captures": "Flow and causality exactly — every thing that happened, in order, with its values frozen. Rates, conversion, time-between-states, drift-proof attribution.",
+      "why": "The churn problem disappears (you see the 3 and the 2). Attribution survives later edits because the value was copied into the event, not pointed at. Any new breakdown is just a re-aggregation.",
+      "pains": "You only get the dimensions you snapshotted into the payload. Records what happened; does not rebuild an entity's arbitrary past state. Most moving parts so far.",
+      "avoid": "Compute rates from same-period snapshots (this-month closes ÷ this-month leads); store the daily ratio instead of its two counts; derive \"events\" by diffing state at end of day.",
+      "avoid_pain": "Metrics that invert under volume, average-of-averages errors, and a corrupt event log with fabricated timestamps — the \"feels wrong because it IS wrong\" problem.",
+      "build_steps": [
+        {
+          "title": "Define the event (schema-first)",
+          "code": "class DealClosed < EventDefinition\n  required_payload :lead_id, :salesperson_id, :source_id\n  required_payload :amount_cents\n  # occurred_at (spine) = when it happened\nend"
+        },
+        {
+          "title": "Emit at the moment of the change — freeze the values",
+          "code": "def close_deal!(deal)\n  deal.update!(state: :won)\n  emit :deal_closed,\n    lead_id: deal.lead_id, salesperson_id: deal.rep_id,\n    source_id: deal.lead.source_id,   # frozen NOW, survives later edits\n    amount_cents: deal.total_cents\nend"
+        },
+        {
+          "title": "Project into a permanent, queryable events table",
+          "code": "create_table :events do |t|\n  t.uuid :event_id; t.string :name\n  t.datetime :occurred_at\n  t.bigint :source_id, :salesperson_id  # promoted = filterable\n  t.bigint :amount_cents\n  t.jsonb :payload\nend\nadd_index :events, :event_id, unique: true\nadd_index :events, [:name, :occurred_at]"
+        },
+        {
+          "title": "Roll up by recomputation (idempotent, auditable)",
+          "code": "INSERT INTO sales_rollups (period, source_id, deals, revenue_cents)\nSELECT date_trunc('month', occurred_at), source_id,\n  count(*), sum(amount_cents)\nFROM events WHERE name = 'deal_closed'\nGROUP BY 1, 2\nON CONFLICT (period, source_id) DO UPDATE SET ...;"
+        },
+        {
+          "title": "Reconcile — the recompute is the auditor",
+          "code": "# nightly: rebuild from events, diff vs incremental rollup.\n# any mismatch = a caught bug. unique event_id stops double-counting."
+        }
+      ]
+    },
+    "5": {
+      "name": "Event sourcing",
+      "tagline": "Events ARE the record; state is a projection you replay.",
+      "complexity": "high — model inverts",
+      "setup": "event store · replay · snapshotting",
+      "maintenance": "event versioning/upcasting forever · replay performance",
+      "captures": "Everything Tier 4 does, plus arbitrary past state and full audit replay — questions you never anticipated.",
+      "why": "One source of truth. Reconstruct any moment. Fix a projection and re-derive it cleanly. Strongest possible audit position.",
+      "pains": "Heaviest to build and reason about. Overkill for most data. Replay and old-event versioning become permanent concerns. Resist it unless you truly need reconstruction or regulatory replay.",
+      "avoid": "Bolt on an audit_log; add history columns ad hoc; keep a changes table.",
+      "avoid_pain": "Partial history covering only what you anticipated, audit gaps exactly where you didn't log, two sources of truth that disagree.",
+      "build_steps": [
+        {
+          "title": "Events are the only writes",
+          "code": "# never UPDATE state. append facts.\nstore.append(deal_id, :deal_closed, amount_cents: 1_850_000)"
+        },
+        {
+          "title": "State is folded from the stream",
+          "code": "def rebuild(deal_id)\n  store.events_for(deal_id).reduce(Deal.new) do |deal, event|\n    deal.apply(event)   # pure function: (state, event) -> state\n  end\nend"
+        },
+        {
+          "title": "Snapshot for replay speed; query as-of any date",
+          "code": "# \"what did this look like on 2026-03-31?\"\nstore.events_for(deal_id, before: Date.new(2026, 3, 31)).reduce(...)"
+        }
+      ]
+    }
   }
 }

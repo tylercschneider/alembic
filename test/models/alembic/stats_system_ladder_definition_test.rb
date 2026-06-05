@@ -48,5 +48,9 @@ module Alembic
     test "matches the reference warnings" do
       assert_equal reference.warnings, loaded.warnings
     end
+
+    test "matches every reference tier node" do
+      assert_equal (1..5).map { |number| reference.tier(number) }, (1..5).map { |number| loaded.tier(number) }
+    end
   end
 end
