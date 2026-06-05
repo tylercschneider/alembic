@@ -12,6 +12,12 @@ module Alembic
       JSON.parse(File.read(File.expand_path(file, __dir__)))
     end
 
+    def seed!
+      Dir[File.expand_path("alembic/definitions/*.json", __dir__)].each do |file|
+        Diagnostic.upsert_definition(JSON.parse(File.read(file)))
+      end
+    end
+
     # The host app sets this to render the engine inside its own layout
     # (e.g. "marketing"). Defaults to the engine's own layout.
     def layout
