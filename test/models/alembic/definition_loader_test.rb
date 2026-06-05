@@ -73,5 +73,11 @@ module Alembic
 
       assert_equal "Outbox", loader.build.level(:l3).name
     end
+
+    test "a node carries its optional descriptive text" do
+      loader = DefinitionLoader.new({ "tiers" => { "1" => { "name" => "Live query", "captures" => "The current value." } } })
+
+      assert_equal "The current value.", loader.build.tier(1).captures
+    end
   end
 end
