@@ -14,7 +14,13 @@ module Alembic
 
     def questions
       Array(@definition["questions"]).map do |question|
-        Guide::Question.new(id: question["id"].to_sym, text: question["text"])
+        Guide::Question.new(id: question["id"].to_sym, text: question["text"], options: options_for(question))
+      end
+    end
+
+    def options_for(question)
+      Array(question["options"]).map do |option|
+        Guide::Option.new(value: option["value"], label: option["label"], hint: option["hint"])
       end
     end
 

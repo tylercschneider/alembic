@@ -37,5 +37,11 @@ module Alembic
 
       assert_equal :need, loader.build.questions.first.id
     end
+
+    test "builds a question's option carrying its value" do
+      loader = DefinitionLoader.new({ "questions" => [ { "id" => "need", "text" => "Need?", "options" => [ { "value" => "now" } ] } ] })
+
+      assert_equal "now", loader.build.questions.first.options.first.value
+    end
   end
 end
