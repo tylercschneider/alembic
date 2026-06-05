@@ -11,3 +11,21 @@ stats_ladder:
   summary: A branching field guide to where your metrics system needs to be.
   kind: guide
   status: draft
+
+db_guide:
+  slug: db-guide
+  title: Database Guide Record
+  kind: guide
+  status: published
+  definition:
+    slug: db-guide
+    kicker: Demo
+    headline: A guide defined in the database
+    blurb: Loaded straight from the definition column.
+    start_label: "Begin →"
+    questions:
+      - id: pick
+        text: Pick one option
+        options:
+          - { value: a, label: Option A }
+          - { value: b, label: Option B }
