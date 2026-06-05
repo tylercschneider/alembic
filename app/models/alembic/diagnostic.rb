@@ -8,6 +8,14 @@ module Alembic
     has_many :questions, dependent: :destroy
     has_many :bands, dependent: :destroy
     has_many :results, dependent: :destroy
+    has_many :rules, dependent: :destroy
+
+    def place(answers)
+      rules.ordered.select { |rule| rule.fires?(answers) }
+        .each_with_object({}) do |rule, placement|
+          rule.results.each { |result| placement[result.slot] = result }
+        end
+    end
 
     def band_for(score)
       bands.sort_by { |band| band.ceiling || Float::INFINITY }

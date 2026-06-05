@@ -21,5 +21,21 @@ module Alembic
     test "falls through to the open-ended band for high scores" do
       assert_equal "Well instrumented", alembic_diagnostics(:business_scorecard).band_for(90).name
     end
+
+    test "places by applying the results of firing rules" do
+      diagnostic = alembic_diagnostics(:stats_ladder)
+      diagnostic.rules.create!(position: 1).results << alembic_results(:tier_event_log)
+
+      assert_equal "Event log + rollups", diagnostic.place({})["tier"].title
+    end
+
+    test "a later rule overrides an earlier one on the same slot" do
+      diagnostic = alembic_diagnostics(:stats_ladder)
+      lossy = diagnostic.results.create!(slot: :level, key: "l0", title: "Telemetry sink", position: 1)
+      diagnostic.rules.create!(position: 1).results << lossy
+      diagnostic.rules.create!(position: 2).results << alembic_results(:level_outbox)
+
+      assert_equal "Outbox · durable", diagnostic.place({})["level"].title
+    end
   end
 end

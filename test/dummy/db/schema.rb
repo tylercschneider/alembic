@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_125119) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_05_130339) do
   create_table "alembic_bands", force: :cascade do |t|
     t.integer "ceiling"
     t.datetime "created_at", null: false
@@ -85,6 +85,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_125119) do
     t.index ["diagnostic_id"], name: "index_alembic_results_on_diagnostic_id"
   end
 
+  create_table "alembic_rule_results", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "result_id", null: false
+    t.integer "rule_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["result_id"], name: "index_alembic_rule_results_on_result_id"
+    t.index ["rule_id"], name: "index_alembic_rule_results_on_rule_id"
+  end
+
+  create_table "alembic_rules", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "diagnostic_id", null: false
+    t.integer "position"
+    t.datetime "updated_at", null: false
+    t.index ["diagnostic_id"], name: "index_alembic_rules_on_diagnostic_id"
+  end
+
   add_foreign_key "alembic_bands", "alembic_diagnostics", column: "diagnostic_id"
   add_foreign_key "alembic_condition_options", "alembic_conditions", column: "condition_id"
   add_foreign_key "alembic_condition_options", "alembic_options", column: "option_id"
@@ -92,4 +109,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_125119) do
   add_foreign_key "alembic_options", "alembic_questions", column: "question_id"
   add_foreign_key "alembic_questions", "alembic_diagnostics", column: "diagnostic_id"
   add_foreign_key "alembic_results", "alembic_diagnostics", column: "diagnostic_id"
+  add_foreign_key "alembic_rule_results", "alembic_results", column: "result_id"
+  add_foreign_key "alembic_rule_results", "alembic_rules", column: "rule_id"
+  add_foreign_key "alembic_rules", "alembic_diagnostics", column: "diagnostic_id"
 end
