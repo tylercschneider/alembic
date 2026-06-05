@@ -13,5 +13,11 @@ module Alembic
 
       assert_equal "Where to?", loader.build.headline
     end
+
+    test "builds a guide carrying the definition's kicker" do
+      loader = DefinitionLoader.new({ "kicker" => "Diagnose · Place" })
+
+      assert_equal "Diagnose · Place", loader.build.kicker
+    end
   end
 end
