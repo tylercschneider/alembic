@@ -7,5 +7,11 @@ module Alembic
 
       assert_equal "demo", loader.build.slug
     end
+
+    test "builds a guide carrying the definition's headline" do
+      loader = DefinitionLoader.new({ "headline" => "Where to?" })
+
+      assert_equal "Where to?", loader.build.headline
+    end
   end
 end
