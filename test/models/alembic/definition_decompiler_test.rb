@@ -17,5 +17,13 @@ module Alembic
 
       assert_equal "stats_ladder", diagnostic.resolver_key
     end
+
+    test "builds question rows keyed and ordered from the definition" do
+      diagnostic = Diagnostic.create!(slug: "decompiled")
+
+      DefinitionDecompiler.new(diagnostic).load({ "questions" => [ { "id" => "need", "text" => "Need?" }, { "id" => "read", "text" => "Read?" } ] })
+
+      assert_equal [ "need", "read" ], diagnostic.questions.ordered.map(&:key)
+    end
   end
 end
