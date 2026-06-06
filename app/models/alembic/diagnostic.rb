@@ -26,6 +26,10 @@ module Alembic
       update!(definition: DefinitionCompiler.new(self).to_definition)
     end
 
+    def revert!
+      DefinitionDecompiler.new(self).load(definition)
+    end
+
     def score(answers)
       answers.sum do |question_key, option_value|
         question = questions.find { |candidate| candidate.key == question_key }

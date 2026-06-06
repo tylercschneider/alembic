@@ -36,6 +36,14 @@ module Alembic
       assert_equal "Compiled", diagnostic.definition["headline"]
     end
 
+    test "reverting decompiles the definition into rows" do
+      diagnostic = Diagnostic.create!(slug: "demo", definition: { "questions" => [ { "id" => "need", "text" => "Need?" } ] })
+
+      diagnostic.revert!
+
+      assert_equal [ "need" ], diagnostic.questions.ordered.map(&:key)
+    end
+
     test "upserts a diagnostic storing the definition keyed by its slug" do
       Diagnostic.upsert_definition({ "slug" => "seeded", "headline" => "Hi" })
 
