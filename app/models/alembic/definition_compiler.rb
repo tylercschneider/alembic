@@ -30,7 +30,9 @@ module Alembic
       condition = question.conditions.first
       return nil unless condition
 
-      { "answer" => condition.tested_question.key, "equals" => condition.options.ordered.first.value }
+      values = condition.options.ordered.map(&:value)
+      answer = { "answer" => condition.tested_question.key }
+      values.one? ? answer.merge("equals" => values.first) : answer.merge("in" => values)
     end
 
     def compile_options(question)

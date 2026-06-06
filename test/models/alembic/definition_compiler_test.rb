@@ -34,5 +34,16 @@ module Alembic
       loss = DefinitionCompiler.new(diagnostic).to_definition["questions"].find { |q| q["id"] == "loss" }
       assert_equal({ "answer" => "need", "equals" => "rates" }, loss["condition"])
     end
+
+    test "compiles a multi-option condition as in" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      DefinitionDecompiler.new(diagnostic).load({ "questions" => [
+        { "id" => "need", "text" => "Need?", "options" => [ { "value" => "rates" }, { "value" => "audit" } ] },
+        { "id" => "origin", "text" => "Origin?", "condition" => { "answer" => "need", "in" => [ "rates", "audit" ] } }
+      ] })
+
+      origin = DefinitionCompiler.new(diagnostic).to_definition["questions"].find { |q| q["id"] == "origin" }
+      assert_equal({ "answer" => "need", "in" => [ "rates", "audit" ] }, origin["condition"])
+    end
   end
 end
