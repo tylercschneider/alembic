@@ -67,5 +67,14 @@ module Alembic
 
       assert_equal({ "money_pairing" => "Good pairing." }, DefinitionCompiler.new(diagnostic).to_definition["warnings"])
     end
+
+    test "round-trips the bundled stats-ladder definition through rows" do
+      definition = Alembic.bundled_definition("stats-system-ladder")
+      diagnostic = alembic_diagnostics(:stats_ladder)
+
+      DefinitionDecompiler.new(diagnostic).load(definition)
+
+      assert_equal definition, DefinitionCompiler.new(diagnostic).to_definition
+    end
   end
 end
