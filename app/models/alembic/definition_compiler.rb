@@ -10,7 +10,8 @@ module Alembic
         "kicker" => @diagnostic.kicker,
         "headline" => @diagnostic.headline,
         "blurb" => @diagnostic.blurb,
-        "start_label" => @diagnostic.start_label
+        "start_label" => @diagnostic.start_label,
+        "placement" => { "resolver_key" => @diagnostic.resolver_key }
       }
     end
   end
