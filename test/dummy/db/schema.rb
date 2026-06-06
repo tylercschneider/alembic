@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_06_000855) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_06_010312) do
   create_table "alembic_bands", force: :cascade do |t|
     t.integer "ceiling"
     t.datetime "created_at", null: false
@@ -19,6 +19,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_06_000855) do
     t.string "name"
     t.datetime "updated_at", null: false
     t.index ["diagnostic_id"], name: "index_alembic_bands_on_diagnostic_id"
+  end
+
+  create_table "alembic_build_steps", force: :cascade do |t|
+    t.text "code"
+    t.datetime "created_at", null: false
+    t.integer "node_id", null: false
+    t.integer "position"
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.index ["node_id"], name: "index_alembic_build_steps_on_node_id"
   end
 
   create_table "alembic_condition_options", force: :cascade do |t|
@@ -55,6 +65,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_06_000855) do
     t.string "title"
     t.datetime "updated_at", null: false
     t.index ["slug"], name: "index_alembic_diagnostics_on_slug", unique: true
+  end
+
+  create_table "alembic_nodes", force: :cascade do |t|
+    t.text "avoid"
+    t.text "avoid_pain"
+    t.text "captures"
+    t.text "complexity"
+    t.datetime "created_at", null: false
+    t.integer "diagnostic_id", null: false
+    t.string "key"
+    t.string "kind"
+    t.text "maintenance"
+    t.string "name"
+    t.text "pains"
+    t.integer "position"
+    t.text "setup"
+    t.text "tagline"
+    t.datetime "updated_at", null: false
+    t.text "why"
+    t.index ["diagnostic_id"], name: "index_alembic_nodes_on_diagnostic_id"
   end
 
   create_table "alembic_options", force: :cascade do |t|
@@ -109,9 +139,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_06_000855) do
   end
 
   add_foreign_key "alembic_bands", "alembic_diagnostics", column: "diagnostic_id"
+  add_foreign_key "alembic_build_steps", "alembic_nodes", column: "node_id"
   add_foreign_key "alembic_condition_options", "alembic_conditions", column: "condition_id"
   add_foreign_key "alembic_condition_options", "alembic_options", column: "option_id"
   add_foreign_key "alembic_conditions", "alembic_questions", column: "tested_question_id"
+  add_foreign_key "alembic_nodes", "alembic_diagnostics", column: "diagnostic_id"
   add_foreign_key "alembic_options", "alembic_questions", column: "question_id"
   add_foreign_key "alembic_questions", "alembic_diagnostics", column: "diagnostic_id"
   add_foreign_key "alembic_results", "alembic_diagnostics", column: "diagnostic_id"
