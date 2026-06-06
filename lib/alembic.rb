@@ -4,8 +4,8 @@ require "alembic/engine"
 
 module Alembic
   class << self
-    attr_writer :layout, :base_controller
-    attr_accessor :lead_partial
+    attr_writer :layout, :base_controller, :admin_layout
+    attr_accessor :lead_partial, :admin_authentication_method
 
     def bundled_definition(slug)
       file = "alembic/definitions/#{slug.tr('-', '_')}.json"
@@ -29,6 +29,12 @@ module Alembic
     # Defaults to a plain controller.
     def base_controller
       @base_controller || "ActionController::Base"
+    end
+
+    # The host app sets this to render the builder inside its own admin
+    # chrome. Defaults to the conventional application layout.
+    def admin_layout
+      @admin_layout || "application"
     end
   end
 end
