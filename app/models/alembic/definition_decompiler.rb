@@ -19,7 +19,14 @@ module Alembic
 
     def build_questions(questions)
       Array(questions).each_with_index do |question, index|
-        @diagnostic.questions.create!(key: question["id"], text: question["text"], position: index + 1)
+        record = @diagnostic.questions.create!(key: question["id"], text: question["text"], position: index + 1)
+        build_options(record, question["options"])
+      end
+    end
+
+    def build_options(question, options)
+      Array(options).each_with_index do |option, index|
+        question.options.create!(value: option["value"], label: option["label"], hint: option["hint"], position: index + 1)
       end
     end
   end

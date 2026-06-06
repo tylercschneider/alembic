@@ -25,5 +25,14 @@ module Alembic
 
       assert_equal [ "need", "read" ], diagnostic.questions.ordered.map(&:key)
     end
+
+    test "builds option rows under their question from the definition" do
+      diagnostic = Diagnostic.create!(slug: "decompiled")
+
+      DefinitionDecompiler.new(diagnostic).load({ "questions" => [ { "id" => "need", "text" => "Need?", "options" => [ { "value" => "now", "label" => "Now", "hint" => "h" } ] } ] })
+
+      option = diagnostic.questions.first.options.first
+      assert_equal [ "now", "Now", "h" ], [ option.value, option.label, option.hint ]
+    end
   end
 end
