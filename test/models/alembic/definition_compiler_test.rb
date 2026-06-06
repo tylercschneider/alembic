@@ -14,5 +14,14 @@ module Alembic
 
       assert_equal({ "resolver_key" => "stats_ladder" }, DefinitionCompiler.new(diagnostic).to_definition["placement"])
     end
+
+    test "compiles questions with their options" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      question = diagnostic.questions.create!(key: "need", text: "Need?", position: 1)
+      question.options.create!(value: "now", label: "Now", hint: "h", position: 1)
+
+      assert_equal [ { "id" => "need", "text" => "Need?", "options" => [ { "value" => "now", "label" => "Now", "hint" => "h" } ] } ],
+        DefinitionCompiler.new(diagnostic).to_definition["questions"]
+    end
   end
 end
