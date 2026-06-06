@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_06_005430) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_06_010312) do
   create_table "alembic_bands", force: :cascade do |t|
     t.integer "ceiling"
     t.datetime "created_at", null: false
@@ -19,6 +19,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_06_005430) do
     t.string "name"
     t.datetime "updated_at", null: false
     t.index ["diagnostic_id"], name: "index_alembic_bands_on_diagnostic_id"
+  end
+
+  create_table "alembic_build_steps", force: :cascade do |t|
+    t.text "code"
+    t.datetime "created_at", null: false
+    t.integer "node_id", null: false
+    t.integer "position"
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.index ["node_id"], name: "index_alembic_build_steps_on_node_id"
   end
 
   create_table "alembic_condition_options", force: :cascade do |t|
@@ -129,6 +139,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_06_005430) do
   end
 
   add_foreign_key "alembic_bands", "alembic_diagnostics", column: "diagnostic_id"
+  add_foreign_key "alembic_build_steps", "alembic_nodes", column: "node_id"
   add_foreign_key "alembic_condition_options", "alembic_conditions", column: "condition_id"
   add_foreign_key "alembic_condition_options", "alembic_options", column: "option_id"
   add_foreign_key "alembic_conditions", "alembic_questions", column: "tested_question_id"
