@@ -52,5 +52,13 @@ module Alembic
 
       assert_equal({ "1" => { "name" => "Live query", "captures" => "now" } }, DefinitionCompiler.new(diagnostic).to_definition["tiers"])
     end
+
+    test "compiles a node's build steps" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      node = diagnostic.nodes.create!(kind: "tier", key: "1", position: 1, name: "Live query")
+      node.build_steps.create!(title: "Index", code: "add_index", position: 1)
+
+      assert_equal [ { "title" => "Index", "code" => "add_index" } ], DefinitionCompiler.new(diagnostic).to_definition["tiers"]["1"]["build_steps"]
+    end
   end
 end

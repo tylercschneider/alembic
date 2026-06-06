@@ -29,7 +29,15 @@ module Alembic
     end
 
     def compile_node(node)
-      { "name" => node.name }.merge(node_text(node))
+      body = { "name" => node.name }.merge(node_text(node))
+      steps = compile_steps(node)
+      steps.any? ? body.merge("build_steps" => steps) : body
+    end
+
+    def compile_steps(node)
+      node.build_steps.order(:position).map do |step|
+        { "title" => step.title, "code" => step.code }
+      end
     end
 
     def node_text(node)
