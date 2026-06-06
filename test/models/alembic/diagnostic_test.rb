@@ -28,6 +28,14 @@ module Alembic
       assert_equal [ "k", "h", "b", "s", "r" ], [ diagnostic.kicker, diagnostic.headline, diagnostic.blurb, diagnostic.start_label, diagnostic.resolver_key ]
     end
 
+    test "compiling writes the rows into the definition" do
+      diagnostic = Diagnostic.create!(slug: "demo", headline: "Compiled")
+
+      diagnostic.compile!
+
+      assert_equal "Compiled", diagnostic.definition["headline"]
+    end
+
     test "upserts a diagnostic storing the definition keyed by its slug" do
       Diagnostic.upsert_definition({ "slug" => "seeded", "headline" => "Hi" })
 
