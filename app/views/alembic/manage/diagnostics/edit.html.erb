@@ -1,7 +1,7 @@
 <%= ui_page(max_width: :lg) do %>
-  <%= ui_form_page(title: "Edit details", back_url: manage_diagnostic_path(@diagnostic)) %>
+  <%= ui_form_page(title: "Edit details", back_url: alembic.manage_diagnostic_path(@diagnostic)) %>
 
-  <%= ui_form(action: manage_diagnostic_path(@diagnostic), method: :patch) do %>
+  <%= ui_form(action: alembic.manage_diagnostic_path(@diagnostic), method: :patch) do %>
     <%= ui_section(title: "Copy") do %>
       <label class="block text-sm font-medium mb-1">Kicker</label>
       <%= ui_input(name: "diagnostic[kicker]", value: @diagnostic.kicker) %>
