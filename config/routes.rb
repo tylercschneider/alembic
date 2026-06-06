@@ -1,6 +1,6 @@
 Alembic::Engine.routes.draw do
   namespace :manage do
-    resources :diagnostics, only: :index
+    resources :diagnostics, only: [ :index, :show ]
   end
 
   get ":slug", to: "diagnostics#show", as: :diagnostic

@@ -1,0 +1,16 @@
+<%= ui_page(max_width: :xl) do %>
+  <%= ui_page_header(title: @diagnostic.title.presence || @diagnostic.slug, subtitle: @diagnostic.slug) do |header| %>
+    <% header.action do %>
+      <%= ui_button(label: "All diagnostics", href: manage_diagnostics_path, variant: :secondary) %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section(title: "Modules", subtitle: "Click into a part to edit it") do %>
+    <%= ui_grid(cols: { default: 1, sm: 2, lg: 4 }, gap: :lg) do %>
+      <%= ui_stat_card(label: "Questions", value: @diagnostic.questions.count) %>
+      <%= ui_stat_card(label: "Tiers", value: @diagnostic.nodes.where(kind: "tier").count) %>
+      <%= ui_stat_card(label: "Levels", value: @diagnostic.nodes.where(kind: "level").count) %>
+      <%= ui_stat_card(label: "Warnings", value: @diagnostic.warnings.count) %>
+    <% end %>
+  <% end %>
+<% end %>

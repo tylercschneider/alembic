@@ -5,5 +5,7 @@
     items: @diagnostics,
     columns: [ { title: "Title" }, { slug: "Slug" }, { kind: "Kind" }, { status: "Status" } ],
     empty_message: "No diagnostics yet."
-  ) %>
+  ) do |table| %>
+    <% table.link(:title) { |diagnostic| manage_diagnostic_path(diagnostic) } %>
+  <% end %>
 <% end %>
