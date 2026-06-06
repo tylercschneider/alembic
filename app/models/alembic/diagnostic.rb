@@ -7,6 +7,7 @@ module Alembic
 
     has_many :questions, dependent: :destroy
     has_many :nodes, dependent: :destroy
+    has_many :warnings, dependent: :destroy
     has_many :bands, dependent: :destroy
     has_many :results, dependent: :destroy
     has_many :rules, dependent: :destroy
