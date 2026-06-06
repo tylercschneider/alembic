@@ -5,6 +5,7 @@ module Alembic
     end
 
     def load(definition)
+      reset_children
       @diagnostic.update!(
         kicker: definition["kicker"],
         headline: definition["headline"],
@@ -20,6 +21,13 @@ module Alembic
     end
 
     private
+
+    def reset_children
+      @diagnostic.questions.each { |question| question.conditions.destroy_all }
+      @diagnostic.questions.destroy_all
+      @diagnostic.nodes.destroy_all
+      @diagnostic.warnings.destroy_all
+    end
 
     NODE_TEXT_KEYS = %w[tagline complexity setup maintenance captures why pains avoid avoid_pain].freeze
 

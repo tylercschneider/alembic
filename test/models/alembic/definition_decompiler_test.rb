@@ -70,5 +70,14 @@ module Alembic
 
       assert_equal "Good pairing.", diagnostic.warnings.find_by(key: "money_pairing").text
     end
+
+    test "reloading replaces children instead of duplicating them" do
+      diagnostic = Diagnostic.create!(slug: "decompiled")
+      definition = { "questions" => [ { "id" => "need", "text" => "Need?" } ], "warnings" => { "w" => "x" }, "tiers" => { "1" => { "name" => "T" } } }
+
+      2.times { DefinitionDecompiler.new(diagnostic).load(definition) }
+
+      assert_equal [ 1, 1, 1 ], [ diagnostic.questions.count, diagnostic.warnings.count, diagnostic.nodes.count ]
+    end
   end
 end
