@@ -14,7 +14,8 @@ module Alembic
         "placement" => { "resolver_key" => @diagnostic.resolver_key },
         "questions" => compile_questions,
         "tiers" => compile_nodes("tier"),
-        "levels" => compile_nodes("level")
+        "levels" => compile_nodes("level"),
+        "warnings" => compile_warnings
       }
     end
 
@@ -38,6 +39,10 @@ module Alembic
       node.build_steps.order(:position).map do |step|
         { "title" => step.title, "code" => step.code }
       end
+    end
+
+    def compile_warnings
+      @diagnostic.warnings.to_h { |warning| [ warning.key, warning.text ] }
     end
 
     def node_text(node)

@@ -60,5 +60,12 @@ module Alembic
 
       assert_equal [ { "title" => "Index", "code" => "add_index" } ], DefinitionCompiler.new(diagnostic).to_definition["tiers"]["1"]["build_steps"]
     end
+
+    test "compiles warnings keyed by key" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.warnings.create!(key: "money_pairing", text: "Good pairing.")
+
+      assert_equal({ "money_pairing" => "Good pairing." }, DefinitionCompiler.new(diagnostic).to_definition["warnings"])
+    end
   end
 end
