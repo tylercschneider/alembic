@@ -1,6 +1,7 @@
 <%= ui_page(max_width: :xl) do %>
   <%= ui_page_header(title: @diagnostic.title.presence || @diagnostic.slug, subtitle: @diagnostic.slug) do |header| %>
     <% header.action do %>
+      <%= ui_button(label: "Edit details", href: edit_manage_diagnostic_path(@diagnostic)) %>
       <%= ui_button(label: "All diagnostics", href: manage_diagnostics_path, variant: :secondary) %>
     <% end %>
   <% end %>
