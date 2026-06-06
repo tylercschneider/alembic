@@ -28,6 +28,33 @@ module Alembic
       assert_equal [ "k", "h", "b", "s", "r" ], [ diagnostic.kicker, diagnostic.headline, diagnostic.blurb, diagnostic.start_label, diagnostic.resolver_key ]
     end
 
+    test "compiling writes the rows into the definition" do
+      diagnostic = Diagnostic.create!(slug: "demo", headline: "Compiled")
+
+      diagnostic.compile!
+
+      assert_equal "Compiled", diagnostic.definition["headline"]
+    end
+
+    test "reverting decompiles the definition into rows" do
+      diagnostic = Diagnostic.create!(slug: "demo", definition: { "questions" => [ { "id" => "need", "text" => "Need?" } ] })
+
+      diagnostic.revert!
+
+      assert_equal [ "need" ], diagnostic.questions.ordered.map(&:key)
+    end
+
+    test "reverting then compiling round-trips the bundled definition" do
+      definition = Alembic.bundled_definition("stats-system-ladder")
+      diagnostic = alembic_diagnostics(:stats_ladder)
+      diagnostic.update!(definition: definition)
+
+      diagnostic.revert!
+      diagnostic.compile!
+
+      assert_equal definition, diagnostic.definition
+    end
+
     test "upserts a diagnostic storing the definition keyed by its slug" do
       Diagnostic.upsert_definition({ "slug" => "seeded", "headline" => "Hi" })
 
