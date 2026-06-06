@@ -16,6 +16,7 @@ module Alembic
       build_conditions(definition["questions"])
       build_nodes("tier", definition["tiers"])
       build_nodes("level", definition["levels"])
+      build_warnings(definition["warnings"])
     end
 
     private
@@ -57,6 +58,12 @@ module Alembic
         tested = @diagnostic.questions.find_by(key: condition["answer"])
         values = condition["in"] || [ condition["equals"] ]
         gated.conditions.create!(tested_question: tested, options: tested.options.where(value: values))
+      end
+    end
+
+    def build_warnings(warnings)
+      Hash(warnings).each do |key, text|
+        @diagnostic.warnings.create!(key: key, text: text)
       end
     end
   end

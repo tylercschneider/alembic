@@ -62,5 +62,13 @@ module Alembic
       step = diagnostic.nodes.first.build_steps.first
       assert_equal [ "Index", "add_index" ], [ step.title, step.code ]
     end
+
+    test "builds warning rows from the definition" do
+      diagnostic = Diagnostic.create!(slug: "decompiled")
+
+      DefinitionDecompiler.new(diagnostic).load({ "warnings" => { "money_pairing" => "Good pairing." } })
+
+      assert_equal "Good pairing.", diagnostic.warnings.find_by(key: "money_pairing").text
+    end
   end
 end
