@@ -14,9 +14,19 @@ module Alembic
       )
       build_questions(definition["questions"])
       build_conditions(definition["questions"])
+      build_nodes("tier", definition["tiers"])
+      build_nodes("level", definition["levels"])
     end
 
     private
+
+    NODE_TEXT_KEYS = %w[tagline complexity setup maintenance captures why pains avoid avoid_pain].freeze
+
+    def build_nodes(kind, nodes)
+      Hash(nodes).each_with_index do |(key, node), index|
+        @diagnostic.nodes.create!(kind: kind, key: key, position: index + 1, name: node["name"], **node.slice(*NODE_TEXT_KEYS).transform_keys(&:to_sym))
+      end
+    end
 
     def build_questions(questions)
       Array(questions).each_with_index do |question, index|

@@ -45,5 +45,13 @@ module Alembic
 
       assert_not diagnostic.questions.find_by(key: "loss").applies?({ "need" => "now" })
     end
+
+    test "builds tier and level node rows from the definition" do
+      diagnostic = Diagnostic.create!(slug: "decompiled")
+
+      DefinitionDecompiler.new(diagnostic).load({ "tiers" => { "1" => { "name" => "Live query" } }, "levels" => { "l3" => { "name" => "Outbox" } } })
+
+      assert_equal [ [ "tier", "1" ], [ "level", "l3" ] ], diagnostic.nodes.map { |node| [ node.kind, node.key ] }
+    end
   end
 end
