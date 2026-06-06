@@ -22,6 +22,12 @@ module Alembic
       assert_equal "demo", Diagnostic.new(definition: { "slug" => "demo" }).to_guide.slug
     end
 
+    test "stores guide copy and placement attributes" do
+      diagnostic = Diagnostic.new(kicker: "k", headline: "h", blurb: "b", start_label: "s", resolver_key: "r")
+
+      assert_equal [ "k", "h", "b", "s", "r" ], [ diagnostic.kicker, diagnostic.headline, diagnostic.blurb, diagnostic.start_label, diagnostic.resolver_key ]
+    end
+
     test "upserts a diagnostic storing the definition keyed by its slug" do
       Diagnostic.upsert_definition({ "slug" => "seeded", "headline" => "Hi" })
 
