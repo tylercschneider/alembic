@@ -23,5 +23,16 @@ module Alembic
       assert_equal [ { "id" => "need", "text" => "Need?", "options" => [ { "value" => "now", "label" => "Now", "hint" => "h" } ] } ],
         DefinitionCompiler.new(diagnostic).to_definition["questions"]
     end
+
+    test "compiles a single-option condition as equals" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      DefinitionDecompiler.new(diagnostic).load({ "questions" => [
+        { "id" => "need", "text" => "Need?", "options" => [ { "value" => "rates" } ] },
+        { "id" => "loss", "text" => "Loss?", "condition" => { "answer" => "need", "equals" => "rates" } }
+      ] })
+
+      loss = DefinitionCompiler.new(diagnostic).to_definition["questions"].find { |q| q["id"] == "loss" }
+      assert_equal({ "answer" => "need", "equals" => "rates" }, loss["condition"])
+    end
   end
 end

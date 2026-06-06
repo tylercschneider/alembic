@@ -20,8 +20,17 @@ module Alembic
 
     def compile_questions
       @diagnostic.questions.ordered.map do |question|
-        { "id" => question.key, "text" => question.text, "options" => compile_options(question) }
+        base = { "id" => question.key, "text" => question.text, "options" => compile_options(question) }
+        condition = compile_condition(question)
+        condition ? base.merge("condition" => condition) : base
       end
+    end
+
+    def compile_condition(question)
+      condition = question.conditions.first
+      return nil unless condition
+
+      { "answer" => condition.tested_question.key, "equals" => condition.options.ordered.first.value }
     end
 
     def compile_options(question)
