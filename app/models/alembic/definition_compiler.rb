@@ -12,11 +12,32 @@ module Alembic
         "blurb" => @diagnostic.blurb,
         "start_label" => @diagnostic.start_label,
         "placement" => { "resolver_key" => @diagnostic.resolver_key },
-        "questions" => compile_questions
+        "questions" => compile_questions,
+        "tiers" => compile_nodes("tier"),
+        "levels" => compile_nodes("level")
       }
     end
 
     private
+
+    NODE_TEXT_KEYS = %w[tagline complexity setup maintenance captures why pains avoid avoid_pain].freeze
+
+    def compile_nodes(kind)
+      @diagnostic.nodes.where(kind: kind).order(:position).to_h do |node|
+        [ node.key, compile_node(node) ]
+      end
+    end
+
+    def compile_node(node)
+      { "name" => node.name }.merge(node_text(node))
+    end
+
+    def node_text(node)
+      NODE_TEXT_KEYS.each_with_object({}) do |key, text|
+        value = node.public_send(key)
+        text[key] = value unless value.nil?
+      end
+    end
 
     def compile_questions
       @diagnostic.questions.ordered.map do |question|

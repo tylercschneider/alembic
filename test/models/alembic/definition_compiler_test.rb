@@ -45,5 +45,12 @@ module Alembic
       origin = DefinitionCompiler.new(diagnostic).to_definition["questions"].find { |q| q["id"] == "origin" }
       assert_equal({ "answer" => "need", "in" => [ "rates", "audit" ] }, origin["condition"])
     end
+
+    test "compiles tier nodes keyed by their key with present text" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.nodes.create!(kind: "tier", key: "1", position: 1, name: "Live query", captures: "now")
+
+      assert_equal({ "1" => { "name" => "Live query", "captures" => "now" } }, DefinitionCompiler.new(diagnostic).to_definition["tiers"])
+    end
   end
 end
