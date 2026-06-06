@@ -1,0 +1,9 @@
+<%= ui_page(max_width: :xl) do %>
+  <%= ui_page_header(title: "Diagnostics", subtitle: "Build and edit your diagnostics") %>
+
+  <%= ui_data_table(
+    items: @diagnostics,
+    columns: [ { title: "Title" }, { slug: "Slug" }, { kind: "Kind" }, { status: "Status" } ],
+    empty_message: "No diagnostics yet."
+  ) %>
+<% end %>
