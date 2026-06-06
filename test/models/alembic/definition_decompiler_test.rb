@@ -53,5 +53,14 @@ module Alembic
 
       assert_equal [ [ "tier", "1" ], [ "level", "l3" ] ], diagnostic.nodes.map { |node| [ node.kind, node.key ] }
     end
+
+    test "builds build step rows under their node from the definition" do
+      diagnostic = Diagnostic.create!(slug: "decompiled")
+
+      DefinitionDecompiler.new(diagnostic).load({ "tiers" => { "1" => { "name" => "Live query", "build_steps" => [ { "title" => "Index", "code" => "add_index" } ] } } })
+
+      step = diagnostic.nodes.first.build_steps.first
+      assert_equal [ "Index", "add_index" ], [ step.title, step.code ]
+    end
   end
 end

@@ -24,7 +24,14 @@ module Alembic
 
     def build_nodes(kind, nodes)
       Hash(nodes).each_with_index do |(key, node), index|
-        @diagnostic.nodes.create!(kind: kind, key: key, position: index + 1, name: node["name"], **node.slice(*NODE_TEXT_KEYS).transform_keys(&:to_sym))
+        record = @diagnostic.nodes.create!(kind: kind, key: key, position: index + 1, name: node["name"], **node.slice(*NODE_TEXT_KEYS).transform_keys(&:to_sym))
+        build_steps(record, node["build_steps"])
+      end
+    end
+
+    def build_steps(node, steps)
+      Array(steps).each_with_index do |step, index|
+        node.build_steps.create!(title: step["title"], code: step["code"], position: index + 1)
       end
     end
 
