@@ -9,7 +9,8 @@ module Alembic
         kicker: definition["kicker"],
         headline: definition["headline"],
         blurb: definition["blurb"],
-        start_label: definition["start_label"]
+        start_label: definition["start_label"],
+        resolver_key: definition.dig("placement", "resolver_key")
       )
     end
   end
