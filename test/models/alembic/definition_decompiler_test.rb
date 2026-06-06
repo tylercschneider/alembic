@@ -79,5 +79,13 @@ module Alembic
 
       assert_equal [ 1, 1, 1 ], [ diagnostic.questions.count, diagnostic.warnings.count, diagnostic.nodes.count ]
     end
+
+    test "decompiles the bundled stats-ladder definition into rows" do
+      diagnostic = Diagnostic.create!(slug: "bundled-ladder")
+
+      DefinitionDecompiler.new(diagnostic).load(Alembic.bundled_definition("stats-system-ladder"))
+
+      assert_equal "Event log + rollups", diagnostic.nodes.find_by(kind: "tier", key: "4").name
+    end
   end
 end
