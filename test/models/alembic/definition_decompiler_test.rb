@@ -34,5 +34,16 @@ module Alembic
       option = diagnostic.questions.first.options.first
       assert_equal [ "now", "Now", "h" ], [ option.value, option.label, option.hint ]
     end
+
+    test "builds a condition gating a question on another question's answer" do
+      diagnostic = Diagnostic.create!(slug: "decompiled")
+
+      DefinitionDecompiler.new(diagnostic).load({ "questions" => [
+        { "id" => "need", "text" => "Need?", "options" => [ { "value" => "rates" }, { "value" => "now" } ] },
+        { "id" => "loss", "text" => "Loss?", "condition" => { "answer" => "need", "equals" => "rates" } }
+      ] })
+
+      assert_not diagnostic.questions.find_by(key: "loss").applies?({ "need" => "now" })
+    end
   end
 end
