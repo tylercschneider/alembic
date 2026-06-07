@@ -23,5 +23,17 @@ module Alembic
 
       assert_select "input[type=checkbox][name=?][value=?]", "condition[option_ids][]", rates.id.to_s
     end
+
+    test "saving with no options removes the gating" do
+      diagnostic = Diagnostic.create!(slug: "cond")
+      need = diagnostic.questions.create!(key: "need", position: 1)
+      rates = need.options.create!(value: "rates", position: 1)
+      loss = diagnostic.questions.create!(key: "loss", position: 2)
+      loss.conditions.create!(tested_question: need, options: [ rates ])
+
+      patch alembic.manage_diagnostic_question_condition_path(diagnostic, loss), params: { condition: { option_ids: [ "" ] } }
+
+      assert loss.reload.applies?({ "need" => "now" })
+    end
   end
 end
