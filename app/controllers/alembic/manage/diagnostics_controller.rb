@@ -19,6 +19,18 @@ module Alembic
         redirect_to manage_diagnostic_path(@diagnostic), notice: "Saved."
       end
 
+      def compile
+        @diagnostic = Diagnostic.find(params[:id])
+        @diagnostic.compile!
+        redirect_to manage_diagnostic_path(@diagnostic), notice: "Published the current rows."
+      end
+
+      def revert
+        @diagnostic = Diagnostic.find(params[:id])
+        @diagnostic.revert!
+        redirect_to manage_diagnostic_path(@diagnostic), notice: "Reverted to the published definition."
+      end
+
       private
 
       def diagnostic_params
