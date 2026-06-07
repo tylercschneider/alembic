@@ -1,0 +1,10 @@
+<%= ui_page(max_width: :lg) do %>
+  <%= ui_form_page(title: "Edit question", back_url: alembic.manage_diagnostic_questions_path(@diagnostic), subtitle: @question.key) %>
+
+  <%= ui_form(action: alembic.manage_diagnostic_question_path(@diagnostic, @question), method: :patch) do %>
+    <label class="block text-sm font-medium mb-1">Question text</label>
+    <%= ui_input(name: "question[text]", value: @question.text) %>
+
+    <%= ui_button(label: "Save", type: :submit) %>
+  <% end %>
+<% end %>

@@ -17,5 +17,32 @@ module Alembic
 
       assert_select "a[href=?]", alembic.manage_diagnostic_questions_path(diagnostic)
     end
+
+    test "the question edit form prefills the text" do
+      diagnostic = Diagnostic.create!(slug: "qedit")
+      question = diagnostic.questions.create!(key: "need", text: "What do you need?", position: 1)
+
+      get alembic.edit_manage_diagnostic_question_path(diagnostic, question)
+
+      assert_select "input[name=?][value=?]", "question[text]", "What do you need?"
+    end
+
+    test "updating a question saves its text" do
+      diagnostic = Diagnostic.create!(slug: "qedit")
+      question = diagnostic.questions.create!(key: "need", text: "Old", position: 1)
+
+      patch alembic.manage_diagnostic_question_path(diagnostic, question), params: { question: { text: "New text" } }
+
+      assert_equal "New text", question.reload.text
+    end
+
+    test "the questions index links each question to its edit form" do
+      diagnostic = Diagnostic.create!(slug: "qedit")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+
+      get alembic.manage_diagnostic_questions_path(diagnostic)
+
+      assert_select "a[href=?]", alembic.edit_manage_diagnostic_question_path(diagnostic, question)
+    end
   end
 end
