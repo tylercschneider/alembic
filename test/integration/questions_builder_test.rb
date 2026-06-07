@@ -44,5 +44,35 @@ module Alembic
 
       assert_select "a[href=?]", alembic.edit_manage_diagnostic_question_path(diagnostic, question)
     end
+
+    test "updating a question saves an option change" do
+      diagnostic = Diagnostic.create!(slug: "qopts")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+      option = question.options.create!(value: "now", label: "Now", position: 1)
+
+      patch alembic.manage_diagnostic_question_path(diagnostic, question), params: { question: { options_attributes: [ { id: option.id, label: "Right now" } ] } }
+
+      assert_equal "Right now", option.reload.label
+    end
+
+    test "the question edit form renders a field for each option" do
+      diagnostic = Diagnostic.create!(slug: "qopts")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+      question.options.create!(value: "now", label: "Now", position: 1)
+
+      get alembic.edit_manage_diagnostic_question_path(diagnostic, question)
+
+      assert_select "input[name=?][value=?]", "question[options_attributes][0][label]", "Now"
+    end
+
+    test "the question edit form renders a remove checkbox for each option" do
+      diagnostic = Diagnostic.create!(slug: "qopts")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+      question.options.create!(value: "now", position: 1)
+
+      get alembic.edit_manage_diagnostic_question_path(diagnostic, question)
+
+      assert_select "input[type=checkbox][name=?]", "question[options_attributes][0][_destroy]"
+    end
   end
 end
