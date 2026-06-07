@@ -25,4 +25,21 @@
   <%= ui_form(action: alembic.manage_diagnostic_question_options_path(@diagnostic, @question), method: :post) do %>
     <%= ui_button(label: "Add option", type: :submit, variant: :secondary) %>
   <% end %>
+
+  <%= ui_form(action: alembic.manage_diagnostic_question_condition_path(@diagnostic, @question), method: :patch) do %>
+    <%= ui_section(title: "Condition", subtitle: "Show this question only when another question is answered with one of the checked options") do %>
+      <% condition_options = @question.conditions.first&.options.to_a %>
+      <% @diagnostic.questions.ordered.where.not(id: @question.id).each do |other| %>
+        <p class="font-medium text-gray-900 dark:text-white mt-3"><%= other.text.presence || other.key %></p>
+        <% other.options.ordered.each do |option| %>
+          <label class="inline-flex items-center gap-2 mr-4 text-sm text-gray-600 dark:text-gray-300">
+            <%= check_box_tag "condition[option_ids][]", option.id, condition_options.include?(option) %>
+            <%= option.label.presence || option.value %>
+          </label>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= ui_button(label: "Save condition", type: :submit) %>
+  <% end %>
 <% end %>
