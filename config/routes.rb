@@ -8,6 +8,7 @@ Alembic::Engine.routes.draw do
 
       resources :questions, only: [ :index, :edit, :update ] do
         resources :options, only: :create
+        resource :condition, only: :update
       end
     end
   end
