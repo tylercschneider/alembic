@@ -23,5 +23,14 @@ module Alembic
     test "a question with an unmet condition does not apply" do
       assert_not alembic_questions(:ladder_read).applies?({ "need" => "rates" })
     end
+
+    test "updates a nested option through the question" do
+      question = Diagnostic.create!(slug: "nested").questions.create!(key: "q", position: 1)
+      option = question.options.create!(value: "old", position: 1)
+
+      question.update!(options_attributes: [ { id: option.id, value: "new" } ])
+
+      assert_equal "new", option.reload.value
+    end
   end
 end
