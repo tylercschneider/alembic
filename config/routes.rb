@@ -5,6 +5,8 @@ Alembic::Engine.routes.draw do
         post :compile
         post :revert
       end
+
+      resources :questions, only: :index
     end
   end
 
