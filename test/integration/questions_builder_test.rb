@@ -44,5 +44,15 @@ module Alembic
 
       assert_select "a[href=?]", alembic.edit_manage_diagnostic_question_path(diagnostic, question)
     end
+
+    test "updating a question saves an option change" do
+      diagnostic = Diagnostic.create!(slug: "qopts")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+      option = question.options.create!(value: "now", label: "Now", position: 1)
+
+      patch alembic.manage_diagnostic_question_path(diagnostic, question), params: { question: { options_attributes: [ { id: option.id, label: "Right now" } ] } }
+
+      assert_equal "Right now", option.reload.label
+    end
   end
 end
