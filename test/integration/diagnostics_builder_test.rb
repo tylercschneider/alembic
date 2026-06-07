@@ -43,5 +43,30 @@ module Alembic
 
       assert_select "a[href=?]", alembic.edit_manage_diagnostic_path(diagnostic)
     end
+
+    test "the update action compiles the rows into the definition" do
+      diagnostic = Diagnostic.create!(slug: "compilable", headline: "Compiled")
+
+      post alembic.compile_manage_diagnostic_path(diagnostic)
+
+      assert_equal "Compiled", diagnostic.reload.definition["headline"]
+    end
+
+    test "the revert action rebuilds rows from the definition" do
+      diagnostic = Diagnostic.create!(slug: "revertable", definition: { "questions" => [ { "id" => "need", "text" => "Need?" } ] })
+
+      post alembic.revert_manage_diagnostic_path(diagnostic)
+
+      assert_equal [ "need" ], diagnostic.reload.questions.ordered.map(&:key)
+    end
+
+    test "the hub has update and revert buttons" do
+      diagnostic = alembic_diagnostics(:business_scorecard)
+
+      get alembic.manage_diagnostic_path(diagnostic)
+
+      assert_select "form[action=?]", alembic.compile_manage_diagnostic_path(diagnostic)
+      assert_select "form[action=?]", alembic.revert_manage_diagnostic_path(diagnostic)
+    end
   end
 end
