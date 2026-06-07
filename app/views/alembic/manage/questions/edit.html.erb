@@ -21,4 +21,8 @@
 
     <%= ui_button(label: "Save", type: :submit) %>
   <% end %>
+
+  <%= ui_form(action: alembic.manage_diagnostic_question_options_path(@diagnostic, @question), method: :post) do %>
+    <%= ui_button(label: "Add option", type: :submit, variant: :secondary) %>
+  <% end %>
 <% end %>

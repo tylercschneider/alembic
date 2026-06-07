@@ -83,5 +83,14 @@ module Alembic
         post alembic.manage_diagnostic_question_options_path(diagnostic, question)
       end
     end
+
+    test "the question edit form has an add-option button" do
+      diagnostic = Diagnostic.create!(slug: "addopt")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+
+      get alembic.edit_manage_diagnostic_question_path(diagnostic, question)
+
+      assert_select "form[action=?]", alembic.manage_diagnostic_question_options_path(diagnostic, question)
+    end
   end
 end
