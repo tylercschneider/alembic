@@ -1,0 +1,20 @@
+<%= ui_page(max_width: :xl) do %>
+  <%= ui_page_header(title: "Questions", subtitle: @diagnostic.title.presence || @diagnostic.slug) do |header| %>
+    <% header.action do %>
+      <%= ui_button(label: "Back to diagnostic", href: alembic.manage_diagnostic_path(@diagnostic), variant: :secondary) %>
+    <% end %>
+  <% end %>
+
+  <% if @questions.any? %>
+    <ul class="mt-6 divide-y divide-gray-200 dark:divide-zinc-700">
+      <% @questions.each do |question| %>
+        <li class="py-4">
+          <p class="font-medium text-gray-900 dark:text-white"><%= question.text %></p>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400"><%= question.key %> · <%= question.options.count %> options</p>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="mt-6 text-gray-500 dark:text-gray-400">No questions yet.</p>
+  <% end %>
+<% end %>
