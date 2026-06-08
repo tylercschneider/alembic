@@ -10,5 +10,13 @@ module Alembic
 
       assert_includes response.body, "Live query"
     end
+
+    test "the hub links to the nodes editor" do
+      diagnostic = alembic_diagnostics(:stats_ladder)
+
+      get alembic.manage_diagnostic_path(diagnostic)
+
+      assert_select "a[href=?]", alembic.manage_diagnostic_nodes_path(diagnostic)
+    end
   end
 end
