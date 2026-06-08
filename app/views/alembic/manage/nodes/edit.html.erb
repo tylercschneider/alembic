@@ -1,0 +1,15 @@
+<%= ui_page(max_width: :lg) do %>
+  <%= ui_form_page(title: "Edit #{@node.kind} #{@node.key}", back_url: alembic.manage_diagnostic_nodes_path(@diagnostic), subtitle: @node.name) %>
+
+  <%= ui_form(action: alembic.manage_diagnostic_node_path(@diagnostic, @node), method: :patch) do %>
+    <label class="block text-sm font-medium mb-1">Name</label>
+    <%= ui_input(name: "node[name]", value: @node.name) %>
+
+    <% Alembic::Manage::NodesController::TEXT_FIELDS.each do |field| %>
+      <label class="block text-sm font-medium mb-1 mt-4"><%= field.to_s.humanize %></label>
+      <%= ui_textarea(name: "node[#{field}]", value: @node.public_send(field), rows: 2) %>
+    <% end %>
+
+    <%= ui_button(label: "Save", type: :submit) %>
+  <% end %>
+<% end %>

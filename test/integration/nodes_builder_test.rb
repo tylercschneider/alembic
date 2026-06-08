@@ -18,5 +18,14 @@ module Alembic
 
       assert_select "a[href=?]", alembic.manage_diagnostic_nodes_path(diagnostic)
     end
+
+    test "the node edit form prefills the node name" do
+      diagnostic = Diagnostic.create!(slug: "nodes")
+      node = diagnostic.nodes.create!(kind: "tier", key: "1", name: "Live query", position: 1)
+
+      get alembic.edit_manage_diagnostic_node_path(diagnostic, node)
+
+      assert_select "input[name=?][value=?]", "node[name]", "Live query"
+    end
   end
 end
