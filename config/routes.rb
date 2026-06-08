@@ -10,6 +10,8 @@ Alembic::Engine.routes.draw do
         resources :options, only: :create
         resource :condition, only: :update
       end
+
+      resources :nodes, only: [ :index, :edit, :update ]
     end
   end
 
