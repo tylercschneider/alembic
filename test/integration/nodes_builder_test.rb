@@ -56,5 +56,15 @@ module Alembic
 
       assert_select "textarea[name=?]", "node[build_steps_attributes][0][code]", text: "add_index :contacts, :status"
     end
+
+    test "the node edit form renders a remove checkbox for each build step" do
+      diagnostic = Diagnostic.create!(slug: "nodes")
+      node = diagnostic.nodes.create!(kind: "tier", key: "1", name: "Live query", position: 1)
+      node.build_steps.create!(title: "Index", code: "x", position: 1)
+
+      get alembic.edit_manage_diagnostic_node_path(diagnostic, node)
+
+      assert_select "input[type=checkbox][name=?]", "node[build_steps_attributes][0][_destroy]"
+    end
   end
 end

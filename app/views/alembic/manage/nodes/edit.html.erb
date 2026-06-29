@@ -16,6 +16,9 @@
           <%= hidden_field_tag "node[build_steps_attributes][#{index}][id]", step.id %>
           <%= ui_input(name: "node[build_steps_attributes][#{index}][title]", value: step.title, placeholder: "title") %>
           <%= ui_textarea(name: "node[build_steps_attributes][#{index}][code]", value: step.code, rows: 3) %>
+          <label class="inline-flex items-center gap-2 mt-1 text-sm text-gray-500">
+            <%= check_box_tag "node[build_steps_attributes][#{index}][_destroy]", "1", false %> Remove
+          </label>
         </div>
       <% end %>
     <% end %>
