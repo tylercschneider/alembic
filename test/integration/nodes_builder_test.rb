@@ -36,5 +36,15 @@ module Alembic
 
       assert_select "a[href=?]", alembic.edit_manage_diagnostic_node_path(diagnostic, node)
     end
+
+    test "updating a node saves a build step change" do
+      diagnostic = Diagnostic.create!(slug: "nodes")
+      node = diagnostic.nodes.create!(kind: "tier", key: "1", name: "Live query", position: 1)
+      step = node.build_steps.create!(title: "Index", code: "old", position: 1)
+
+      patch alembic.manage_diagnostic_node_path(diagnostic, node), params: { node: { build_steps_attributes: [ { id: step.id, code: "new" } ] } }
+
+      assert_equal "new", step.reload.code
+    end
   end
 end

@@ -23,7 +23,7 @@ module Alembic
       private
 
       def node_params
-        params.require(:node).permit(:name, *TEXT_FIELDS)
+        params.require(:node).permit(:name, *TEXT_FIELDS, build_steps_attributes: [ :id, :title, :code, :position, :_destroy ])
       end
     end
   end
