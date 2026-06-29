@@ -46,5 +46,15 @@ module Alembic
 
       assert_equal "new", step.reload.code
     end
+
+    test "the node edit form renders a code field for each build step" do
+      diagnostic = Diagnostic.create!(slug: "nodes")
+      node = diagnostic.nodes.create!(kind: "tier", key: "1", name: "Live query", position: 1)
+      node.build_steps.create!(title: "Index", code: "add_index :contacts, :status", position: 1)
+
+      get alembic.edit_manage_diagnostic_node_path(diagnostic, node)
+
+      assert_select "textarea[name=?]", "node[build_steps_attributes][0][code]", text: "add_index :contacts, :status"
+    end
   end
 end
