@@ -18,5 +18,14 @@ module Alembic
 
       assert_select "a[href=?]", alembic.manage_diagnostic_warnings_path(diagnostic)
     end
+
+    test "the warning edit form prefills the warning text" do
+      diagnostic = Diagnostic.create!(slug: "warnings")
+      warning = diagnostic.warnings.create!(key: "money_pairing", text: "Money-grade pairing.")
+
+      get alembic.edit_manage_diagnostic_warning_path(diagnostic, warning)
+
+      assert_select "textarea[name=?]", "warning[text]", text: "Money-grade pairing."
+    end
   end
 end
