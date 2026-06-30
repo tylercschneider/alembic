@@ -108,5 +108,14 @@ module Alembic
 
       assert_select "form[action=?]", alembic.manage_diagnostic_questions_path(diagnostic)
     end
+
+    test "destroying a question removes it from the diagnostic" do
+      diagnostic = Diagnostic.create!(slug: "delq")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+
+      assert_difference -> { diagnostic.questions.count }, -1 do
+        delete alembic.manage_diagnostic_question_path(diagnostic, question)
+      end
+    end
   end
 end

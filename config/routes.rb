@@ -6,7 +6,7 @@ Alembic::Engine.routes.draw do
         post :revert
       end
 
-      resources :questions, only: [ :index, :create, :edit, :update ] do
+      resources :questions, only: [ :index, :create, :edit, :update, :destroy ] do
         resources :options, only: :create
         resource :condition, only: :update
       end
