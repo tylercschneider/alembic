@@ -100,5 +100,13 @@ module Alembic
         post alembic.manage_diagnostic_questions_path(diagnostic), params: { question: { key: "budget" } }
       end
     end
+
+    test "the questions index has an add-question form" do
+      diagnostic = Diagnostic.create!(slug: "addq")
+
+      get alembic.manage_diagnostic_questions_path(diagnostic)
+
+      assert_select "form[action=?]", alembic.manage_diagnostic_questions_path(diagnostic)
+    end
   end
 end
