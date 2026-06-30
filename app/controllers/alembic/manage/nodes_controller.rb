@@ -26,6 +26,12 @@ module Alembic
         redirect_to manage_diagnostic_nodes_path(@diagnostic), notice: "Saved."
       end
 
+      def destroy
+        @diagnostic = Diagnostic.find(params[:diagnostic_id])
+        @diagnostic.nodes.find(params[:id]).destroy!
+        redirect_to manage_diagnostic_nodes_path(@diagnostic), notice: "Node removed."
+      end
+
       private
 
       def create_params

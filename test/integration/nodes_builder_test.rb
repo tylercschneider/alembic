@@ -110,6 +110,15 @@ module Alembic
       end
     end
 
+    test "destroying a node removes it from the diagnostic" do
+      diagnostic = Diagnostic.create!(slug: "nodes")
+      node = diagnostic.nodes.create!(kind: "tier", key: "1", name: "Live query", position: 1)
+
+      assert_difference -> { diagnostic.nodes.count }, -1 do
+        delete alembic.manage_diagnostic_node_path(diagnostic, node)
+      end
+    end
+
     test "the node edit form has an add-build-step button" do
       diagnostic = Diagnostic.create!(slug: "nodes")
       node = diagnostic.nodes.create!(kind: "tier", key: "1", name: "Live query", position: 1)
