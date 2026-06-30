@@ -110,6 +110,15 @@ module Alembic
       end
     end
 
+    test "the nodes index has a remove control for each node" do
+      diagnostic = Diagnostic.create!(slug: "nodes")
+      node = diagnostic.nodes.create!(kind: "tier", key: "1", name: "Live query", position: 1)
+
+      get alembic.manage_diagnostic_nodes_path(diagnostic)
+
+      assert_select "form[action=?]", alembic.manage_diagnostic_node_path(diagnostic, node)
+    end
+
     test "destroying a node removes it from the diagnostic" do
       diagnostic = Diagnostic.create!(slug: "nodes")
       node = diagnostic.nodes.create!(kind: "tier", key: "1", name: "Live query", position: 1)
