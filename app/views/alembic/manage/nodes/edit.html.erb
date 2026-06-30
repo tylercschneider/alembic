@@ -10,6 +10,23 @@
       <%= ui_textarea(name: "node[#{field}]", value: @node.public_send(field), rows: 2) %>
     <% end %>
 
+    <%= ui_section(title: "Build steps") do %>
+      <% @node.build_steps.order(:position).each_with_index do |step, index| %>
+        <div class="mb-4">
+          <%= hidden_field_tag "node[build_steps_attributes][#{index}][id]", step.id %>
+          <%= ui_input(name: "node[build_steps_attributes][#{index}][title]", value: step.title, placeholder: "title") %>
+          <%= ui_textarea(name: "node[build_steps_attributes][#{index}][code]", value: step.code, rows: 3) %>
+          <label class="inline-flex items-center gap-2 mt-1 text-sm text-gray-500">
+            <%= check_box_tag "node[build_steps_attributes][#{index}][_destroy]", "1", false %> Remove
+          </label>
+        </div>
+      <% end %>
+    <% end %>
+
     <%= ui_button(label: "Save", type: :submit) %>
+  <% end %>
+
+  <%= ui_form(action: alembic.manage_diagnostic_node_build_steps_path(@diagnostic, @node), method: :post) do %>
+    <%= ui_button(label: "Add build step", type: :submit, variant: :secondary) %>
   <% end %>
 <% end %>

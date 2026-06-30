@@ -8,5 +8,15 @@ module Alembic
 
       assert_equal "Live query", node.name
     end
+
+    test "updates a build step through nested attributes" do
+      diagnostic = Diagnostic.create!(slug: "with-nodes")
+      node = diagnostic.nodes.create!(kind: "tier", key: "1", name: "Live query")
+      step = node.build_steps.create!(title: "Index", code: "old")
+
+      node.update!(build_steps_attributes: [ { id: step.id, code: "new" } ])
+
+      assert_equal "new", step.reload.code
+    end
   end
 end
