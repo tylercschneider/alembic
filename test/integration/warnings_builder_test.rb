@@ -53,5 +53,13 @@ module Alembic
         post alembic.manage_diagnostic_warnings_path(diagnostic), params: { warning: { key: "money_pairing" } }
       end
     end
+
+    test "the warnings index has an add-warning form" do
+      diagnostic = Diagnostic.create!(slug: "warnings")
+
+      get alembic.manage_diagnostic_warnings_path(diagnostic)
+
+      assert_select "form[action=?]", alembic.manage_diagnostic_warnings_path(diagnostic)
+    end
   end
 end

@@ -22,4 +22,13 @@
   <% else %>
     <p class="mt-6 text-gray-500 dark:text-gray-400">No warnings yet.</p>
   <% end %>
+
+  <%= ui_section(title: "Add a warning") do %>
+    <%= ui_form(action: alembic.manage_diagnostic_warnings_path(@diagnostic), method: :post) do %>
+      <label class="block text-sm font-medium mb-1">Key</label>
+      <%= ui_input(name: "warning[key]", placeholder: "e.g. money_pairing") %>
+
+      <%= ui_button(label: "Add warning", type: :submit, variant: :secondary) %>
+    <% end %>
+  <% end %>
 <% end %>
