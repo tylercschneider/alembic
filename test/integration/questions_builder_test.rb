@@ -92,5 +92,13 @@ module Alembic
 
       assert_select "form[action=?]", alembic.manage_diagnostic_question_options_path(diagnostic, question)
     end
+
+    test "creating a question adds one to the diagnostic" do
+      diagnostic = Diagnostic.create!(slug: "addq")
+
+      assert_difference -> { diagnostic.questions.count } do
+        post alembic.manage_diagnostic_questions_path(diagnostic), params: { question: { key: "budget" } }
+      end
+    end
   end
 end
