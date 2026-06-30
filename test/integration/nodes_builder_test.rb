@@ -86,6 +86,14 @@ module Alembic
       end
     end
 
+    test "creating a node adds one to the diagnostic" do
+      diagnostic = Diagnostic.create!(slug: "nodes")
+
+      assert_difference -> { diagnostic.nodes.count } do
+        post alembic.manage_diagnostic_nodes_path(diagnostic), params: { node: { kind: "tier", key: "2" } }
+      end
+    end
+
     test "the node edit form has an add-build-step button" do
       diagnostic = Diagnostic.create!(slug: "nodes")
       node = diagnostic.nodes.create!(kind: "tier", key: "1", name: "Live query", position: 1)
