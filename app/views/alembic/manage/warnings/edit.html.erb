@@ -1,0 +1,13 @@
+<%= ui_page(max_width: :lg) do %>
+  <%= ui_form_page(title: "Edit #{@warning.key}", back_url: alembic.manage_diagnostic_warnings_path(@diagnostic)) %>
+
+  <%= ui_form(action: alembic.manage_diagnostic_warning_path(@diagnostic, @warning), method: :patch) do %>
+    <label class="block text-sm font-medium mb-1">Key</label>
+    <%= ui_input(name: "warning[key]", value: @warning.key) %>
+
+    <label class="block text-sm font-medium mb-1 mt-4">Text</label>
+    <%= ui_textarea(name: "warning[text]", value: @warning.text, rows: 3) %>
+
+    <%= ui_button(label: "Save", type: :submit) %>
+  <% end %>
+<% end %>
