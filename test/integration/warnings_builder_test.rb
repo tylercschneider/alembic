@@ -27,5 +27,14 @@ module Alembic
 
       assert_select "textarea[name=?]", "warning[text]", text: "Money-grade pairing."
     end
+
+    test "updating a warning saves the text" do
+      diagnostic = Diagnostic.create!(slug: "warnings")
+      warning = diagnostic.warnings.create!(key: "money_pairing", text: "old")
+
+      patch alembic.manage_diagnostic_warning_path(diagnostic, warning), params: { warning: { text: "new" } }
+
+      assert_equal "new", warning.reload.text
+    end
   end
 end
