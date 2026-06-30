@@ -10,5 +10,13 @@ module Alembic
 
       assert_includes response.body, "Money-grade pairing."
     end
+
+    test "the hub links to the warnings editor" do
+      diagnostic = alembic_diagnostics(:stats_ladder)
+
+      get alembic.manage_diagnostic_path(diagnostic)
+
+      assert_select "a[href=?]", alembic.manage_diagnostic_warnings_path(diagnostic)
+    end
   end
 end
