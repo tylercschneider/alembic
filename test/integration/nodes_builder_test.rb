@@ -66,5 +66,15 @@ module Alembic
 
       assert_select "input[type=checkbox][name=?]", "node[build_steps_attributes][0][_destroy]"
     end
+
+    test "updating a node with _destroy removes the build step" do
+      diagnostic = Diagnostic.create!(slug: "nodes")
+      node = diagnostic.nodes.create!(kind: "tier", key: "1", name: "Live query", position: 1)
+      step = node.build_steps.create!(title: "Index", code: "x", position: 1)
+
+      assert_difference -> { node.build_steps.count }, -1 do
+        patch alembic.manage_diagnostic_node_path(diagnostic, node), params: { node: { build_steps_attributes: [ { id: step.id, _destroy: "1" } ] } }
+      end
+    end
   end
 end
