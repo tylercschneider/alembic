@@ -79,5 +79,15 @@ module Alembic
 
       assert_select "form[action=?]", alembic.manage_diagnostic_warning_path(diagnostic, warning)
     end
+
+    test "an edited warning lands in the compiled definition after Update" do
+      diagnostic = Diagnostic.create!(slug: "warnings")
+      warning = diagnostic.warnings.create!(key: "money_pairing", text: "old")
+
+      patch alembic.manage_diagnostic_warning_path(diagnostic, warning), params: { warning: { text: "Money-grade pairing." } }
+      post alembic.compile_manage_diagnostic_path(diagnostic)
+
+      assert_equal "Money-grade pairing.", diagnostic.reload.definition["warnings"]["money_pairing"]
+    end
   end
 end
