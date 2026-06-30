@@ -20,4 +20,16 @@
   <% else %>
     <p class="mt-6 text-gray-500 dark:text-gray-400">No tiers or levels yet.</p>
   <% end %>
+
+  <%= ui_section(title: "Add a node") do %>
+    <%= ui_form(action: alembic.manage_diagnostic_nodes_path(@diagnostic), method: :post) do %>
+      <label class="block text-sm font-medium mb-1">Kind</label>
+      <%= ui_select(name: "node[kind]", options: [ [ "Tier", "tier" ], [ "Level", "level" ] ]) %>
+
+      <label class="block text-sm font-medium mb-1 mt-4">Key</label>
+      <%= ui_input(name: "node[key]", placeholder: "e.g. 2 or l3") %>
+
+      <%= ui_button(label: "Add node", type: :submit, variant: :secondary) %>
+    <% end %>
+  <% end %>
 <% end %>

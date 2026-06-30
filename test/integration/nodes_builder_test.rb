@@ -86,6 +86,22 @@ module Alembic
       end
     end
 
+    test "the nodes index has an add-node form" do
+      diagnostic = Diagnostic.create!(slug: "nodes")
+
+      get alembic.manage_diagnostic_nodes_path(diagnostic)
+
+      assert_select "form[action=?]", alembic.manage_diagnostic_nodes_path(diagnostic)
+    end
+
+    test "the add-node form has a kind select" do
+      diagnostic = Diagnostic.create!(slug: "nodes")
+
+      get alembic.manage_diagnostic_nodes_path(diagnostic)
+
+      assert_select "select[name=?]", "node[kind]"
+    end
+
     test "creating a node adds one to the diagnostic" do
       diagnostic = Diagnostic.create!(slug: "nodes")
 
