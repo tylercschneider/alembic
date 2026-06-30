@@ -15,7 +15,7 @@ Alembic::Engine.routes.draw do
         resources :build_steps, only: :create
       end
 
-      resources :warnings, only: [ :index, :edit, :update ]
+      resources :warnings, only: [ :index, :create, :edit, :update ]
     end
   end
 

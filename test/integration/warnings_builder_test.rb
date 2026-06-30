@@ -45,5 +45,13 @@ module Alembic
 
       assert_select "a[href=?]", alembic.edit_manage_diagnostic_warning_path(diagnostic, warning)
     end
+
+    test "creating a warning adds one to the diagnostic" do
+      diagnostic = Diagnostic.create!(slug: "warnings")
+
+      assert_difference -> { diagnostic.warnings.count } do
+        post alembic.manage_diagnostic_warnings_path(diagnostic), params: { warning: { key: "money_pairing" } }
+      end
+    end
   end
 end
