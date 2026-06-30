@@ -70,5 +70,14 @@ module Alembic
         delete alembic.manage_diagnostic_warning_path(diagnostic, warning)
       end
     end
+
+    test "the warnings index has a remove control for each warning" do
+      diagnostic = Diagnostic.create!(slug: "warnings")
+      warning = diagnostic.warnings.create!(key: "money_pairing", text: "x")
+
+      get alembic.manage_diagnostic_warnings_path(diagnostic)
+
+      assert_select "form[action=?]", alembic.manage_diagnostic_warning_path(diagnostic, warning)
+    end
   end
 end

@@ -15,6 +15,9 @@
           </div>
           <div class="flex items-center gap-4">
             <%= link_to "Edit", alembic.edit_manage_diagnostic_warning_path(@diagnostic, warning), class: "text-sm text-accent-700 dark:text-accent-300" %>
+            <%= ui_form(action: alembic.manage_diagnostic_warning_path(@diagnostic, warning), method: :delete) do %>
+              <%= ui_button(label: "Remove", type: :submit, variant: :secondary) %>
+            <% end %>
           </div>
         </li>
       <% end %>
