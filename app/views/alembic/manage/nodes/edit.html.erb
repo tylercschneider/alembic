@@ -25,4 +25,8 @@
 
     <%= ui_button(label: "Save", type: :submit) %>
   <% end %>
+
+  <%= ui_form(action: alembic.manage_diagnostic_node_build_steps_path(@diagnostic, @node), method: :post) do %>
+    <%= ui_button(label: "Add build step", type: :submit, variant: :secondary) %>
+  <% end %>
 <% end %>

@@ -85,5 +85,14 @@ module Alembic
         post alembic.manage_diagnostic_node_build_steps_path(diagnostic, node)
       end
     end
+
+    test "the node edit form has an add-build-step button" do
+      diagnostic = Diagnostic.create!(slug: "nodes")
+      node = diagnostic.nodes.create!(kind: "tier", key: "1", name: "Live query", position: 1)
+
+      get alembic.edit_manage_diagnostic_node_path(diagnostic, node)
+
+      assert_select "form[action=?]", alembic.manage_diagnostic_node_build_steps_path(diagnostic, node)
+    end
   end
 end
