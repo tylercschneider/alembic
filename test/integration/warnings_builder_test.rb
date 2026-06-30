@@ -36,5 +36,14 @@ module Alembic
 
       assert_equal "new", warning.reload.text
     end
+
+    test "the warnings index links each warning to its edit form" do
+      diagnostic = Diagnostic.create!(slug: "warnings")
+      warning = diagnostic.warnings.create!(key: "money_pairing", text: "x")
+
+      get alembic.manage_diagnostic_warnings_path(diagnostic)
+
+      assert_select "a[href=?]", alembic.edit_manage_diagnostic_warning_path(diagnostic, warning)
+    end
   end
 end
