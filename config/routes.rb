@@ -11,7 +11,7 @@ Alembic::Engine.routes.draw do
         resource :condition, only: :update
       end
 
-      resources :nodes, only: [ :index, :edit, :update ] do
+      resources :nodes, only: [ :index, :create, :edit, :update, :destroy ] do
         resources :build_steps, only: :create
       end
     end

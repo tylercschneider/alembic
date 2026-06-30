@@ -8,6 +8,12 @@ module Alembic
         @nodes = @diagnostic.nodes.order(:kind, :position)
       end
 
+      def create
+        @diagnostic = Diagnostic.find(params[:diagnostic_id])
+        @node = @diagnostic.nodes.create!(create_params)
+        redirect_to edit_manage_diagnostic_node_path(@diagnostic, @node), notice: "Node added."
+      end
+
       def edit
         @diagnostic = Diagnostic.find(params[:diagnostic_id])
         @node = @diagnostic.nodes.find(params[:id])
@@ -20,7 +26,20 @@ module Alembic
         redirect_to manage_diagnostic_nodes_path(@diagnostic), notice: "Saved."
       end
 
+      def destroy
+        @diagnostic = Diagnostic.find(params[:diagnostic_id])
+        @diagnostic.nodes.find(params[:id]).destroy!
+        redirect_to manage_diagnostic_nodes_path(@diagnostic), notice: "Node removed."
+      end
+
       private
+
+      def create_params
+        params.require(:node).permit(:kind, :key).reverse_merge(
+          name: "New node",
+          position: @diagnostic.nodes.maximum(:position).to_i + 1
+        )
+      end
 
       def node_params
         params.require(:node).permit(:name, *TEXT_FIELDS, build_steps_attributes: [ :id, :title, :code, :position, :_destroy ])
