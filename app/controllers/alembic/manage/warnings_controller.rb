@@ -24,6 +24,12 @@ module Alembic
         redirect_to manage_diagnostic_warnings_path(@diagnostic), notice: "Saved."
       end
 
+      def destroy
+        @diagnostic = Diagnostic.find(params[:diagnostic_id])
+        @diagnostic.warnings.find(params[:id]).destroy!
+        redirect_to manage_diagnostic_warnings_path(@diagnostic), notice: "Warning removed."
+      end
+
       private
 
       def create_params

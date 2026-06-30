@@ -61,5 +61,14 @@ module Alembic
 
       assert_select "form[action=?]", alembic.manage_diagnostic_warnings_path(diagnostic)
     end
+
+    test "destroying a warning removes it from the diagnostic" do
+      diagnostic = Diagnostic.create!(slug: "warnings")
+      warning = diagnostic.warnings.create!(key: "money_pairing", text: "x")
+
+      assert_difference -> { diagnostic.warnings.count }, -1 do
+        delete alembic.manage_diagnostic_warning_path(diagnostic, warning)
+      end
+    end
   end
 end
