@@ -76,5 +76,14 @@ module Alembic
         patch alembic.manage_diagnostic_node_path(diagnostic, node), params: { node: { build_steps_attributes: [ { id: step.id, _destroy: "1" } ] } }
       end
     end
+
+    test "adding a build step creates one on the node" do
+      diagnostic = Diagnostic.create!(slug: "nodes")
+      node = diagnostic.nodes.create!(kind: "tier", key: "1", name: "Live query", position: 1)
+
+      assert_difference -> { node.build_steps.count } do
+        post alembic.manage_diagnostic_node_build_steps_path(diagnostic, node)
+      end
+    end
   end
 end
