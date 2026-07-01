@@ -13,7 +13,12 @@
             <p class="font-medium text-gray-900 dark:text-white"><%= question.text %></p>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400"><%= question.key %> · <%= question.options.count %> options</p>
           </div>
-          <%= link_to "Edit", alembic.edit_manage_diagnostic_question_path(@diagnostic, question), class: "text-sm text-accent-700 dark:text-accent-300" %>
+          <div class="flex items-center gap-4">
+            <%= link_to "Edit", alembic.edit_manage_diagnostic_question_path(@diagnostic, question), class: "text-sm text-accent-700 dark:text-accent-300" %>
+            <%= ui_form(action: alembic.manage_diagnostic_question_path(@diagnostic, question), method: :delete) do %>
+              <%= ui_button(label: "Remove", type: :submit, variant: :secondary) %>
+            <% end %>
+          </div>
         </li>
       <% end %>
     </ul>

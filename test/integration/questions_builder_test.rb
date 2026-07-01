@@ -117,5 +117,14 @@ module Alembic
         delete alembic.manage_diagnostic_question_path(diagnostic, question)
       end
     end
+
+    test "the questions index has a remove control for each question" do
+      diagnostic = Diagnostic.create!(slug: "delq")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+
+      get alembic.manage_diagnostic_questions_path(diagnostic)
+
+      assert_select "form[action=?]", alembic.manage_diagnostic_question_path(diagnostic, question)
+    end
   end
 end
