@@ -126,5 +126,20 @@ module Alembic
 
       assert_select "form[action=?]", alembic.manage_diagnostic_question_path(diagnostic, question)
     end
+
+    test "a destroyed question leaves no trace in the compiled definition after Update" do
+      diagnostic = Diagnostic.create!(slug: "delq")
+      need = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+      rates = need.options.create!(value: "rates", position: 1)
+      loss = diagnostic.questions.create!(key: "loss", text: "Q", position: 2)
+      loss.conditions.create!(tested_question: need, options: [ rates ])
+
+      delete alembic.manage_diagnostic_question_path(diagnostic, need)
+      post alembic.compile_manage_diagnostic_path(diagnostic)
+
+      compiled = diagnostic.reload.definition["questions"]
+      assert_equal [ "loss" ], compiled.map { |question| question["id"] }
+      assert_nil compiled.first["condition"]
+    end
   end
 end
