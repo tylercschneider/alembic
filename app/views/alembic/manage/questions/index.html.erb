@@ -13,11 +13,25 @@
             <p class="font-medium text-gray-900 dark:text-white"><%= question.text %></p>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400"><%= question.key %> · <%= question.options.count %> options</p>
           </div>
-          <%= link_to "Edit", alembic.edit_manage_diagnostic_question_path(@diagnostic, question), class: "text-sm text-accent-700 dark:text-accent-300" %>
+          <div class="flex items-center gap-4">
+            <%= link_to "Edit", alembic.edit_manage_diagnostic_question_path(@diagnostic, question), class: "text-sm text-accent-700 dark:text-accent-300" %>
+            <%= ui_form(action: alembic.manage_diagnostic_question_path(@diagnostic, question), method: :delete) do %>
+              <%= ui_button(label: "Remove", type: :submit, variant: :secondary) %>
+            <% end %>
+          </div>
         </li>
       <% end %>
     </ul>
   <% else %>
     <p class="mt-6 text-gray-500 dark:text-gray-400">No questions yet.</p>
+  <% end %>
+
+  <%= ui_section(title: "Add a question") do %>
+    <%= ui_form(action: alembic.manage_diagnostic_questions_path(@diagnostic), method: :post) do %>
+      <label class="block text-sm font-medium mb-1">Key</label>
+      <%= ui_input(name: "question[key]", placeholder: "e.g. budget") %>
+
+      <%= ui_button(label: "Add question", type: :submit, variant: :secondary) %>
+    <% end %>
   <% end %>
 <% end %>

@@ -32,5 +32,17 @@ module Alembic
 
       assert_equal "new", option.reload.value
     end
+
+    test "destroying a question destroys conditions in other questions that test it" do
+      diagnostic = Diagnostic.create!(slug: "testedby")
+      need = diagnostic.questions.create!(key: "need", position: 1)
+      rates = need.options.create!(value: "rates", position: 1)
+      loss = diagnostic.questions.create!(key: "loss", position: 2)
+      loss.conditions.create!(tested_question: need, options: [ rates ])
+
+      assert_difference -> { Condition.count }, -1 do
+        need.destroy!
+      end
+    end
   end
 end

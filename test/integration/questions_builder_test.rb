@@ -92,5 +92,54 @@ module Alembic
 
       assert_select "form[action=?]", alembic.manage_diagnostic_question_options_path(diagnostic, question)
     end
+
+    test "creating a question adds one to the diagnostic" do
+      diagnostic = Diagnostic.create!(slug: "addq")
+
+      assert_difference -> { diagnostic.questions.count } do
+        post alembic.manage_diagnostic_questions_path(diagnostic), params: { question: { key: "budget" } }
+      end
+    end
+
+    test "the questions index has an add-question form" do
+      diagnostic = Diagnostic.create!(slug: "addq")
+
+      get alembic.manage_diagnostic_questions_path(diagnostic)
+
+      assert_select "form[action=?]", alembic.manage_diagnostic_questions_path(diagnostic)
+    end
+
+    test "destroying a question removes it from the diagnostic" do
+      diagnostic = Diagnostic.create!(slug: "delq")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+
+      assert_difference -> { diagnostic.questions.count }, -1 do
+        delete alembic.manage_diagnostic_question_path(diagnostic, question)
+      end
+    end
+
+    test "the questions index has a remove control for each question" do
+      diagnostic = Diagnostic.create!(slug: "delq")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+
+      get alembic.manage_diagnostic_questions_path(diagnostic)
+
+      assert_select "form[action=?]", alembic.manage_diagnostic_question_path(diagnostic, question)
+    end
+
+    test "a destroyed question leaves no trace in the compiled definition after Update" do
+      diagnostic = Diagnostic.create!(slug: "delq")
+      need = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+      rates = need.options.create!(value: "rates", position: 1)
+      loss = diagnostic.questions.create!(key: "loss", text: "Q", position: 2)
+      loss.conditions.create!(tested_question: need, options: [ rates ])
+
+      delete alembic.manage_diagnostic_question_path(diagnostic, need)
+      post alembic.compile_manage_diagnostic_path(diagnostic)
+
+      compiled = diagnostic.reload.definition["questions"]
+      assert_equal [ "loss" ], compiled.map { |question| question["id"] }
+      assert_nil compiled.first["condition"]
+    end
   end
 end
