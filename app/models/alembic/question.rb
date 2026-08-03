@@ -14,11 +14,11 @@ module Alembic
     scope :ordered, -> { order(:position) }
 
     def move_up
-      swap_with(diagnostic.questions.ordered.where("position < ?", position).last)
+      reposition(-1)
     end
 
     def move_down
-      swap_with(diagnostic.questions.ordered.where("position > ?", position).first)
+      reposition(1)
     end
 
     def applies?(answers)
@@ -27,12 +27,13 @@ module Alembic
 
     private
 
-    def swap_with(neighbour)
-      return if neighbour.nil?
+    def reposition(offset)
+      siblings = diagnostic.questions.ordered.to_a
+      destination = siblings.index(self) + offset
+      return unless destination.between?(0, siblings.size - 1)
 
-      neighbour_position = neighbour.position
-      neighbour.update!(position: position)
-      update!(position: neighbour_position)
+      siblings.insert(destination, siblings.delete(self))
+      siblings.each_with_index { |question, spot| question.update!(position: spot + 1) }
     end
   end
 end

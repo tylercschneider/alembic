@@ -40,6 +40,16 @@ module Alembic
       assert_equal [ "a", "b" ], diagnostic.questions.ordered.map(&:key)
     end
 
+    test "moving a question renumbers the gaps out of the positions" do
+      diagnostic = Diagnostic.create!(slug: "move-contiguous")
+      first = diagnostic.questions.create!(position: 1, key: "a")
+      diagnostic.questions.create!(position: 5, key: "b")
+
+      first.move_down
+
+      assert_equal [ 1, 2 ], diagnostic.questions.ordered.map(&:position)
+    end
+
     test "is invalid without a key" do
       question = Question.new(diagnostic: alembic_diagnostics(:stats_ladder), key: nil)
 
