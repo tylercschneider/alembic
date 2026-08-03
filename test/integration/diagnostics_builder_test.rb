@@ -60,6 +60,12 @@ module Alembic
       assert_equal [ "need" ], diagnostic.reload.questions.ordered.map(&:key)
     end
 
+    test "creating a diagnostic adds it" do
+      assert_difference -> { Diagnostic.count } do
+        post alembic.manage_diagnostics_path, params: { diagnostic: { slug: "brand-new" } }
+      end
+    end
+
     test "the hub has update and revert buttons" do
       diagnostic = alembic_diagnostics(:business_scorecard)
 

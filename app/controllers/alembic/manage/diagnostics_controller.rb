@@ -5,6 +5,11 @@ module Alembic
         @diagnostics = Diagnostic.order(:slug)
       end
 
+      def create
+        @diagnostic = Diagnostic.create!(create_params)
+        redirect_to manage_diagnostic_path(@diagnostic), notice: "Diagnostic created."
+      end
+
       def show
         @diagnostic = Diagnostic.find(params[:id])
       end
@@ -32,6 +37,10 @@ module Alembic
       end
 
       private
+
+      def create_params
+        params.require(:diagnostic).permit(:slug, :kind)
+      end
 
       def diagnostic_params
         params.require(:diagnostic).permit(:kicker, :headline, :blurb, :start_label, :resolver_key)
