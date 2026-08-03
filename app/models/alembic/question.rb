@@ -28,6 +28,8 @@ module Alembic
     private
 
     def swap_with(neighbour)
+      return if neighbour.nil?
+
       neighbour_position = neighbour.position
       neighbour.update!(position: position)
       update!(position: neighbour_position)
