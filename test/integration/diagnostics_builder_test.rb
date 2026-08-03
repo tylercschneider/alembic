@@ -60,6 +60,53 @@ module Alembic
       assert_equal [ "need" ], diagnostic.reload.questions.ordered.map(&:key)
     end
 
+    test "the builder index offers a form to create a diagnostic" do
+      get alembic.manage_diagnostics_path
+
+      assert_select "form[action=?] input[name=?]", alembic.manage_diagnostics_path, "diagnostic[slug]"
+    end
+
+    test "creating a diagnostic adds it" do
+      assert_difference -> { Diagnostic.count } do
+        post alembic.manage_diagnostics_path, params: { diagnostic: { slug: "brand-new" } }
+      end
+    end
+
+    test "creating a diagnostic without a slug re-renders with the error" do
+      post alembic.manage_diagnostics_path, params: { diagnostic: { slug: "" } }
+
+      assert_select "p", text: "Slug can't be blank"
+    end
+
+    test "the builder index offers a remove control per diagnostic" do
+      get alembic.manage_diagnostics_path
+
+      assert_select "form[action=?]", alembic.manage_diagnostic_path(alembic_diagnostics(:business_scorecard))
+    end
+
+    test "deleting a diagnostic removes it" do
+      diagnostic = Diagnostic.create!(slug: "deleteme")
+
+      delete alembic.manage_diagnostic_path(diagnostic)
+
+      assert_not Diagnostic.exists?(diagnostic.id)
+    end
+
+    test "deleting a diagnostic removes its dependent rows" do
+      diagnostic = Diagnostic.create!(slug: "cascade")
+      diagnostic.questions.create!(key: "need")
+      diagnostic.nodes.create!(key: "tier_one", kind: "tier")
+      diagnostic.warnings.create!(key: "watch_out", text: "Careful.")
+      diagnostic.bands.create!(name: "Low", ceiling: 5)
+      diagnostic.rules.create!(position: 1)
+        .results << diagnostic.results.create!(key: "r1", slot: "tier")
+
+      delete alembic.manage_diagnostic_path(diagnostic)
+
+      assert_empty [ Question, Node, Warning, Band, Result, Rule ]
+        .flat_map { |model| model.where(diagnostic_id: diagnostic.id) }
+    end
+
     test "the hub has update and revert buttons" do
       diagnostic = alembic_diagnostics(:business_scorecard)
 

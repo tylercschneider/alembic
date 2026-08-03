@@ -1,6 +1,6 @@
 Alembic::Engine.routes.draw do
   namespace :manage do
-    resources :diagnostics, only: [ :index, :show, :edit, :update ] do
+    resources :diagnostics, only: [ :index, :create, :show, :edit, :update, :destroy ] do
       member do
         post :compile
         post :revert
