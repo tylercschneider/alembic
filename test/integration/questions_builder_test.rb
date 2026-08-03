@@ -137,6 +137,16 @@ module Alembic
       assert_equal [ "b", "a" ], diagnostic.questions.ordered.map(&:key)
     end
 
+    test "moving a question up from the index reorders it" do
+      diagnostic = Diagnostic.create!(slug: "moveq")
+      diagnostic.questions.create!(key: "a", position: 1)
+      last = diagnostic.questions.create!(key: "b", position: 2)
+
+      post alembic.move_up_manage_diagnostic_question_path(diagnostic, last)
+
+      assert_equal [ "b", "a" ], diagnostic.questions.ordered.map(&:key)
+    end
+
     test "a destroyed question leaves no trace in the compiled definition after Update" do
       diagnostic = Diagnostic.create!(slug: "delq")
       need = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
