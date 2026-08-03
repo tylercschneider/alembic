@@ -9,8 +9,10 @@ module Alembic
     has_many :nodes, dependent: :destroy
     has_many :warnings, dependent: :destroy
     has_many :bands, dependent: :destroy
-    has_many :results, dependent: :destroy
+    # Declared before :results so their rule_results clear first, otherwise
+    # destroying a diagnostic trips the rule_results -> results FK.
     has_many :rules, dependent: :destroy
+    has_many :results, dependent: :destroy
 
     def self.upsert_definition(definition)
       find_or_initialize_by(slug: definition["slug"]).tap do |diagnostic|

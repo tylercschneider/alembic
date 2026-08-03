@@ -92,6 +92,21 @@ module Alembic
       assert_not Diagnostic.exists?(diagnostic.id)
     end
 
+    test "deleting a diagnostic removes its dependent rows" do
+      diagnostic = Diagnostic.create!(slug: "cascade")
+      diagnostic.questions.create!(key: "need")
+      diagnostic.nodes.create!(key: "tier_one", kind: "tier")
+      diagnostic.warnings.create!(key: "watch_out", text: "Careful.")
+      diagnostic.bands.create!(name: "Low", ceiling: 5)
+      diagnostic.rules.create!(position: 1)
+        .results << diagnostic.results.create!(key: "r1", slot: "tier")
+
+      delete alembic.manage_diagnostic_path(diagnostic)
+
+      assert_empty [ Question, Node, Warning, Band, Result, Rule ]
+        .flat_map { |model| model.where(diagnostic_id: diagnostic.id) }
+    end
+
     test "the hub has update and revert buttons" do
       diagnostic = alembic_diagnostics(:business_scorecard)
 
