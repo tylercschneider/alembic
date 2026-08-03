@@ -7,6 +7,11 @@
     empty_message: "No diagnostics yet."
   ) do |table| %>
     <% table.link(:title) { |diagnostic| alembic.manage_diagnostic_path(diagnostic) } %>
+    <% table.actions do |diagnostic| %>
+      <%= ui_form(action: alembic.manage_diagnostic_path(diagnostic), method: :delete) do %>
+        <%= ui_button(label: "Remove", type: :submit, variant: :secondary) %>
+      <% end %>
+    <% end %>
   <% end %>
 
   <%= ui_section(title: "Create a diagnostic") do %>

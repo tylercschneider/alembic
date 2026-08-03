@@ -78,6 +78,12 @@ module Alembic
       assert_select "p", text: "Slug can't be blank"
     end
 
+    test "the builder index offers a remove control per diagnostic" do
+      get alembic.manage_diagnostics_path
+
+      assert_select "form[action=?]", alembic.manage_diagnostic_path(alembic_diagnostics(:business_scorecard))
+    end
+
     test "deleting a diagnostic removes it" do
       diagnostic = Diagnostic.create!(slug: "deleteme")
 
