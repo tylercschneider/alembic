@@ -60,6 +60,12 @@ module Alembic
       assert_equal [ "need" ], diagnostic.reload.questions.ordered.map(&:key)
     end
 
+    test "the builder index offers a form to create a diagnostic" do
+      get alembic.manage_diagnostics_path
+
+      assert_select "form[action=?] input[name=?]", alembic.manage_diagnostics_path, "diagnostic[slug]"
+    end
+
     test "creating a diagnostic adds it" do
       assert_difference -> { Diagnostic.count } do
         post alembic.manage_diagnostics_path, params: { diagnostic: { slug: "brand-new" } }

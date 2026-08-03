@@ -8,4 +8,16 @@
   ) do |table| %>
     <% table.link(:title) { |diagnostic| alembic.manage_diagnostic_path(diagnostic) } %>
   <% end %>
+
+  <%= ui_section(title: "Create a diagnostic") do %>
+    <%= ui_form(action: alembic.manage_diagnostics_path, method: :post) do %>
+      <label class="block text-sm font-medium mb-1">Slug</label>
+      <%= ui_input(name: "diagnostic[slug]", placeholder: "e.g. business-scorecard") %>
+
+      <label class="block text-sm font-medium mb-1 mt-4">Kind</label>
+      <%= ui_select(name: "diagnostic[kind]", options: [ [ "Scored", "scored" ], [ "Guide", "guide" ] ]) %>
+
+      <%= ui_button(label: "Create", type: :submit, variant: :secondary) %>
+    <% end %>
+  <% end %>
 <% end %>
