@@ -147,6 +147,17 @@ module Alembic
       assert_equal [ "b", "a" ], diagnostic.questions.ordered.map(&:key)
     end
 
+    test "moving an option down from the question edit form reorders it" do
+      diagnostic = Diagnostic.create!(slug: "moveopt")
+      question = diagnostic.questions.create!(key: "q", position: 1)
+      first = question.options.create!(value: "a", position: 1)
+      question.options.create!(value: "b", position: 2)
+
+      post alembic.move_down_manage_diagnostic_question_option_path(diagnostic, question, first)
+
+      assert_equal [ "b", "a" ], question.options.ordered.map(&:value)
+    end
+
     test "a destroyed question leaves no trace in the compiled definition after Update" do
       diagnostic = Diagnostic.create!(slug: "delq")
       need = diagnostic.questions.create!(key: "need", text: "Q", position: 1)

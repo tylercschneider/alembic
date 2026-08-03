@@ -12,7 +12,12 @@ Alembic::Engine.routes.draw do
           post :move_down
         end
 
-        resources :options, only: :create
+        resources :options, only: :create do
+          member do
+            post :move_down
+          end
+        end
+
         resource :condition, only: :update
       end
 

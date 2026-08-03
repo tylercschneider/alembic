@@ -22,6 +22,17 @@
     <%= ui_button(label: "Save", type: :submit) %>
   <% end %>
 
+  <%= ui_section(title: "Option order") do %>
+    <% @question.options.ordered.each do |option| %>
+      <div class="py-2 flex items-center justify-between">
+        <p class="text-sm text-gray-900 dark:text-white"><%= option.label.presence || option.value %></p>
+        <%= ui_form(action: alembic.move_down_manage_diagnostic_question_option_path(@diagnostic, @question, option), method: :post) do %>
+          <%= ui_button(label: "Down", type: :submit, variant: :secondary) %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
   <%= ui_form(action: alembic.manage_diagnostic_question_options_path(@diagnostic, @question), method: :post) do %>
     <%= ui_button(label: "Add option", type: :submit, variant: :secondary) %>
   <% end %>
