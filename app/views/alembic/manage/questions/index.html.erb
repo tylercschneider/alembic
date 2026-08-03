@@ -14,6 +14,9 @@
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400"><%= question.key %> · <%= question.options.count %> options</p>
           </div>
           <div class="flex items-center gap-4">
+            <%= ui_form(action: alembic.move_down_manage_diagnostic_question_path(@diagnostic, question), method: :post) do %>
+              <%= ui_button(label: "Down", type: :submit, variant: :secondary) %>
+            <% end %>
             <%= link_to "Edit", alembic.edit_manage_diagnostic_question_path(@diagnostic, question), class: "text-sm text-accent-700 dark:text-accent-300" %>
             <%= ui_form(action: alembic.manage_diagnostic_question_path(@diagnostic, question), method: :delete) do %>
               <%= ui_button(label: "Remove", type: :submit, variant: :secondary) %>

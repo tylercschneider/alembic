@@ -7,6 +7,10 @@ Alembic::Engine.routes.draw do
       end
 
       resources :questions, only: [ :index, :create, :edit, :update, :destroy ] do
+        member do
+          post :move_down
+        end
+
         resources :options, only: :create
         resource :condition, only: :update
       end

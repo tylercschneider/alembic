@@ -24,6 +24,10 @@ module Alembic
         redirect_to manage_diagnostic_questions_path(@diagnostic), notice: "Saved."
       end
 
+      def move_down
+        reorder(&:move_down)
+      end
+
       def destroy
         @diagnostic = Diagnostic.find(params[:diagnostic_id])
         @diagnostic.questions.find(params[:id]).destroy!
@@ -31,6 +35,12 @@ module Alembic
       end
 
       private
+
+      def reorder
+        @diagnostic = Diagnostic.find(params[:diagnostic_id])
+        yield @diagnostic.questions.find(params[:id])
+        redirect_to manage_diagnostic_questions_path(@diagnostic), notice: "Order updated."
+      end
 
       def create_params
         params.require(:question).permit(:key).reverse_merge(
