@@ -13,6 +13,13 @@ module Alembic
 
     scope :ordered, -> { order(:position) }
 
+    def move_down
+      neighbour = diagnostic.questions.ordered.where("position > ?", position).first
+      neighbour_position = neighbour.position
+      neighbour.update!(position: position)
+      update!(position: neighbour_position)
+    end
+
     def applies?(answers)
       conditions.all? { |condition| condition.satisfied_by?(answers) }
     end
