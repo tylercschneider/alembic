@@ -7,6 +7,10 @@ module Alembic
         redirect_to edit_manage_diagnostic_question_path(@question.diagnostic, @question), notice: "Option added."
       end
 
+      def move_up
+        reorder(&:move_up)
+      end
+
       def move_down
         reorder(&:move_down)
       end
