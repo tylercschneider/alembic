@@ -10,6 +10,10 @@
   <% end %>
 
   <%= ui_section(title: "Create a diagnostic") do %>
+    <% if @diagnostic&.errors&.any? %>
+      <%= ui_alert(message: @diagnostic.errors.full_messages.to_sentence, type: :error) %>
+    <% end %>
+
     <%= ui_form(action: alembic.manage_diagnostics_path, method: :post) do %>
       <label class="block text-sm font-medium mb-1">Slug</label>
       <%= ui_input(name: "diagnostic[slug]", placeholder: "e.g. business-scorecard") %>

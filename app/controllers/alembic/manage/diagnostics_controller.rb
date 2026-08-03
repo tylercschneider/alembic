@@ -2,12 +2,18 @@ module Alembic
   module Manage
     class DiagnosticsController < BaseController
       def index
-        @diagnostics = Diagnostic.order(:slug)
+        @diagnostics = ordered_diagnostics
       end
 
       def create
-        @diagnostic = Diagnostic.create!(create_params)
-        redirect_to manage_diagnostic_path(@diagnostic), notice: "Diagnostic created."
+        @diagnostic = Diagnostic.new(create_params)
+
+        if @diagnostic.save
+          redirect_to manage_diagnostic_path(@diagnostic), notice: "Diagnostic created."
+        else
+          @diagnostics = ordered_diagnostics
+          render :index, status: :unprocessable_entity
+        end
       end
 
       def show
@@ -37,6 +43,10 @@ module Alembic
       end
 
       private
+
+      def ordered_diagnostics
+        Diagnostic.order(:slug)
+      end
 
       def create_params
         params.require(:diagnostic).permit(:slug, :kind)

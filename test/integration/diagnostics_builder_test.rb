@@ -72,6 +72,12 @@ module Alembic
       end
     end
 
+    test "creating a diagnostic without a slug re-renders with the error" do
+      post alembic.manage_diagnostics_path, params: { diagnostic: { slug: "" } }
+
+      assert_select "p", text: "Slug can't be blank"
+    end
+
     test "the hub has update and revert buttons" do
       diagnostic = alembic_diagnostics(:business_scorecard)
 
