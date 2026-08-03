@@ -20,6 +20,16 @@ module Alembic
       assert_equal [ "b", "a" ], diagnostic.questions.ordered.map(&:key)
     end
 
+    test "moving a question up places it before its neighbour" do
+      diagnostic = Diagnostic.create!(slug: "move-up")
+      diagnostic.questions.create!(position: 1, key: "a")
+      last = diagnostic.questions.create!(position: 2, key: "b")
+
+      last.move_up
+
+      assert_equal [ "b", "a" ], diagnostic.questions.ordered.map(&:key)
+    end
+
     test "is invalid without a key" do
       question = Question.new(diagnostic: alembic_diagnostics(:stats_ladder), key: nil)
 
