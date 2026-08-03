@@ -78,6 +78,14 @@ module Alembic
       assert_select "p", text: "Slug can't be blank"
     end
 
+    test "deleting a diagnostic removes it" do
+      diagnostic = Diagnostic.create!(slug: "deleteme")
+
+      delete alembic.manage_diagnostic_path(diagnostic)
+
+      assert_not Diagnostic.exists?(diagnostic.id)
+    end
+
     test "the hub has update and revert buttons" do
       diagnostic = alembic_diagnostics(:business_scorecard)
 

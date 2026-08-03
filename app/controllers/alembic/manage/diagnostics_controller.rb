@@ -30,6 +30,11 @@ module Alembic
         redirect_to manage_diagnostic_path(@diagnostic), notice: "Saved."
       end
 
+      def destroy
+        Diagnostic.find(params[:id]).destroy!
+        redirect_to manage_diagnostics_path, notice: "Diagnostic removed."
+      end
+
       def compile
         @diagnostic = Diagnostic.find(params[:id])
         @diagnostic.compile!
