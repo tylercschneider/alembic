@@ -55,6 +55,16 @@ module Alembic
       assert_equal "Right now", option.reload.label
     end
 
+    test "updating a question saves an option weight" do
+      diagnostic = Diagnostic.create!(slug: "qweight")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+      option = question.options.create!(value: "now", position: 1)
+
+      patch alembic.manage_diagnostic_question_path(diagnostic, question), params: { question: { options_attributes: [ { id: option.id, weight: 3 } ] } }
+
+      assert_equal 3, option.reload.weight
+    end
+
     test "the question edit form renders a field for each option" do
       diagnostic = Diagnostic.create!(slug: "qopts")
       question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
@@ -63,6 +73,16 @@ module Alembic
       get alembic.edit_manage_diagnostic_question_path(diagnostic, question)
 
       assert_select "input[name=?][value=?]", "question[options_attributes][0][label]", "Now"
+    end
+
+    test "the question edit form renders a weight field for each option" do
+      diagnostic = Diagnostic.create!(slug: "qweight")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+      question.options.create!(value: "now", weight: 2, position: 1)
+
+      get alembic.edit_manage_diagnostic_question_path(diagnostic, question)
+
+      assert_select "input[name=?][value=?]", "question[options_attributes][0][weight]", "2"
     end
 
     test "the question edit form renders a remove checkbox for each option" do
@@ -178,6 +198,18 @@ module Alembic
       post alembic.compile_manage_diagnostic_path(diagnostic)
 
       assert_equal [ "b", "a" ], diagnostic.reload.definition["questions"].map { |question| question["id"] }
+    end
+
+    test "an option weight set in the builder survives compiling and reverting" do
+      diagnostic = Diagnostic.create!(slug: "weight-roundtrip")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+      option = question.options.create!(value: "now", position: 1)
+
+      patch alembic.manage_diagnostic_question_path(diagnostic, question), params: { question: { options_attributes: [ { id: option.id, weight: 3 } ] } }
+      post alembic.compile_manage_diagnostic_path(diagnostic)
+      diagnostic.reload.revert!
+
+      assert_equal 3, diagnostic.questions.first.options.first.weight
     end
 
     test "a destroyed question leaves no trace in the compiled definition after Update" do

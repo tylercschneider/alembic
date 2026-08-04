@@ -63,7 +63,7 @@ module Alembic
 
     def options_for(question)
       Array(question["options"]).map do |option|
-        Guide::Option.new(value: option["value"], label: option["label"], hint: option["hint"])
+        Guide::Option.new(value: option["value"], label: option["label"], hint: option["hint"], weight: option["weight"])
       end
     end
 

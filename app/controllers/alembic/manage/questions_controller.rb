@@ -54,7 +54,7 @@ module Alembic
       end
 
       def question_params
-        params.require(:question).permit(:text, options_attributes: [ :id, :value, :label, :hint, :_destroy ])
+        params.require(:question).permit(:text, options_attributes: [ :id, :value, :label, :hint, :weight, :_destroy ])
       end
     end
   end

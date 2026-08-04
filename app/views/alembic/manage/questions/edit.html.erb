@@ -12,6 +12,7 @@
           <%= ui_input(name: "question[options_attributes][#{index}][value]", value: option.value, placeholder: "value") %>
           <%= ui_input(name: "question[options_attributes][#{index}][label]", value: option.label, placeholder: "label") %>
           <%= ui_input(name: "question[options_attributes][#{index}][hint]", value: option.hint, placeholder: "hint") %>
+          <%= ui_input(name: "question[options_attributes][#{index}][weight]", value: option.weight, placeholder: "weight") %>
           <label class="inline-flex items-center gap-2 mt-1 text-sm text-gray-500">
             <%= check_box_tag "question[options_attributes][#{index}][_destroy]", "1", false %> Remove
           </label>

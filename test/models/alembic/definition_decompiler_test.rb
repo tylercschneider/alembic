@@ -35,6 +35,14 @@ module Alembic
       assert_equal [ "now", "Now", "h" ], [ option.value, option.label, option.hint ]
     end
 
+    test "builds an option row carrying its weight from the definition" do
+      diagnostic = Diagnostic.create!(slug: "decompiled")
+
+      DefinitionDecompiler.new(diagnostic).load({ "questions" => [ { "id" => "need", "text" => "Need?", "options" => [ { "value" => "now", "weight" => 3 } ] } ] })
+
+      assert_equal 3, diagnostic.questions.first.options.first.weight
+    end
+
     test "builds a condition gating a question on another question's answer" do
       diagnostic = Diagnostic.create!(slug: "decompiled")
 
