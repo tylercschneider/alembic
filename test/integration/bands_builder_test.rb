@@ -18,5 +18,13 @@ module Alembic
 
       assert_select "form[action=?]", alembic.manage_diagnostic_bands_path(diagnostic)
     end
+
+    test "an added band persists its ceiling" do
+      diagnostic = Diagnostic.create!(slug: "bands")
+
+      post alembic.manage_diagnostic_bands_path(diagnostic), params: { band: { name: "Starter", ceiling: 10 } }
+
+      assert_equal 10, diagnostic.bands.sole.ceiling
+    end
   end
 end
