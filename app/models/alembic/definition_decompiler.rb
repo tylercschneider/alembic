@@ -28,6 +28,7 @@ module Alembic
       @diagnostic.questions.destroy_all
       @diagnostic.nodes.destroy_all
       @diagnostic.warnings.destroy_all
+      @diagnostic.bands.destroy_all
     end
 
     NODE_TEXT_KEYS = %w[tagline complexity setup maintenance captures why pains avoid avoid_pain].freeze
