@@ -2,5 +2,5 @@
   <h1><%= @diagnostic.title %></h1>
   <p><%= @diagnostic.summary %></p>
 
-  <%= link_to "Start", diagnostic_step_path(@diagnostic.slug), class: "alembic-start" %>
+  <%= link_to "Start", alembic.diagnostic_step_path(@diagnostic.slug), class: "alembic-start" %>
 </section>
