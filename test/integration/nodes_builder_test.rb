@@ -53,6 +53,17 @@ module Alembic
       assert_equal [ "b", "a" ], node.build_steps.ordered.map(&:title)
     end
 
+    test "a reordered node keeps its new place in the compiled definition" do
+      diagnostic = Diagnostic.create!(slug: "reorder-nodes")
+      first = diagnostic.nodes.create!(kind: "tier", key: "a", name: "A", position: 1)
+      diagnostic.nodes.create!(kind: "tier", key: "b", name: "B", position: 2)
+
+      post alembic.move_down_manage_diagnostic_node_path(diagnostic, first)
+      post alembic.compile_manage_diagnostic_path(diagnostic)
+
+      assert_equal [ "b", "a" ], diagnostic.reload.definition["tiers"].keys
+    end
+
     test "the hub links to the nodes editor" do
       diagnostic = alembic_diagnostics(:stats_ladder)
 
