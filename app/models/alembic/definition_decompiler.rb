@@ -53,7 +53,7 @@ module Alembic
 
     def build_options(question, options)
       Array(options).each_with_index do |option, index|
-        question.options.create!(value: option["value"], label: option["label"], hint: option["hint"], position: index + 1)
+        question.options.create!(value: option["value"], label: option["label"], hint: option["hint"], weight: option["weight"], position: index + 1)
       end
     end
 
