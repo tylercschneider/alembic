@@ -37,9 +37,9 @@ module Alembic
       end
     end
 
-    attr_reader :slug, :questions, :resolver, :kicker, :headline, :blurb, :start_label, :tiers, :levels, :warnings
+    attr_reader :slug, :questions, :resolver, :kicker, :headline, :blurb, :start_label, :tiers, :levels, :warnings, :bands
 
-    def initialize(slug:, questions:, resolver: nil, kicker: nil, headline: nil, blurb: nil, start_label: "Start →", tiers: {}, levels: {}, warnings: {})
+    def initialize(slug:, questions:, resolver: nil, kicker: nil, headline: nil, blurb: nil, start_label: "Start →", tiers: {}, levels: {}, warnings: {}, bands: [])
       @slug = slug
       @questions = questions
       @resolver = resolver
@@ -50,6 +50,7 @@ module Alembic
       @tiers = tiers
       @levels = levels
       @warnings = warnings
+      @bands = bands
     end
 
     def warning_text(key)
