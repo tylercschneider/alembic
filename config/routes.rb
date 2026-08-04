@@ -38,7 +38,7 @@ Alembic::Engine.routes.draw do
 
       resources :warnings, only: [ :index, :create, :edit, :update, :destroy ]
 
-      resources :bands, only: [ :index, :create, :edit ]
+      resources :bands, only: [ :index, :create, :edit, :update ]
     end
   end
 

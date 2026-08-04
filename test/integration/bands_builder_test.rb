@@ -43,5 +43,14 @@ module Alembic
 
       assert_select "a[href=?]", alembic.edit_manage_diagnostic_band_path(diagnostic, band)
     end
+
+    test "the band edit form prefills the band's name" do
+      diagnostic = Diagnostic.create!(slug: "bands")
+      band = diagnostic.bands.create!(ceiling: 10, name: "Starter")
+
+      get alembic.edit_manage_diagnostic_band_path(diagnostic, band)
+
+      assert_select "input[name=?][value=?]", "band[name]", "Starter"
+    end
   end
 end

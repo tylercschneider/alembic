@@ -12,6 +12,11 @@ module Alembic
         redirect_to manage_diagnostic_bands_path(@diagnostic), notice: "Band added."
       end
 
+      def edit
+        @diagnostic = Diagnostic.find(params[:diagnostic_id])
+        @band = @diagnostic.bands.find(params[:id])
+      end
+
       private
 
       def band_params
