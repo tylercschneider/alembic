@@ -79,6 +79,23 @@ module Alembic
       assert_equal "Good pairing.", diagnostic.warnings.find_by(key: "money_pairing").text
     end
 
+    test "builds band rows from the definition" do
+      diagnostic = Diagnostic.create!(slug: "decompiled")
+
+      DefinitionDecompiler.new(diagnostic).load({ "bands" => [ { "ceiling" => 10, "name" => "Starter", "description" => "Just beginning." } ] })
+
+      assert_equal "Just beginning.", diagnostic.bands.sole.description
+    end
+
+    test "reloading replaces bands instead of duplicating them" do
+      diagnostic = Diagnostic.create!(slug: "decompiled")
+      definition = { "bands" => [ { "ceiling" => 10, "name" => "Starter" } ] }
+
+      2.times { DefinitionDecompiler.new(diagnostic).load(definition) }
+
+      assert_equal 1, diagnostic.bands.count
+    end
+
     test "reloading replaces children instead of duplicating them" do
       diagnostic = Diagnostic.create!(slug: "decompiled")
       definition = { "questions" => [ { "id" => "need", "text" => "Need?" } ], "warnings" => { "w" => "x" }, "tiers" => { "1" => { "name" => "T" } } }

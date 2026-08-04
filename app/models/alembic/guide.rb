@@ -16,6 +16,12 @@ module Alembic
       end
     end
 
+    Band = Data.define(:ceiling, :name, :description) do
+      def initialize(ceiling:, name:, description: nil)
+        super
+      end
+    end
+
     Placement = Data.define(:tier, :grade, :level, :warning, :warning_ok)
 
     BuildStep = Data.define(:title, :code)
@@ -31,9 +37,9 @@ module Alembic
       end
     end
 
-    attr_reader :slug, :questions, :resolver, :kicker, :headline, :blurb, :start_label, :tiers, :levels, :warnings
+    attr_reader :slug, :questions, :resolver, :kicker, :headline, :blurb, :start_label, :tiers, :levels, :warnings, :bands
 
-    def initialize(slug:, questions:, resolver: nil, kicker: nil, headline: nil, blurb: nil, start_label: "Start →", tiers: {}, levels: {}, warnings: {})
+    def initialize(slug:, questions:, resolver: nil, kicker: nil, headline: nil, blurb: nil, start_label: "Start →", tiers: {}, levels: {}, warnings: {}, bands: [])
       @slug = slug
       @questions = questions
       @resolver = resolver
@@ -44,6 +50,7 @@ module Alembic
       @tiers = tiers
       @levels = levels
       @warnings = warnings
+      @bands = bands
     end
 
     def warning_text(key)

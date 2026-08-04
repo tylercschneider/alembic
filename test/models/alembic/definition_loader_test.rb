@@ -92,6 +92,12 @@ module Alembic
       assert_equal "add_index :contacts, :status", loader.build.tier(1).build_steps.first.code
     end
 
+    test "builds a band carrying its name" do
+      loader = DefinitionLoader.new({ "bands" => [ { "ceiling" => 10, "name" => "Starter", "description" => "Just beginning." } ] })
+
+      assert_equal "Starter", loader.build.bands.first.name
+    end
+
     test "selects the resolver named by the definition's placement key" do
       loader = DefinitionLoader.new({ "placement" => { "resolver_key" => "stats_ladder" } })
 
