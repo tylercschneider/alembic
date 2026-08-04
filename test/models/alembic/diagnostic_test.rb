@@ -55,6 +55,20 @@ module Alembic
       assert_equal definition, diagnostic.definition
     end
 
+    test "compiling then reverting round-trips a scored diagnostic's bands and weights" do
+      diagnostic = Diagnostic.create!(slug: "scored", kind: "scored")
+      question = diagnostic.questions.create!(key: "need", text: "Need?", position: 1)
+      question.options.create!(value: "yes", label: "Yes", weight: 3, position: 1)
+      diagnostic.bands.create!(ceiling: 10, name: "Starter", description: "Just beginning.")
+
+      diagnostic.compile!
+      compiled = diagnostic.definition
+      diagnostic.revert!
+      diagnostic.compile!
+
+      assert_equal compiled, diagnostic.definition
+    end
+
     test "upserts a diagnostic storing the definition keyed by its slug" do
       Diagnostic.upsert_definition({ "slug" => "seeded", "headline" => "Hi" })
 
