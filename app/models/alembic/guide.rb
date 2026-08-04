@@ -16,6 +16,12 @@ module Alembic
       end
     end
 
+    Band = Data.define(:ceiling, :name, :description) do
+      def initialize(ceiling:, name:, description: nil)
+        super
+      end
+    end
+
     Placement = Data.define(:tier, :grade, :level, :warning, :warning_ok)
 
     BuildStep = Data.define(:title, :code)

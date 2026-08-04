@@ -47,5 +47,9 @@ module Alembic
 
       assert_equal [ :a ], guide([ Q.new(id: :a, text: "A"), gated ]).applicable_questions({}).map(&:id)
     end
+
+    test "a band carries its description" do
+      assert_equal "Just beginning.", Guide::Band.new(ceiling: 10, name: "Starter", description: "Just beginning.").description
+    end
   end
 end
