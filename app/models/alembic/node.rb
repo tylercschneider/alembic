@@ -10,7 +10,7 @@ module Alembic
     private
 
     def siblings
-      diagnostic.nodes
+      diagnostic.nodes.where(kind: kind)
     end
   end
 end
