@@ -48,6 +48,25 @@ module Alembic
       assert_equal [ :a ], guide([ Q.new(id: :a, text: "A"), gated ]).applicable_questions({}).map(&:id)
     end
 
+    test "scoring sums the weights of the answered options" do
+      option = Guide::Option.new(value: "yes", label: "Yes", hint: nil, weight: 3)
+      scored = guide([ Q.new(id: :need, text: "Need?", options: [ option ]) ])
+
+      assert_equal 3, scored.score({ need: "yes" })
+    end
+
+    test "a score falls into the first band whose ceiling it is under" do
+      banded = Guide.new(slug: "t", questions: [], bands: [ Guide::Band.new(ceiling: 10, name: "Low"), Guide::Band.new(ceiling: 20, name: "High") ])
+
+      assert_equal "Low", banded.band_for(4).name
+    end
+
+    test "a score above every ceiling falls into the open-ended band" do
+      banded = Guide.new(slug: "t", questions: [], bands: [ Guide::Band.new(ceiling: nil, name: "Top"), Guide::Band.new(ceiling: 10, name: "Low") ])
+
+      assert_equal "Top", banded.band_for(40).name
+    end
+
     test "a band carries its description" do
       assert_equal "Just beginning.", Guide::Band.new(ceiling: 10, name: "Starter", description: "Just beginning.").description
     end

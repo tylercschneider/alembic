@@ -16,11 +16,19 @@ module Alembic
       @question = @guide.next_question(@answers)
       return render :step if @question
 
+      return render_result if @guide.bands.any?
+
       @placement = @guide.place(@answers)
       render :placement
     end
 
     private
+
+    def render_result
+      @score = @guide.score(@answers)
+      @band = @guide.band_for(@score)
+      render :result
+    end
 
     def guide
       defined_guide || Alembic::Guide.find(params[:slug])

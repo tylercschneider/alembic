@@ -58,6 +58,41 @@ module Alembic
       assert_select "legend", text: /read.*versus how often/
     end
 
+    def scored_diagnostic
+      Diagnostic.create!(slug: "scored-flow", kind: "scored", definition: {
+        "slug" => "scored-flow",
+        "questions" => [
+          { "id" => "need", "text" => "Need?", "options" => [ { "value" => "yes", "label" => "Yes", "weight" => 5 }, { "value" => "no", "label" => "No", "weight" => 0 } ] },
+          { "id" => "team", "text" => "Team?", "options" => [ { "value" => "yes", "label" => "Yes", "weight" => 3 }, { "value" => "no", "label" => "No", "weight" => 0 } ] }
+        ],
+        "bands" => [ { "ceiling" => 4, "name" => "Flying blind" }, { "ceiling" => nil, "name" => "Well instrumented" } ]
+      })
+    end
+
+    test "completing a scored diagnostic names the band the score lands in" do
+      scored_diagnostic
+
+      get alembic.diagnostic_step_path("scored-flow"), params: { answers: { need: "yes", team: "no" } }
+
+      assert_select "h1", text: /Well instrumented/
+    end
+
+    test "the scored result shows the total score" do
+      scored_diagnostic
+
+      get alembic.diagnostic_step_path("scored-flow"), params: { answers: { need: "yes", team: "no" } }
+
+      assert_includes response.body, "Score: 5"
+    end
+
+    test "a scored diagnostic answered with no weight lands in the lowest band" do
+      scored_diagnostic
+
+      get alembic.diagnostic_step_path("scored-flow"), params: { answers: { need: "no", team: "no" } }
+
+      assert_select "h1", text: /Flying blind/
+    end
+
     test "completing the quiz reveals the tier placement" do
       get alembic.diagnostic_step_path("stats-system-ladder"), params: { answers: { need: "rates", loss: "money", origin: "app" } }
 
