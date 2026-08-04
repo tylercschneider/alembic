@@ -9,6 +9,26 @@ module Alembic
       assert_equal "Live query", node.name
     end
 
+    test "moving a node down places it after its neighbour" do
+      diagnostic = Diagnostic.create!(slug: "node-move")
+      first = diagnostic.nodes.create!(kind: "tier", key: "a", position: 1)
+      diagnostic.nodes.create!(kind: "tier", key: "b", position: 2)
+
+      first.move_down
+
+      assert_equal [ "b", "a" ], diagnostic.nodes.ordered.map(&:key)
+    end
+
+    test "the only tier stays put when moved down past a level" do
+      diagnostic = Diagnostic.create!(slug: "node-kind")
+      tier = diagnostic.nodes.create!(kind: "tier", key: "t", position: 1)
+      diagnostic.nodes.create!(kind: "level", key: "l", position: 2)
+
+      tier.move_down
+
+      assert_equal 1, tier.reload.position
+    end
+
     test "updates a build step through nested attributes" do
       diagnostic = Diagnostic.create!(slug: "with-nodes")
       node = diagnostic.nodes.create!(kind: "tier", key: "1", name: "Live query")

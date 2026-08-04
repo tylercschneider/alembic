@@ -9,5 +9,15 @@ module Alembic
 
       assert_equal "add_index :contacts, :status", step.code
     end
+
+    test "moving a build step down places it after its neighbour" do
+      node = Diagnostic.create!(slug: "step-move").nodes.create!(kind: "tier", key: "1")
+      first = node.build_steps.create!(title: "a", position: 1)
+      node.build_steps.create!(title: "b", position: 2)
+
+      first.move_down
+
+      assert_equal [ "b", "a" ], node.build_steps.ordered.map(&:title)
+    end
   end
 end

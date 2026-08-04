@@ -23,7 +23,17 @@ Alembic::Engine.routes.draw do
       end
 
       resources :nodes, only: [ :index, :create, :edit, :update, :destroy ] do
-        resources :build_steps, only: :create
+        member do
+          post :move_up
+          post :move_down
+        end
+
+        resources :build_steps, only: :create do
+          member do
+            post :move_up
+            post :move_down
+          end
+        end
       end
 
       resources :warnings, only: [ :index, :create, :edit, :update, :destroy ]

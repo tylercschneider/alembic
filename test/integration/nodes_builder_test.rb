@@ -11,6 +11,59 @@ module Alembic
       assert_includes response.body, "Live query"
     end
 
+    test "moving a node down from the index reorders it" do
+      diagnostic = Diagnostic.create!(slug: "moven")
+      first = diagnostic.nodes.create!(kind: "tier", key: "a", position: 1)
+      diagnostic.nodes.create!(kind: "tier", key: "b", position: 2)
+
+      post alembic.move_down_manage_diagnostic_node_path(diagnostic, first)
+
+      assert_equal [ "b", "a" ], diagnostic.nodes.ordered.map(&:key)
+    end
+
+    test "moving a node up from the index reorders it" do
+      diagnostic = Diagnostic.create!(slug: "moven")
+      diagnostic.nodes.create!(kind: "tier", key: "a", position: 1)
+      last = diagnostic.nodes.create!(kind: "tier", key: "b", position: 2)
+
+      post alembic.move_up_manage_diagnostic_node_path(diagnostic, last)
+
+      assert_equal [ "b", "a" ], diagnostic.nodes.ordered.map(&:key)
+    end
+
+    test "moving a build step down from the node edit form reorders it" do
+      diagnostic = Diagnostic.create!(slug: "movestep")
+      node = diagnostic.nodes.create!(kind: "tier", key: "1", position: 1)
+      first = node.build_steps.create!(title: "a", position: 1)
+      node.build_steps.create!(title: "b", position: 2)
+
+      post alembic.move_down_manage_diagnostic_node_build_step_path(diagnostic, node, first)
+
+      assert_equal [ "b", "a" ], node.build_steps.ordered.map(&:title)
+    end
+
+    test "moving a build step up from the node edit form reorders it" do
+      diagnostic = Diagnostic.create!(slug: "movestep")
+      node = diagnostic.nodes.create!(kind: "tier", key: "1", position: 1)
+      node.build_steps.create!(title: "a", position: 1)
+      last = node.build_steps.create!(title: "b", position: 2)
+
+      post alembic.move_up_manage_diagnostic_node_build_step_path(diagnostic, node, last)
+
+      assert_equal [ "b", "a" ], node.build_steps.ordered.map(&:title)
+    end
+
+    test "a reordered node keeps its new place in the compiled definition" do
+      diagnostic = Diagnostic.create!(slug: "reorder-nodes")
+      first = diagnostic.nodes.create!(kind: "tier", key: "a", name: "A", position: 1)
+      diagnostic.nodes.create!(kind: "tier", key: "b", name: "B", position: 2)
+
+      post alembic.move_down_manage_diagnostic_node_path(diagnostic, first)
+      post alembic.compile_manage_diagnostic_path(diagnostic)
+
+      assert_equal [ "b", "a" ], diagnostic.reload.definition["tiers"].keys
+    end
+
     test "the hub links to the nodes editor" do
       diagnostic = alembic_diagnostics(:stats_ladder)
 
