@@ -9,6 +9,10 @@ gem "sqlite3"
 
 gem "propshaft"
 
+# The dummy app's CSS build. Host apps bring their own; the engine ships no
+# compiled stylesheet.
+gem "tailwindcss-rails"
+
 # UI components for the engine views. The host app provides this at runtime;
 # here it's for the dummy app and view tests.
 gem "keystone_ui", github: "tylercschneider/keystone_ui"
