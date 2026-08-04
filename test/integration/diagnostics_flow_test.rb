@@ -51,6 +51,12 @@ module Alembic
       assert_select "a[href=?]", alembic.diagnostic_path("stats-system-ladder")
     end
 
+    test "the stepper submits answers back to itself" do
+      get alembic.diagnostic_step_path("stats-system-ladder")
+
+      assert_select "form[action=?]", alembic.diagnostic_step_path("stats-system-ladder")
+    end
+
     test "the stepper renders the first question" do
       get alembic.diagnostic_step_path("stats-system-ladder")
 

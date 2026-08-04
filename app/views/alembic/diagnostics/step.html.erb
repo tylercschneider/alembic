@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <%= form_with url: diagnostic_step_path(@guide.slug), method: :get, data: { turbo: false } do %>
+    <%= form_with url: alembic.diagnostic_step_path(@guide.slug), method: :get, data: { turbo: false } do %>
       <% @answers.each do |key, value| %>
         <%= hidden_field_tag "answers[#{key}]", value %>
       <% end %>
