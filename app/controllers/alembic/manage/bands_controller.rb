@@ -24,6 +24,12 @@ module Alembic
         redirect_to manage_diagnostic_bands_path(@diagnostic), notice: "Saved."
       end
 
+      def destroy
+        @diagnostic = Diagnostic.find(params[:diagnostic_id])
+        @diagnostic.bands.find(params[:id]).destroy!
+        redirect_to manage_diagnostic_bands_path(@diagnostic), notice: "Band removed."
+      end
+
       private
 
       def band_params

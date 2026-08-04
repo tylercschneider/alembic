@@ -61,5 +61,14 @@ module Alembic
 
       assert_equal "Starter", band.reload.name
     end
+
+    test "destroying a band removes it from the diagnostic" do
+      diagnostic = Diagnostic.create!(slug: "bands")
+      band = diagnostic.bands.create!(ceiling: 10, name: "Starter")
+
+      assert_difference -> { diagnostic.bands.count }, -1 do
+        delete alembic.manage_diagnostic_band_path(diagnostic, band)
+      end
+    end
   end
 end
