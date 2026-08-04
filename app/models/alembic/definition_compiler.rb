@@ -71,7 +71,8 @@ module Alembic
 
     def compile_options(question)
       question.options.ordered.map do |option|
-        { "value" => option.value, "label" => option.label, "hint" => option.hint }
+        base = { "value" => option.value, "label" => option.label, "hint" => option.hint }
+        option.weight.nil? ? base : base.merge("weight" => option.weight)
       end
     end
   end

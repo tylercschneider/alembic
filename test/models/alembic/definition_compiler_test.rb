@@ -24,6 +24,14 @@ module Alembic
         DefinitionCompiler.new(diagnostic).to_definition["questions"]
     end
 
+    test "compiles an option's weight" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      question = diagnostic.questions.create!(key: "need", text: "Need?", position: 1)
+      question.options.create!(value: "now", weight: 3, position: 1)
+
+      assert_equal 3, DefinitionCompiler.new(diagnostic).to_definition["questions"].first["options"].first["weight"]
+    end
+
     test "compiles a single-option condition as equals" do
       diagnostic = Diagnostic.create!(slug: "demo")
       DefinitionDecompiler.new(diagnostic).load({ "questions" => [
