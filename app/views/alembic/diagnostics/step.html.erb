@@ -2,7 +2,7 @@
 
 <section class="py-20 md:py-28">
   <div class="max-w-2xl mx-auto px-6">
-    <%= link_to "← Start over", diagnostic_path(@guide.slug), class: "text-sm text-accent-600 hover:text-accent-700" %>
+    <%= link_to "← Start over", alembic.diagnostic_path(@guide.slug), class: "text-sm text-accent-600 hover:text-accent-700" %>
 
     <% applicable = [@guide.applicable_questions(@answers).size, 1].max %>
     <div class="mt-6 mb-6">
@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <%= form_with url: diagnostic_step_path(@guide.slug), method: :get, data: { turbo: false } do %>
+    <%= form_with url: alembic.diagnostic_step_path(@guide.slug), method: :get, data: { turbo: false } do %>
       <% @answers.each do |key, value| %>
         <%= hidden_field_tag "answers[#{key}]", value %>
       <% end %>

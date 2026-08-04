@@ -31,6 +31,12 @@ module Alembic
       assert_select "summary", text: /Event log \+ rollups/
     end
 
+    test "the ladder guide starts the stepper through its form" do
+      get alembic.diagnostic_path("stats-system-ladder")
+
+      assert_select "form[action=?]", alembic.diagnostic_step_path("stats-system-ladder")
+    end
+
     test "a diagnostic with a definition renders its guide from the database" do
       get alembic.diagnostic_path("db-guide")
 
@@ -43,6 +49,18 @@ module Alembic
 
       assert_response :success
       assert_select "legend", text: /Pick one option/
+    end
+
+    test "the stepper links back to the intro" do
+      get alembic.diagnostic_step_path("stats-system-ladder")
+
+      assert_select "a[href=?]", alembic.diagnostic_path("stats-system-ladder")
+    end
+
+    test "the stepper submits answers back to itself" do
+      get alembic.diagnostic_step_path("stats-system-ladder")
+
+      assert_select "form[action=?]", alembic.diagnostic_step_path("stats-system-ladder")
     end
 
     test "the stepper renders the first question" do
@@ -77,6 +95,14 @@ module Alembic
       assert_select "h1", text: /Well instrumented/
     end
 
+    test "the scored result links back to the intro" do
+      scored_diagnostic
+
+      get alembic.diagnostic_step_path("scored-flow"), params: { answers: { need: "yes", team: "no" } }
+
+      assert_select "a[href=?]", alembic.diagnostic_path("scored-flow")
+    end
+
     test "the scored result shows the total score" do
       scored_diagnostic
 
@@ -91,6 +117,18 @@ module Alembic
       get alembic.diagnostic_step_path("scored-flow"), params: { answers: { need: "no", team: "no" } }
 
       assert_select "h1", text: /Flying blind/
+    end
+
+    test "the tier placement links back to the intro" do
+      get alembic.diagnostic_step_path("stats-system-ladder"), params: { answers: { need: "rates", loss: "money", origin: "app" } }
+
+      assert_select "a[href=?]", alembic.diagnostic_path("stats-system-ladder")
+    end
+
+    test "the tier placement links into the ladder section of the guide" do
+      get alembic.diagnostic_step_path("stats-system-ladder"), params: { answers: { need: "rates", loss: "money", origin: "app" } }
+
+      assert_select "a[href=?]", alembic.diagnostic_path("stats-system-ladder", anchor: "ladder")
     end
 
     test "completing the quiz reveals the tier placement" do

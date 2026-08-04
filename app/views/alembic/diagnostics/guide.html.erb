@@ -8,7 +8,7 @@
       <p class="text-lg text-gray-600 mb-8"><%= @guide.blurb %></p>
 
       <div class="flex flex-wrap items-center gap-3">
-        <%= form_with url: diagnostic_step_path(@guide.slug), method: :get, data: { turbo: false } do %>
+        <%= form_with url: alembic.diagnostic_step_path(@guide.slug), method: :get, data: { turbo: false } do %>
           <%= ui_button(label: @guide.start_label, type: :submit) %>
         <% end %>
         <%= ui_button(label: "Explore the ladder", href: "#ladder", variant: :secondary) %>
