@@ -74,6 +74,14 @@ module Alembic
       assert_select "h1", text: /Well instrumented/
     end
 
+    test "the scored result shows the total score" do
+      scored_diagnostic
+
+      get alembic.diagnostic_step_path("scored-flow"), params: { answers: { need: "yes" } }
+
+      assert_includes response.body, "Score: 5"
+    end
+
     test "completing the quiz reveals the tier placement" do
       get alembic.diagnostic_step_path("stats-system-ladder"), params: { answers: { need: "rates", loss: "money", origin: "app" } }
 
