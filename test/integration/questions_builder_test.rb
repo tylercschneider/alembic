@@ -127,6 +127,59 @@ module Alembic
       assert_select "form[action=?]", alembic.manage_diagnostic_question_path(diagnostic, question)
     end
 
+    test "moving a question down from the index reorders it" do
+      diagnostic = Diagnostic.create!(slug: "moveq")
+      first = diagnostic.questions.create!(key: "a", position: 1)
+      diagnostic.questions.create!(key: "b", position: 2)
+
+      post alembic.move_down_manage_diagnostic_question_path(diagnostic, first)
+
+      assert_equal [ "b", "a" ], diagnostic.questions.ordered.map(&:key)
+    end
+
+    test "moving a question up from the index reorders it" do
+      diagnostic = Diagnostic.create!(slug: "moveq")
+      diagnostic.questions.create!(key: "a", position: 1)
+      last = diagnostic.questions.create!(key: "b", position: 2)
+
+      post alembic.move_up_manage_diagnostic_question_path(diagnostic, last)
+
+      assert_equal [ "b", "a" ], diagnostic.questions.ordered.map(&:key)
+    end
+
+    test "moving an option down from the question edit form reorders it" do
+      diagnostic = Diagnostic.create!(slug: "moveopt")
+      question = diagnostic.questions.create!(key: "q", position: 1)
+      first = question.options.create!(value: "a", position: 1)
+      question.options.create!(value: "b", position: 2)
+
+      post alembic.move_down_manage_diagnostic_question_option_path(diagnostic, question, first)
+
+      assert_equal [ "b", "a" ], question.options.ordered.map(&:value)
+    end
+
+    test "moving an option up from the question edit form reorders it" do
+      diagnostic = Diagnostic.create!(slug: "moveopt")
+      question = diagnostic.questions.create!(key: "q", position: 1)
+      question.options.create!(value: "a", position: 1)
+      last = question.options.create!(value: "b", position: 2)
+
+      post alembic.move_up_manage_diagnostic_question_option_path(diagnostic, question, last)
+
+      assert_equal [ "b", "a" ], question.options.ordered.map(&:value)
+    end
+
+    test "a reordered question keeps its new place in the compiled definition" do
+      diagnostic = Diagnostic.create!(slug: "reorder-compile")
+      first = diagnostic.questions.create!(key: "a", text: "A", position: 1)
+      diagnostic.questions.create!(key: "b", text: "B", position: 2)
+
+      post alembic.move_down_manage_diagnostic_question_path(diagnostic, first)
+      post alembic.compile_manage_diagnostic_path(diagnostic)
+
+      assert_equal [ "b", "a" ], diagnostic.reload.definition["questions"].map { |question| question["id"] }
+    end
+
     test "a destroyed question leaves no trace in the compiled definition after Update" do
       diagnostic = Diagnostic.create!(slug: "delq")
       need = diagnostic.questions.create!(key: "need", text: "Q", position: 1)

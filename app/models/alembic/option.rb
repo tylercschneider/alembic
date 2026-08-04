@@ -1,9 +1,15 @@
 module Alembic
   class Option < ApplicationRecord
+    include Positioned
+
     belongs_to :question
 
     validates :value, presence: true
 
-    scope :ordered, -> { order(:position) }
+    private
+
+    def siblings
+      question.options
+    end
   end
 end

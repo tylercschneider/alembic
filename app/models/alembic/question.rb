@@ -1,5 +1,7 @@
 module Alembic
   class Question < ApplicationRecord
+    include Positioned
+
     belongs_to :diagnostic
     # Declared before :options so their condition_options clear first, otherwise
     # destroying a tested question trips the condition_options -> options FK.
@@ -11,10 +13,14 @@ module Alembic
 
     validates :key, presence: true
 
-    scope :ordered, -> { order(:position) }
-
     def applies?(answers)
       conditions.all? { |condition| condition.satisfied_by?(answers) }
+    end
+
+    private
+
+    def siblings
+      diagnostic.questions
     end
   end
 end

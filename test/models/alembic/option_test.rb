@@ -11,6 +11,16 @@ module Alembic
       assert_equal [ "a", "b" ], question.options.ordered.map(&:value)
     end
 
+    test "moving an option down places it after its neighbour" do
+      question = Diagnostic.create!(slug: "option-move").questions.create!(position: 1, key: "q")
+      first = question.options.create!(position: 1, value: "a")
+      question.options.create!(position: 2, value: "b")
+
+      first.move_down
+
+      assert_equal [ "b", "a" ], question.options.ordered.map(&:value)
+    end
+
     test "is invalid without a value" do
       option = Option.new(question: alembic_questions(:ladder_need), value: nil)
 

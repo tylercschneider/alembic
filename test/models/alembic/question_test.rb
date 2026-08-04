@@ -10,6 +10,46 @@ module Alembic
       assert_equal [ "a", "b" ], diagnostic.questions.ordered.map(&:key)
     end
 
+    test "moving a question down places it after its neighbour" do
+      diagnostic = Diagnostic.create!(slug: "move-down")
+      first = diagnostic.questions.create!(position: 1, key: "a")
+      diagnostic.questions.create!(position: 2, key: "b")
+
+      first.move_down
+
+      assert_equal [ "b", "a" ], diagnostic.questions.ordered.map(&:key)
+    end
+
+    test "moving a question up places it before its neighbour" do
+      diagnostic = Diagnostic.create!(slug: "move-up")
+      diagnostic.questions.create!(position: 1, key: "a")
+      last = diagnostic.questions.create!(position: 2, key: "b")
+
+      last.move_up
+
+      assert_equal [ "b", "a" ], diagnostic.questions.ordered.map(&:key)
+    end
+
+    test "moving the last question down leaves the order unchanged" do
+      diagnostic = Diagnostic.create!(slug: "move-past-end")
+      diagnostic.questions.create!(position: 1, key: "a")
+      last = diagnostic.questions.create!(position: 2, key: "b")
+
+      last.move_down
+
+      assert_equal [ "a", "b" ], diagnostic.questions.ordered.map(&:key)
+    end
+
+    test "moving a question renumbers the gaps out of the positions" do
+      diagnostic = Diagnostic.create!(slug: "move-contiguous")
+      first = diagnostic.questions.create!(position: 1, key: "a")
+      diagnostic.questions.create!(position: 5, key: "b")
+
+      first.move_down
+
+      assert_equal [ 1, 2 ], diagnostic.questions.ordered.map(&:position)
+    end
+
     test "is invalid without a key" do
       question = Question.new(diagnostic: alembic_diagnostics(:stats_ladder), key: nil)
 
