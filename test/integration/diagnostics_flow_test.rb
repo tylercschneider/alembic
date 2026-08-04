@@ -89,6 +89,14 @@ module Alembic
       assert_select "h1", text: /Well instrumented/
     end
 
+    test "the scored result links back to the intro" do
+      scored_diagnostic
+
+      get alembic.diagnostic_step_path("scored-flow"), params: { answers: { need: "yes", team: "no" } }
+
+      assert_select "a[href=?]", alembic.diagnostic_path("scored-flow")
+    end
+
     test "the scored result shows the total score" do
       scored_diagnostic
 
