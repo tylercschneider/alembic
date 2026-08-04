@@ -44,6 +44,12 @@ module Alembic
       assert_equal "now", loader.build.questions.first.options.first.value
     end
 
+    test "builds a question's option carrying its weight" do
+      loader = DefinitionLoader.new({ "questions" => [ { "id" => "need", "text" => "Need?", "options" => [ { "value" => "now", "weight" => 3 } ] } ] })
+
+      assert_equal 3, loader.build.questions.first.options.first.weight
+    end
+
     test "an equals condition leaves a question inapplicable when the answer differs" do
       loader = DefinitionLoader.new({ "questions" => [ { "id" => "loss", "text" => "?", "condition" => { "answer" => "need", "equals" => "rates" } } ] })
 

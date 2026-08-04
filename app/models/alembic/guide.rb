@@ -1,6 +1,10 @@
 module Alembic
   class Guide
-    Option = Data.define(:value, :label, :hint)
+    Option = Data.define(:value, :label, :hint, :weight) do
+      def initialize(value:, label:, hint:, weight: nil)
+        super
+      end
+    end
 
     Question = Data.define(:id, :text, :options, :condition) do
       def initialize(id:, text:, options: [], condition: nil)
