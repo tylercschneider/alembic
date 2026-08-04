@@ -79,5 +79,13 @@ module Alembic
 
       assert_select "form[action=?]", alembic.manage_diagnostic_band_path(diagnostic, band)
     end
+
+    test "the hub links to the bands editor" do
+      diagnostic = alembic_diagnostics(:stats_ladder)
+
+      get alembic.manage_diagnostic_path(diagnostic)
+
+      assert_select "a[href=?]", alembic.manage_diagnostic_bands_path(diagnostic)
+    end
   end
 end
