@@ -45,6 +45,12 @@ module Alembic
       assert_select "legend", text: /Pick one option/
     end
 
+    test "the stepper links back to the intro" do
+      get alembic.diagnostic_step_path("stats-system-ladder")
+
+      assert_select "a[href=?]", alembic.diagnostic_path("stats-system-ladder")
+    end
+
     test "the stepper renders the first question" do
       get alembic.diagnostic_step_path("stats-system-ladder")
 
