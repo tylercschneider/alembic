@@ -76,6 +76,13 @@ module Alembic
       assert_equal({ "money_pairing" => "Good pairing." }, DefinitionCompiler.new(diagnostic).to_definition["warnings"])
     end
 
+    test "compiles bands in ceiling order" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.bands.create!(ceiling: 10, name: "Starter", description: "Just beginning.")
+
+      assert_equal [ { "ceiling" => 10, "name" => "Starter", "description" => "Just beginning." } ], DefinitionCompiler.new(diagnostic).to_definition["bands"]
+    end
+
     test "round-trips the bundled stats-ladder definition through rows" do
       definition = Alembic.bundled_definition("stats-system-ladder")
       diagnostic = alembic_diagnostics(:stats_ladder)

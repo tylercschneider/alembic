@@ -5,6 +5,13 @@ module Alembic
     end
 
     def to_definition
+      bands = compile_bands
+      bands.any? ? core_definition.merge("bands" => bands) : core_definition
+    end
+
+    private
+
+    def core_definition
       {
         "slug" => @diagnostic.slug,
         "kicker" => @diagnostic.kicker,
@@ -19,7 +26,11 @@ module Alembic
       }
     end
 
-    private
+    def compile_bands
+      @diagnostic.bands.order(:ceiling).map do |band|
+        { "ceiling" => band.ceiling, "name" => band.name, "description" => band.description }
+      end
+    end
 
     NODE_TEXT_KEYS = %w[tagline complexity setup maintenance captures why pains avoid avoid_pain].freeze
 
