@@ -19,4 +19,13 @@
   <% else %>
     <p class="mt-6 text-gray-500 dark:text-gray-400">No bands yet.</p>
   <% end %>
+
+  <%= ui_section(title: "Add a band") do %>
+    <%= ui_form(action: alembic.manage_diagnostic_bands_path(@diagnostic), method: :post) do %>
+      <label class="block text-sm font-medium mb-1">Name</label>
+      <%= ui_input(name: "band[name]", placeholder: "e.g. Starter") %>
+
+      <%= ui_button(label: "Add band", type: :submit, variant: :secondary) %>
+    <% end %>
+  <% end %>
 <% end %>

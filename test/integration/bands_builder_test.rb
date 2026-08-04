@@ -10,5 +10,13 @@ module Alembic
 
       assert_includes response.body, "Starter"
     end
+
+    test "the bands index has an add-band form" do
+      diagnostic = Diagnostic.create!(slug: "bands")
+
+      get alembic.manage_diagnostic_bands_path(diagnostic)
+
+      assert_select "form[action=?]", alembic.manage_diagnostic_bands_path(diagnostic)
+    end
   end
 end
