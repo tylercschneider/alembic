@@ -70,5 +70,14 @@ module Alembic
         delete alembic.manage_diagnostic_band_path(diagnostic, band)
       end
     end
+
+    test "the bands index has a remove control for each band" do
+      diagnostic = Diagnostic.create!(slug: "bands")
+      band = diagnostic.bands.create!(ceiling: 10, name: "Starter")
+
+      get alembic.manage_diagnostic_bands_path(diagnostic)
+
+      assert_select "form[action=?]", alembic.manage_diagnostic_band_path(diagnostic, band)
+    end
   end
 end
