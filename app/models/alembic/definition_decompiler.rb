@@ -18,6 +18,7 @@ module Alembic
       build_nodes("tier", definition["tiers"])
       build_nodes("level", definition["levels"])
       build_warnings(definition["warnings"])
+      build_bands(definition["bands"])
     end
 
     private
@@ -72,6 +73,12 @@ module Alembic
     def build_warnings(warnings)
       Hash(warnings).each do |key, text|
         @diagnostic.warnings.create!(key: key, text: text)
+      end
+    end
+
+    def build_bands(bands)
+      Array(bands).each do |band|
+        @diagnostic.bands.create!(ceiling: band["ceiling"], name: band["name"], description: band["description"])
       end
     end
   end
