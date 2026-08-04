@@ -169,6 +169,17 @@ module Alembic
       assert_equal [ "b", "a" ], question.options.ordered.map(&:value)
     end
 
+    test "a reordered question keeps its new place in the compiled definition" do
+      diagnostic = Diagnostic.create!(slug: "reorder-compile")
+      first = diagnostic.questions.create!(key: "a", text: "A", position: 1)
+      diagnostic.questions.create!(key: "b", text: "B", position: 2)
+
+      post alembic.move_down_manage_diagnostic_question_path(diagnostic, first)
+      post alembic.compile_manage_diagnostic_path(diagnostic)
+
+      assert_equal [ "b", "a" ], diagnostic.reload.definition["questions"].map { |question| question["id"] }
+    end
+
     test "a destroyed question leaves no trace in the compiled definition after Update" do
       diagnostic = Diagnostic.create!(slug: "delq")
       need = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
