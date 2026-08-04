@@ -24,6 +24,7 @@ Alembic::Engine.routes.draw do
 
       resources :nodes, only: [ :index, :create, :edit, :update, :destroy ] do
         member do
+          post :move_up
           post :move_down
         end
 

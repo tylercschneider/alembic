@@ -26,6 +26,10 @@ module Alembic
         redirect_to manage_diagnostic_nodes_path(@diagnostic), notice: "Saved."
       end
 
+      def move_up
+        reorder(&:move_up)
+      end
+
       def move_down
         reorder(&:move_down)
       end

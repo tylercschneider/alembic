@@ -21,6 +21,16 @@ module Alembic
       assert_equal [ "b", "a" ], diagnostic.nodes.ordered.map(&:key)
     end
 
+    test "moving a node up from the index reorders it" do
+      diagnostic = Diagnostic.create!(slug: "moven")
+      diagnostic.nodes.create!(kind: "tier", key: "a", position: 1)
+      last = diagnostic.nodes.create!(kind: "tier", key: "b", position: 2)
+
+      post alembic.move_up_manage_diagnostic_node_path(diagnostic, last)
+
+      assert_equal [ "b", "a" ], diagnostic.nodes.ordered.map(&:key)
+    end
+
     test "the hub links to the nodes editor" do
       diagnostic = alembic_diagnostics(:stats_ladder)
 
