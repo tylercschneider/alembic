@@ -113,6 +113,12 @@ module Alembic
       assert_select "h1", text: /Flying blind/
     end
 
+    test "the tier placement links back to the intro" do
+      get alembic.diagnostic_step_path("stats-system-ladder"), params: { answers: { need: "rates", loss: "money", origin: "app" } }
+
+      assert_select "a[href=?]", alembic.diagnostic_path("stats-system-ladder")
+    end
+
     test "completing the quiz reveals the tier placement" do
       get alembic.diagnostic_step_path("stats-system-ladder"), params: { answers: { need: "rates", loss: "money", origin: "app" } }
 
