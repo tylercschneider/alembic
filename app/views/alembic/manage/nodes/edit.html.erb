@@ -30,9 +30,14 @@
     <% @node.build_steps.ordered.each do |step| %>
       <div class="py-2 flex items-center justify-between">
         <p class="text-sm text-gray-900 dark:text-white"><%= step.title %></p>
-        <%= ui_form(action: alembic.move_down_manage_diagnostic_node_build_step_path(@diagnostic, @node, step), method: :post) do %>
-          <%= ui_button(label: "Down", type: :submit, variant: :secondary) %>
-        <% end %>
+        <div class="flex items-center gap-4">
+          <%= ui_form(action: alembic.move_up_manage_diagnostic_node_build_step_path(@diagnostic, @node, step), method: :post) do %>
+            <%= ui_button(label: "Up", type: :submit, variant: :secondary) %>
+          <% end %>
+          <%= ui_form(action: alembic.move_down_manage_diagnostic_node_build_step_path(@diagnostic, @node, step), method: :post) do %>
+            <%= ui_button(label: "Down", type: :submit, variant: :secondary) %>
+          <% end %>
+        </div>
       </div>
     <% end %>
   <% end %>

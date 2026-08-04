@@ -30,6 +30,7 @@ Alembic::Engine.routes.draw do
 
         resources :build_steps, only: :create do
           member do
+            post :move_up
             post :move_down
           end
         end
