@@ -30,8 +30,8 @@
     <% end %>
 
     <div class="mb-10 flex flex-wrap gap-3">
-      <%= ui_button(label: "See how to build #{tier.name} →", href: diagnostic_path(@guide.slug, anchor: "tier-#{@placement.tier}")) %>
-      <%= ui_button(label: "Explore the whole ladder", href: diagnostic_path(@guide.slug, anchor: "ladder"), variant: :secondary) %>
+      <%= ui_button(label: "See how to build #{tier.name} →", href: alembic.diagnostic_path(@guide.slug, anchor: "tier-#{@placement.tier}")) %>
+      <%= ui_button(label: "Explore the whole ladder", href: alembic.diagnostic_path(@guide.slug, anchor: "ladder"), variant: :secondary) %>
     </div>
 
     <% if Alembic.lead_partial %>

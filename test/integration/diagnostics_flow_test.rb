@@ -119,6 +119,12 @@ module Alembic
       assert_select "a[href=?]", alembic.diagnostic_path("stats-system-ladder")
     end
 
+    test "the tier placement links into the ladder section of the guide" do
+      get alembic.diagnostic_step_path("stats-system-ladder"), params: { answers: { need: "rates", loss: "money", origin: "app" } }
+
+      assert_select "a[href=?]", alembic.diagnostic_path("stats-system-ladder", anchor: "ladder")
+    end
+
     test "completing the quiz reveals the tier placement" do
       get alembic.diagnostic_step_path("stats-system-ladder"), params: { answers: { need: "rates", loss: "money", origin: "app" } }
 
