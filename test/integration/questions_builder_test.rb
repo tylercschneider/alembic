@@ -75,6 +75,16 @@ module Alembic
       assert_select "input[name=?][value=?]", "question[options_attributes][0][label]", "Now"
     end
 
+    test "the question edit form renders a weight field for each option" do
+      diagnostic = Diagnostic.create!(slug: "qweight")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+      question.options.create!(value: "now", weight: 2, position: 1)
+
+      get alembic.edit_manage_diagnostic_question_path(diagnostic, question)
+
+      assert_select "input[name=?][value=?]", "question[options_attributes][0][weight]", "2"
+    end
+
     test "the question edit form renders a remove checkbox for each option" do
       diagnostic = Diagnostic.create!(slug: "qopts")
       question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
