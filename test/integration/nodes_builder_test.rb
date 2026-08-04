@@ -31,6 +31,17 @@ module Alembic
       assert_equal [ "b", "a" ], diagnostic.nodes.ordered.map(&:key)
     end
 
+    test "moving a build step down from the node edit form reorders it" do
+      diagnostic = Diagnostic.create!(slug: "movestep")
+      node = diagnostic.nodes.create!(kind: "tier", key: "1", position: 1)
+      first = node.build_steps.create!(title: "a", position: 1)
+      node.build_steps.create!(title: "b", position: 2)
+
+      post alembic.move_down_manage_diagnostic_node_build_step_path(diagnostic, node, first)
+
+      assert_equal [ "b", "a" ], node.build_steps.ordered.map(&:title)
+    end
+
     test "the hub links to the nodes editor" do
       diagnostic = alembic_diagnostics(:stats_ladder)
 
