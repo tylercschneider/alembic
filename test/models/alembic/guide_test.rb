@@ -61,6 +61,12 @@ module Alembic
       assert_equal "Low", banded.band_for(4).name
     end
 
+    test "a score above every ceiling falls into the open-ended band" do
+      banded = Guide.new(slug: "t", questions: [], bands: [ Guide::Band.new(ceiling: nil, name: "Top"), Guide::Band.new(ceiling: 10, name: "Low") ])
+
+      assert_equal "Top", banded.band_for(40).name
+    end
+
     test "a band carries its description" do
       assert_equal "Just beginning.", Guide::Band.new(ceiling: 10, name: "Starter", description: "Just beginning.").description
     end
