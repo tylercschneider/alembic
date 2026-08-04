@@ -17,6 +17,13 @@ module Alembic
         @band = @diagnostic.bands.find(params[:id])
       end
 
+      def update
+        @diagnostic = Diagnostic.find(params[:diagnostic_id])
+        @band = @diagnostic.bands.find(params[:id])
+        @band.update!(band_params)
+        redirect_to manage_diagnostic_bands_path(@diagnostic), notice: "Saved."
+      end
+
       private
 
       def band_params

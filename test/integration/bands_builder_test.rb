@@ -52,5 +52,14 @@ module Alembic
 
       assert_select "input[name=?][value=?]", "band[name]", "Starter"
     end
+
+    test "updating a band saves the name" do
+      diagnostic = Diagnostic.create!(slug: "bands")
+      band = diagnostic.bands.create!(ceiling: 10, name: "old")
+
+      patch alembic.manage_diagnostic_band_path(diagnostic, band), params: { band: { name: "Starter" } }
+
+      assert_equal "Starter", band.reload.name
+    end
   end
 end
