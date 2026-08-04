@@ -11,6 +11,16 @@ module Alembic
       assert_includes response.body, "Live query"
     end
 
+    test "moving a node down from the index reorders it" do
+      diagnostic = Diagnostic.create!(slug: "moven")
+      first = diagnostic.nodes.create!(kind: "tier", key: "a", position: 1)
+      diagnostic.nodes.create!(kind: "tier", key: "b", position: 2)
+
+      post alembic.move_down_manage_diagnostic_node_path(diagnostic, first)
+
+      assert_equal [ "b", "a" ], diagnostic.nodes.ordered.map(&:key)
+    end
+
     test "the hub links to the nodes editor" do
       diagnostic = alembic_diagnostics(:stats_ladder)
 
