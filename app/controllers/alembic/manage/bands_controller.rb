@@ -15,7 +15,7 @@ module Alembic
       private
 
       def band_params
-        params.require(:band).permit(:name, :ceiling)
+        params.require(:band).permit(:name, :ceiling, :description)
       end
     end
   end

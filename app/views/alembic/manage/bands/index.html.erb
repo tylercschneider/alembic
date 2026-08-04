@@ -28,6 +28,9 @@
       <label class="block text-sm font-medium mb-1 mt-4">Ceiling</label>
       <%= ui_input(name: "band[ceiling]", placeholder: "e.g. 10") %>
 
+      <label class="block text-sm font-medium mb-1 mt-4">Description</label>
+      <%= ui_textarea(name: "band[description]", rows: 3) %>
+
       <%= ui_button(label: "Add band", type: :submit, variant: :secondary) %>
     <% end %>
   <% end %>

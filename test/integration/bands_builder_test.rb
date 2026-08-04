@@ -26,5 +26,13 @@ module Alembic
 
       assert_equal 10, diagnostic.bands.sole.ceiling
     end
+
+    test "an added band persists its description" do
+      diagnostic = Diagnostic.create!(slug: "bands")
+
+      post alembic.manage_diagnostic_bands_path(diagnostic), params: { band: { name: "Starter", description: "Just beginning." } }
+
+      assert_equal "Just beginning.", diagnostic.bands.sole.description
+    end
   end
 end
