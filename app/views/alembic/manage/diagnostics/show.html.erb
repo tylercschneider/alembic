@@ -18,6 +18,7 @@
       <%= ui_card(title: "Tiers", summary: "#{@diagnostic.nodes.where(kind: "tier").count} tiers", link: alembic.manage_diagnostic_nodes_path(@diagnostic), cta: "Edit tiers & levels") %>
       <%= ui_card(title: "Levels", summary: "#{@diagnostic.nodes.where(kind: "level").count} levels", link: alembic.manage_diagnostic_nodes_path(@diagnostic), cta: "Edit tiers & levels") %>
       <%= ui_card(title: "Warnings", summary: "#{@diagnostic.warnings.count} warnings", link: alembic.manage_diagnostic_warnings_path(@diagnostic), cta: "Edit warnings") %>
+      <%= ui_card(title: "Bands", summary: "#{@diagnostic.bands.count} bands", link: alembic.manage_diagnostic_bands_path(@diagnostic), cta: "Edit bands") %>
     <% end %>
   <% end %>
 <% end %>

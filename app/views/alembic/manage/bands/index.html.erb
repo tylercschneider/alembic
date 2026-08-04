@@ -1,0 +1,43 @@
+<%= ui_page(max_width: :xl) do %>
+  <%= ui_page_header(title: "Bands", subtitle: @diagnostic.title.presence || @diagnostic.slug) do |header| %>
+    <% header.action do %>
+      <%= ui_button(label: "Back to diagnostic", href: alembic.manage_diagnostic_path(@diagnostic), variant: :secondary) %>
+    <% end %>
+  <% end %>
+
+  <% if @bands.any? %>
+    <ul class="mt-6 divide-y divide-gray-200 dark:divide-zinc-700">
+      <% @bands.each do |band| %>
+        <li class="py-4 flex items-center justify-between">
+          <div>
+            <p class="font-medium text-gray-900 dark:text-white"><%= band.name %></p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400"><%= band.description %></p>
+          </div>
+          <div class="flex items-center gap-4">
+            <%= link_to "Edit", alembic.edit_manage_diagnostic_band_path(@diagnostic, band), class: "text-sm text-accent-700 dark:text-accent-300" %>
+            <%= ui_form(action: alembic.manage_diagnostic_band_path(@diagnostic, band), method: :delete) do %>
+              <%= ui_button(label: "Remove", type: :submit, variant: :secondary) %>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="mt-6 text-gray-500 dark:text-gray-400">No bands yet.</p>
+  <% end %>
+
+  <%= ui_section(title: "Add a band") do %>
+    <%= ui_form(action: alembic.manage_diagnostic_bands_path(@diagnostic), method: :post) do %>
+      <label class="block text-sm font-medium mb-1">Name</label>
+      <%= ui_input(name: "band[name]", placeholder: "e.g. Starter") %>
+
+      <label class="block text-sm font-medium mb-1 mt-4">Ceiling</label>
+      <%= ui_input(name: "band[ceiling]", placeholder: "e.g. 10") %>
+
+      <label class="block text-sm font-medium mb-1 mt-4">Description</label>
+      <%= ui_textarea(name: "band[description]", rows: 3) %>
+
+      <%= ui_button(label: "Add band", type: :submit, variant: :secondary) %>
+    <% end %>
+  <% end %>
+<% end %>
