@@ -200,6 +200,18 @@ module Alembic
       assert_equal [ "b", "a" ], diagnostic.reload.definition["questions"].map { |question| question["id"] }
     end
 
+    test "an option weight set in the builder survives compiling and reverting" do
+      diagnostic = Diagnostic.create!(slug: "weight-roundtrip")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+      option = question.options.create!(value: "now", position: 1)
+
+      patch alembic.manage_diagnostic_question_path(diagnostic, question), params: { question: { options_attributes: [ { id: option.id, weight: 3 } ] } }
+      post alembic.compile_manage_diagnostic_path(diagnostic)
+      diagnostic.reload.revert!
+
+      assert_equal 3, diagnostic.questions.first.options.first.weight
+    end
+
     test "a destroyed question leaves no trace in the compiled definition after Update" do
       diagnostic = Diagnostic.create!(slug: "delq")
       need = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
