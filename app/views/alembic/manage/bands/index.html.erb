@@ -13,6 +13,9 @@
             <p class="font-medium text-gray-900 dark:text-white"><%= band.name %></p>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400"><%= band.description %></p>
           </div>
+          <div class="flex items-center gap-4">
+            <%= link_to "Edit", alembic.edit_manage_diagnostic_band_path(@diagnostic, band), class: "text-sm text-accent-700 dark:text-accent-300" %>
+          </div>
         </li>
       <% end %>
     </ul>

@@ -34,5 +34,14 @@ module Alembic
 
       assert_equal "Just beginning.", diagnostic.bands.sole.description
     end
+
+    test "the bands index links each band to its edit form" do
+      diagnostic = Diagnostic.create!(slug: "bands")
+      band = diagnostic.bands.create!(ceiling: 10, name: "Starter")
+
+      get alembic.manage_diagnostic_bands_path(diagnostic)
+
+      assert_select "a[href=?]", alembic.edit_manage_diagnostic_band_path(diagnostic, band)
+    end
   end
 end
