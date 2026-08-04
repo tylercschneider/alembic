@@ -48,6 +48,13 @@ module Alembic
       assert_equal [ :a ], guide([ Q.new(id: :a, text: "A"), gated ]).applicable_questions({}).map(&:id)
     end
 
+    test "scoring sums the weights of the answered options" do
+      option = Guide::Option.new(value: "yes", label: "Yes", hint: nil, weight: 3)
+      scored = guide([ Q.new(id: :need, text: "Need?", options: [ option ]) ])
+
+      assert_equal 3, scored.score({ need: "yes" })
+    end
+
     test "a band carries its description" do
       assert_equal "Just beginning.", Guide::Band.new(ceiling: 10, name: "Starter", description: "Just beginning.").description
     end

@@ -65,6 +65,14 @@ module Alembic
       levels[key]
     end
 
+    def score(answers)
+      answers.sum do |question_id, value|
+        question = questions.find { |candidate| candidate.id == question_id }
+        option = question&.options&.find { |candidate| candidate.value == value }
+        option&.weight || 0
+      end
+    end
+
     def place(answers)
       resolver.call(answers)
     end
