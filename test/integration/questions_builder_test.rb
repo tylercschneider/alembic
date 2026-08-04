@@ -55,6 +55,16 @@ module Alembic
       assert_equal "Right now", option.reload.label
     end
 
+    test "updating a question saves an option weight" do
+      diagnostic = Diagnostic.create!(slug: "qweight")
+      question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
+      option = question.options.create!(value: "now", position: 1)
+
+      patch alembic.manage_diagnostic_question_path(diagnostic, question), params: { question: { options_attributes: [ { id: option.id, weight: 3 } ] } }
+
+      assert_equal 3, option.reload.weight
+    end
+
     test "the question edit form renders a field for each option" do
       diagnostic = Diagnostic.create!(slug: "qopts")
       question = diagnostic.questions.create!(key: "need", text: "Q", position: 1)
