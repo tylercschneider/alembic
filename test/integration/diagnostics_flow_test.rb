@@ -31,6 +31,12 @@ module Alembic
       assert_select "summary", text: /Event log \+ rollups/
     end
 
+    test "the ladder guide starts the stepper through its form" do
+      get alembic.diagnostic_path("stats-system-ladder")
+
+      assert_select "form[action=?]", alembic.diagnostic_step_path("stats-system-ladder")
+    end
+
     test "a diagnostic with a definition renders its guide from the database" do
       get alembic.diagnostic_path("db-guide")
 
