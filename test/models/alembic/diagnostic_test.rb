@@ -128,6 +128,16 @@ module Alembic
       assert_equal 50, diagnostic.overall_percentage({ "q1" => "partial" })
     end
 
+    test "the weight on offer is each question's heaviest option" do
+      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
+      light = diagnostic.questions.create!(key: "q1", position: 1)
+      light.options.create!(value: "yes", weight: 4)
+      heavy = diagnostic.questions.create!(key: "q2", position: 2)
+      heavy.options.create!(value: "yes", weight: 6)
+
+      assert_equal 40, diagnostic.overall_percentage({ "q1" => "yes" })
+    end
+
     test "the scored result is the band for the total" do
       assert_equal "Flying blind", alembic_diagnostics(:business_scorecard).result_for({}).name
     end
