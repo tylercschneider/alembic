@@ -61,7 +61,11 @@ module Alembic
     end
 
     def overall_percentage(answers)
-      (score(answers).to_f / maximum_score * 100).round
+      percentage_of(questions, answers)
+    end
+
+    def domain_percentages(answers)
+      domains.index_with { |domain| percentage_of(domain.questions, answers) }
     end
 
     def band_for(score)
@@ -71,8 +75,20 @@ module Alembic
 
     private
 
-    def maximum_score
+    def percentage_of(questions, answers)
+      (captured_weight(questions, answers).to_f / weight_on_offer(questions) * 100).round
+    end
+
+    def captured_weight(questions, answers)
+      questions.sum { |question| weight_of(question, answers[question.key]) }
+    end
+
+    def weight_on_offer(questions)
       questions.sum { |question| question.options.maximum(:weight) || 0 }
+    end
+
+    def weight_of(question, value)
+      question.options.find { |option| option.value == value }&.weight || 0
     end
   end
 end

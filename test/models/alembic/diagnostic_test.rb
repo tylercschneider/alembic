@@ -138,6 +138,16 @@ module Alembic
       assert_equal 40, diagnostic.overall_percentage({ "q1" => "yes" })
     end
 
+    test "reports a captured percentage for each of its domains" do
+      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
+      governance = diagnostic.domains.create!(key: "governance", name: "Governance")
+      question = diagnostic.questions.create!(key: "q1", position: 1, domain: governance)
+      question.options.create!(value: "full", weight: 4)
+      question.options.create!(value: "partial", weight: 1)
+
+      assert_equal({ governance => 25 }, diagnostic.domain_percentages({ "q1" => "partial" }))
+    end
+
     test "the scored result is the band for the total" do
       assert_equal "Flying blind", alembic_diagnostics(:business_scorecard).result_for({}).name
     end
