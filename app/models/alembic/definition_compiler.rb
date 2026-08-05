@@ -5,11 +5,20 @@ module Alembic
     end
 
     def to_definition
-      bands = compile_bands
-      bands.any? ? core_definition.merge("bands" => bands) : core_definition
+      core_definition.merge(present_sections)
     end
 
     private
+
+    def present_sections
+      { "bands" => compile_bands, "domains" => compile_domains }.reject { |_key, section| section.empty? }
+    end
+
+    def compile_domains
+      @diagnostic.domains.order(:position).to_h do |domain|
+        [ domain.key, { "name" => domain.name, "gap_meaning" => domain.gap_meaning, "gap_cost" => domain.gap_cost } ]
+      end
+    end
 
     def core_definition
       {
