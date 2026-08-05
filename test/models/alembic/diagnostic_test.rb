@@ -172,6 +172,22 @@ module Alembic
       assert_equal [ cash ], diagnostic.blind_spots({ "q1" => "full" }, count: 1)
     end
 
+    test "reports as many blind spots as it is asked for, weakest first" do
+      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
+      governance = diagnostic.domains.create!(key: "governance", name: "Governance")
+      cash = diagnostic.domains.create!(key: "cash", name: "Cash")
+      demand = diagnostic.domains.create!(key: "demand", name: "Demand")
+      diagnostic.questions.create!(key: "q1", position: 1, domain: governance)
+        .options.create!(value: "full", weight: 4)
+      diagnostic.questions.create!(key: "q2", position: 2, domain: cash)
+        .options.create!(value: "full", weight: 6)
+      question = diagnostic.questions.create!(key: "q3", position: 3, domain: demand)
+      question.options.create!(value: "full", weight: 8)
+      question.options.create!(value: "half", weight: 4)
+
+      assert_equal [ cash, demand ], diagnostic.blind_spots({ "q1" => "full", "q3" => "half" }, count: 2)
+    end
+
     test "the scored result is the band for the total" do
       assert_equal "Flying blind", alembic_diagnostics(:business_scorecard).result_for({}).name
     end
