@@ -5,11 +5,20 @@ module Alembic
     end
 
     def to_definition
-      bands = compile_bands
-      bands.any? ? core_definition.merge("bands" => bands) : core_definition
+      core_definition.merge(present_sections)
     end
 
     private
+
+    def present_sections
+      { "bands" => compile_bands, "domains" => compile_domains }.reject { |_key, section| section.empty? }
+    end
+
+    def compile_domains
+      @diagnostic.domains.order(:position).to_h do |domain|
+        [ domain.key, { "name" => domain.name, "gap_meaning" => domain.gap_meaning, "gap_cost" => domain.gap_cost } ]
+      end
+    end
 
     def core_definition
       {
@@ -65,10 +74,13 @@ module Alembic
 
     def compile_questions
       @diagnostic.questions.ordered.map do |question|
-        base = { "id" => question.key, "text" => question.text, "options" => compile_options(question) }
-        condition = compile_condition(question)
-        condition ? base.merge("condition" => condition) : base
+        { "id" => question.key, "text" => question.text, "options" => compile_options(question) }
+          .merge(question_placement(question))
       end
+    end
+
+    def question_placement(question)
+      { "domain" => question.domain&.key, "condition" => compile_condition(question) }.compact
     end
 
     def compile_condition(question)

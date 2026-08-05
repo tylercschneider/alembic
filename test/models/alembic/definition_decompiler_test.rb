@@ -87,6 +87,25 @@ module Alembic
       assert_equal "Just beginning.", diagnostic.bands.sole.description
     end
 
+    test "builds domain rows from the definition" do
+      diagnostic = Diagnostic.create!(slug: "decompiled")
+
+      DefinitionDecompiler.new(diagnostic).load({ "domains" => { "governance" => { "name" => "Governance", "gap_meaning" => "No owner.", "gap_cost" => "Drift." } } })
+
+      assert_equal "Drift.", diagnostic.domains.sole.gap_cost
+    end
+
+    test "assigns a question its domain from the definition" do
+      diagnostic = Diagnostic.create!(slug: "decompiled")
+
+      DefinitionDecompiler.new(diagnostic).load({
+        "domains" => { "governance" => { "name" => "Governance" } },
+        "questions" => [ { "id" => "need", "text" => "Need?", "domain" => "governance" } ]
+      })
+
+      assert_equal "governance", diagnostic.questions.sole.domain.key
+    end
+
     test "reloading replaces bands instead of duplicating them" do
       diagnostic = Diagnostic.create!(slug: "decompiled")
       definition = { "bands" => [ { "ceiling" => 10, "name" => "Starter" } ] }

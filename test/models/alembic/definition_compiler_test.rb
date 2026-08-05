@@ -83,6 +83,22 @@ module Alembic
       assert_equal [ { "ceiling" => 10, "name" => "Starter", "description" => "Just beginning." } ], DefinitionCompiler.new(diagnostic).to_definition["bands"]
     end
 
+    test "compiles domains keyed by their key" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.domains.create!(key: "governance", name: "Governance", gap_meaning: "No owner.", gap_cost: "Drift.", position: 1)
+
+      assert_equal({ "governance" => { "name" => "Governance", "gap_meaning" => "No owner.", "gap_cost" => "Drift." } },
+        DefinitionCompiler.new(diagnostic).to_definition["domains"])
+    end
+
+    test "compiles a question's domain" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      domain = diagnostic.domains.create!(key: "governance", name: "Governance", position: 1)
+      diagnostic.questions.create!(key: "need", text: "Need?", position: 1, domain: domain)
+
+      assert_equal "governance", DefinitionCompiler.new(diagnostic).to_definition["questions"].first["domain"]
+    end
+
     test "round-trips the bundled stats-ladder definition through rows" do
       definition = Alembic.bundled_definition("stats-system-ladder")
       diagnostic = alembic_diagnostics(:stats_ladder)
