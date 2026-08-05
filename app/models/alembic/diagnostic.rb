@@ -60,9 +60,19 @@ module Alembic
         end
     end
 
+    def overall_percentage(answers)
+      (score(answers).to_f / maximum_score * 100).round
+    end
+
     def band_for(score)
       bands.sort_by { |band| band.ceiling || Float::INFINITY }
         .find { |band| band.ceiling.nil? || score < band.ceiling }
+    end
+
+    private
+
+    def maximum_score
+      questions.sum { |question| question.options.maximum(:weight) || 0 }
     end
   end
 end
