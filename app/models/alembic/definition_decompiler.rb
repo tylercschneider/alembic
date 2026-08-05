@@ -56,9 +56,13 @@ module Alembic
 
     def build_questions(questions)
       Array(questions).each_with_index do |question, index|
-        record = @diagnostic.questions.create!(key: question["id"], text: question["text"], position: index + 1)
+        record = @diagnostic.questions.create!(key: question["id"], text: question["text"], position: index + 1, domain: domain_for(question))
         build_options(record, question["options"])
       end
+    end
+
+    def domain_for(question)
+      @diagnostic.domains.find_by(key: question["domain"])
     end
 
     def build_options(question, options)
