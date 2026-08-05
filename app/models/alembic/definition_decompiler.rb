@@ -13,6 +13,7 @@ module Alembic
         start_label: definition["start_label"],
         resolver_key: definition.dig("placement", "resolver_key")
       )
+      build_domains(definition["domains"])
       build_questions(definition["questions"])
       build_conditions(definition["questions"])
       build_nodes("tier", definition["tiers"])
@@ -26,6 +27,7 @@ module Alembic
     def reset_children
       @diagnostic.questions.each { |question| question.conditions.destroy_all }
       @diagnostic.questions.destroy_all
+      @diagnostic.domains.destroy_all
       @diagnostic.nodes.destroy_all
       @diagnostic.warnings.destroy_all
       @diagnostic.bands.destroy_all
@@ -43,6 +45,12 @@ module Alembic
     def build_steps(node, steps)
       Array(steps).each_with_index do |step, index|
         node.build_steps.create!(title: step["title"], code: step["code"], position: index + 1)
+      end
+    end
+
+    def build_domains(domains)
+      Hash(domains).each_with_index do |(key, domain), index|
+        @diagnostic.domains.create!(key: key, position: index + 1, name: domain["name"], gap_meaning: domain["gap_meaning"], gap_cost: domain["gap_cost"])
       end
     end
 
