@@ -119,6 +119,96 @@ module Alembic
       assert_equal 2, diagnostic.score({ "q1" => "yes" })
     end
 
+    test "reports the overall captured percentage of the weight on offer" do
+      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
+      question = diagnostic.questions.create!(key: "q1", position: 1)
+      question.options.create!(value: "full", weight: 4)
+      question.options.create!(value: "partial", weight: 2)
+
+      assert_equal 50, diagnostic.overall_percentage({ "q1" => "partial" })
+    end
+
+    test "the weight on offer is each question's heaviest option" do
+      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
+      light = diagnostic.questions.create!(key: "q1", position: 1)
+      light.options.create!(value: "yes", weight: 4)
+      heavy = diagnostic.questions.create!(key: "q2", position: 2)
+      heavy.options.create!(value: "yes", weight: 6)
+
+      assert_equal 40, diagnostic.overall_percentage({ "q1" => "yes" })
+    end
+
+    test "reports a captured percentage for each of its domains" do
+      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
+      governance = diagnostic.domains.create!(key: "governance", name: "Governance")
+      question = diagnostic.questions.create!(key: "q1", position: 1, domain: governance)
+      question.options.create!(value: "full", weight: 4)
+      question.options.create!(value: "partial", weight: 1)
+
+      assert_equal({ governance => 25 }, diagnostic.domain_percentages({ "q1" => "partial" }))
+    end
+
+    test "a domain's percentage ignores the questions of other domains" do
+      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
+      governance = diagnostic.domains.create!(key: "governance", name: "Governance")
+      cash = diagnostic.domains.create!(key: "cash", name: "Cash")
+      diagnostic.questions.create!(key: "q1", position: 1, domain: governance)
+        .options.create!(value: "full", weight: 4)
+      diagnostic.questions.create!(key: "q2", position: 2, domain: cash)
+        .options.create!(value: "full", weight: 6)
+
+      assert_equal 100, diagnostic.domain_percentages({ "q1" => "full" })[governance]
+    end
+
+    test "names its weakest domain as a blind spot" do
+      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
+      governance = diagnostic.domains.create!(key: "governance", name: "Governance")
+      cash = diagnostic.domains.create!(key: "cash", name: "Cash")
+      diagnostic.questions.create!(key: "q1", position: 1, domain: governance)
+        .options.create!(value: "full", weight: 4)
+      diagnostic.questions.create!(key: "q2", position: 2, domain: cash)
+        .options.create!(value: "full", weight: 6)
+
+      assert_equal [ cash ], diagnostic.blind_spots({ "q1" => "full" }, count: 1)
+    end
+
+    test "reports as many blind spots as it is asked for, weakest first" do
+      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
+      governance = diagnostic.domains.create!(key: "governance", name: "Governance")
+      cash = diagnostic.domains.create!(key: "cash", name: "Cash")
+      demand = diagnostic.domains.create!(key: "demand", name: "Demand")
+      diagnostic.questions.create!(key: "q1", position: 1, domain: governance)
+        .options.create!(value: "full", weight: 4)
+      diagnostic.questions.create!(key: "q2", position: 2, domain: cash)
+        .options.create!(value: "full", weight: 6)
+      question = diagnostic.questions.create!(key: "q3", position: 3, domain: demand)
+      question.options.create!(value: "full", weight: 8)
+      question.options.create!(value: "half", weight: 4)
+
+      assert_equal [ cash, demand ], diagnostic.blind_spots({ "q1" => "full", "q3" => "half" }, count: 2)
+    end
+
+    test "a domain-scored result bands the overall percentage, not the weight sum" do
+      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
+      diagnostic.bands.create!(ceiling: 50, name: "Flying blind")
+      diagnostic.bands.create!(ceiling: nil, name: "Well instrumented")
+      domain = diagnostic.domains.create!(key: "governance", name: "Governance")
+      question = diagnostic.questions.create!(key: "q1", position: 1, domain: domain)
+      question.options.create!(value: "full", weight: 200)
+      question.options.create!(value: "partial", weight: 60)
+
+      assert_equal "Flying blind", diagnostic.result_for({ "q1" => "partial" }).name
+    end
+
+    test "a domain with no weight on offer captures nothing rather than erroring" do
+      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
+      domain = diagnostic.domains.create!(key: "governance", name: "Governance")
+      diagnostic.questions.create!(key: "q1", position: 1, domain: domain)
+        .options.create!(value: "none", weight: nil)
+
+      assert_equal 0, diagnostic.domain_percentages({ "q1" => "none" })[domain]
+    end
+
     test "the scored result is the band for the total" do
       assert_equal "Flying blind", alembic_diagnostics(:business_scorecard).result_for({}).name
     end
