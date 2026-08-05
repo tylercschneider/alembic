@@ -200,6 +200,15 @@ module Alembic
       assert_equal "Flying blind", diagnostic.result_for({ "q1" => "partial" }).name
     end
 
+    test "a domain with no weight on offer captures nothing rather than erroring" do
+      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
+      domain = diagnostic.domains.create!(key: "governance", name: "Governance")
+      diagnostic.questions.create!(key: "q1", position: 1, domain: domain)
+        .options.create!(value: "none", weight: nil)
+
+      assert_equal 0, diagnostic.domain_percentages({ "q1" => "none" })[domain]
+    end
+
     test "the scored result is the band for the total" do
       assert_equal "Flying blind", alembic_diagnostics(:business_scorecard).result_for({}).name
     end

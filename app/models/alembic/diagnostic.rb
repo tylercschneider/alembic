@@ -80,7 +80,10 @@ module Alembic
     private
 
     def percentage_of(questions, answers)
-      (captured_weight(questions, answers).to_f / weight_on_offer(questions) * 100).round
+      on_offer = weight_on_offer(questions)
+      return 0 if on_offer.zero?
+
+      (captured_weight(questions, answers).to_f / on_offer * 100).round
     end
 
     def captured_weight(questions, answers)
