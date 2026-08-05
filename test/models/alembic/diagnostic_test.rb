@@ -69,6 +69,23 @@ module Alembic
       assert_equal compiled, diagnostic.definition
     end
 
+    test "reverting then compiling round-trips a domain-scored definition" do
+      definition = {
+        "slug" => "domain-scored", "kicker" => nil, "headline" => nil, "blurb" => nil, "start_label" => nil,
+        "placement" => { "resolver_key" => nil },
+        "questions" => [ { "id" => "need", "text" => "Need?", "options" => [ { "value" => "yes", "label" => "Yes", "hint" => nil, "weight" => 3 } ], "domain" => "governance" } ],
+        "tiers" => {}, "levels" => {}, "warnings" => {},
+        "bands" => [ { "ceiling" => 50, "name" => "Starter", "description" => "Just beginning." } ],
+        "domains" => { "governance" => { "name" => "Governance", "gap_meaning" => "No owner.", "gap_cost" => "Drift." } }
+      }
+      diagnostic = Diagnostic.create!(slug: "domain-scored", kind: "scored", definition: definition)
+
+      diagnostic.revert!
+      diagnostic.compile!
+
+      assert_equal definition, diagnostic.definition
+    end
+
     test "upserts a diagnostic storing the definition keyed by its slug" do
       Diagnostic.upsert_definition({ "slug" => "seeded", "headline" => "Hi" })
 
