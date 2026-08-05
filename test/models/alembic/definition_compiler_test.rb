@@ -91,6 +91,14 @@ module Alembic
         DefinitionCompiler.new(diagnostic).to_definition["domains"])
     end
 
+    test "compiles a question's domain" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      domain = diagnostic.domains.create!(key: "governance", name: "Governance", position: 1)
+      diagnostic.questions.create!(key: "need", text: "Need?", position: 1, domain: domain)
+
+      assert_equal "governance", DefinitionCompiler.new(diagnostic).to_definition["questions"].first["domain"]
+    end
+
     test "round-trips the bundled stats-ladder definition through rows" do
       definition = Alembic.bundled_definition("stats-system-ladder")
       diagnostic = alembic_diagnostics(:stats_ladder)
