@@ -68,6 +68,10 @@ module Alembic
       domains.index_with { |domain| percentage_of(domain.questions, answers) }
     end
 
+    def blind_spots(answers, count:)
+      domain_percentages(answers).min_by(count) { |_domain, percentage| percentage }.map(&:first)
+    end
+
     def band_for(score)
       bands.sort_by { |band| band.ceiling || Float::INFINITY }
         .find { |band| band.ceiling.nil? || score < band.ceiling }

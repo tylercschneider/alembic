@@ -160,6 +160,18 @@ module Alembic
       assert_equal 100, diagnostic.domain_percentages({ "q1" => "full" })[governance]
     end
 
+    test "names its weakest domain as a blind spot" do
+      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
+      governance = diagnostic.domains.create!(key: "governance", name: "Governance")
+      cash = diagnostic.domains.create!(key: "cash", name: "Cash")
+      diagnostic.questions.create!(key: "q1", position: 1, domain: governance)
+        .options.create!(value: "full", weight: 4)
+      diagnostic.questions.create!(key: "q2", position: 2, domain: cash)
+        .options.create!(value: "full", weight: 6)
+
+      assert_equal [ cash ], diagnostic.blind_spots({ "q1" => "full" }, count: 1)
+    end
+
     test "the scored result is the band for the total" do
       assert_equal "Flying blind", alembic_diagnostics(:business_scorecard).result_for({}).name
     end
