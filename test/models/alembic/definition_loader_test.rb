@@ -110,6 +110,12 @@ module Alembic
       assert_equal "Security", loader.build.domains[:security].name
     end
 
+    test "builds a domain carrying what a gap in it means" do
+      loader = DefinitionLoader.new({ "domains" => { "security" => { "gap_meaning" => "Access is unreviewed." } } })
+
+      assert_equal "Access is unreviewed.", loader.build.domains[:security].gap_meaning
+    end
+
     test "a compiled question's domain resolves to a domain the guide carries" do
       diagnostic = Diagnostic.create!(slug: "demo")
       security = diagnostic.domains.create!(key: "security", name: "Security", gap_meaning: "Access is unreviewed.", gap_cost: "A leaked credential exposes everything.", position: 1)
