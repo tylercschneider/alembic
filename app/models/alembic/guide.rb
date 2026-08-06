@@ -80,6 +80,10 @@ module Alembic
       percentage_of(questions, answers)
     end
 
+    def domain_percentages(answers)
+      domains.keys.index_with { |key| percentage_of(questions_in(key), answers) }
+    end
+
     def band_for(score)
       bands.sort_by { |band| band.ceiling || Float::INFINITY }
         .find { |band| band.ceiling.nil? || score < band.ceiling }
@@ -116,6 +120,10 @@ module Alembic
     end
 
     private
+
+    def questions_in(domain_key)
+      questions.select { |question| question.domain == domain_key }
+    end
 
     def percentage_of(questions, answers)
       on_offer = weight_on_offer(questions)

@@ -8,6 +8,10 @@ module Alembic
       Guide.new(slug: "t", questions: questions)
     end
 
+    def domains(*keys)
+      keys.to_h { |key| [ key, Guide::Domain.new(key: key, name: key.to_s, gap_meaning: nil, gap_cost: nil) ] }
+    end
+
     test "next question is the first one when nothing is answered" do
       first = Q.new(id: :a, text: "A")
 
@@ -84,6 +88,14 @@ module Alembic
       scored = guide([ Q.new(id: :q1, text: "Q1", options: [ full, partial ]) ])
 
       assert_equal 50, scored.overall_percentage({ q1: "partial" })
+    end
+
+    test "a domain's percentage ignores the questions of other domains" do
+      light = Q.new(id: :q1, text: "Q1", domain: :governance, options: [ Guide::Option.new(value: "full", label: "Full", hint: nil, weight: 4) ])
+      heavy = Q.new(id: :q2, text: "Q2", domain: :cash, options: [ Guide::Option.new(value: "full", label: "Full", hint: nil, weight: 6) ])
+      scored = Guide.new(slug: "t", questions: [ light, heavy ], domains: domains(:governance, :cash))
+
+      assert_equal 100, scored.domain_percentages({ q1: "full" })[:governance]
     end
 
     test "a band carries its description" do
