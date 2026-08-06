@@ -98,6 +98,12 @@ module Alembic
       assert_equal "Starter", loader.build.bands.first.name
     end
 
+    test "builds a domain keyed by symbol carrying its name" do
+      loader = DefinitionLoader.new({ "domains" => { "security" => { "name" => "Security" } } })
+
+      assert_equal "Security", loader.build.domains[:security].name
+    end
+
     test "selects the resolver named by the definition's placement key" do
       loader = DefinitionLoader.new({ "placement" => { "resolver_key" => "stats_ladder" } })
 

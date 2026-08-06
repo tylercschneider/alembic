@@ -8,7 +8,7 @@ module Alembic
     RESOLVERS = { "stats_ladder" => StatsLadderPlacement }.freeze
 
     def build
-      Guide.new(slug: @definition["slug"], questions: questions, resolver: resolver, tiers: tiers, levels: levels, warnings: warnings, bands: bands, **optional_copy)
+      Guide.new(slug: @definition["slug"], questions: questions, resolver: resolver, tiers: tiers, levels: levels, warnings: warnings, bands: bands, domains: domains, **optional_copy)
     end
 
     private
@@ -43,6 +43,12 @@ module Alembic
 
     def warnings
       Hash(@definition["warnings"]).transform_keys(&:to_sym)
+    end
+
+    def domains
+      @definition["domains"].to_h do |key, domain|
+        [ key.to_sym, Guide::Domain.new(key: key.to_sym, name: domain["name"], gap_meaning: domain["gap_meaning"], gap_cost: domain["gap_cost"]) ]
+      end
     end
 
     def bands
