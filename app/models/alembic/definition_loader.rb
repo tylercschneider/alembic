@@ -59,8 +59,12 @@ module Alembic
 
     def questions
       Array(@definition["questions"]).map do |question|
-        Guide::Question.new(id: question["id"].to_sym, text: question["text"], options: options_for(question), condition: condition_for(question))
+        Guide::Question.new(id: question["id"].to_sym, text: question["text"], options: options_for(question), condition: condition_for(question), domain: domain_key_for(question))
       end
+    end
+
+    def domain_key_for(question)
+      question["domain"]&.to_sym
     end
 
     def condition_for(question)

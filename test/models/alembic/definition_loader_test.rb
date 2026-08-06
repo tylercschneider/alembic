@@ -98,6 +98,12 @@ module Alembic
       assert_equal "Starter", loader.build.bands.first.name
     end
 
+    test "builds a question carrying its domain key as a symbol" do
+      loader = DefinitionLoader.new({ "questions" => [ { "id" => "pii", "text" => "PII masked?", "domain" => "security" } ] })
+
+      assert_equal :security, loader.build.questions.first.domain
+    end
+
     test "builds a domain keyed by symbol carrying its name" do
       loader = DefinitionLoader.new({ "domains" => { "security" => { "name" => "Security" } } })
 
