@@ -98,6 +98,52 @@ module Alembic
       assert_equal "Starter", loader.build.bands.first.name
     end
 
+    test "builds a question carrying its domain key as a symbol" do
+      loader = DefinitionLoader.new({ "questions" => [ { "id" => "pii", "text" => "PII masked?", "domain" => "security" } ] })
+
+      assert_equal :security, loader.build.questions.first.domain
+    end
+
+    test "builds a question with no domain when the definition names none" do
+      loader = DefinitionLoader.new({ "questions" => [ { "id" => "need", "text" => "Need?" } ] })
+
+      assert_nil loader.build.questions.first.domain
+    end
+
+    test "builds a domain keyed by symbol carrying its name" do
+      loader = DefinitionLoader.new({ "domains" => { "security" => { "name" => "Security" } } })
+
+      assert_equal "Security", loader.build.domains[:security].name
+    end
+
+    test "builds a domain carrying what a gap in it means" do
+      loader = DefinitionLoader.new({ "domains" => { "security" => { "gap_meaning" => "Access is unreviewed." } } })
+
+      assert_equal "Access is unreviewed.", loader.build.domains[:security].gap_meaning
+    end
+
+    test "builds a domain carrying what a gap in it costs" do
+      loader = DefinitionLoader.new({ "domains" => { "security" => { "gap_cost" => "A leaked credential exposes everything." } } })
+
+      assert_equal "A leaked credential exposes everything.", loader.build.domains[:security].gap_cost
+    end
+
+    test "builds no domains from a definition without a domains section" do
+      loader = DefinitionLoader.new({ "slug" => "demo" })
+
+      assert_empty loader.build.domains
+    end
+
+    test "a compiled question's domain resolves to a domain the guide carries" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      security = diagnostic.domains.create!(key: "security", name: "Security", gap_meaning: "Access is unreviewed.", gap_cost: "A leaked credential exposes everything.", position: 1)
+      diagnostic.questions.create!(key: "pii", text: "PII masked?", position: 1, domain: security)
+
+      guide = DefinitionLoader.new(DefinitionCompiler.new(diagnostic).to_definition).build
+
+      assert_equal "Security", guide.domains[guide.questions.first.domain].name
+    end
+
     test "selects the resolver named by the definition's placement key" do
       loader = DefinitionLoader.new({ "placement" => { "resolver_key" => "stats_ladder" } })
 

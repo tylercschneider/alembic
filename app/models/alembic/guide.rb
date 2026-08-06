@@ -6,8 +6,8 @@ module Alembic
       end
     end
 
-    Question = Data.define(:id, :text, :options, :condition) do
-      def initialize(id:, text:, options: [], condition: nil)
+    Question = Data.define(:id, :text, :options, :condition, :domain) do
+      def initialize(id:, text:, options: [], condition: nil, domain: nil)
         super
       end
 
@@ -21,6 +21,8 @@ module Alembic
         super
       end
     end
+
+    Domain = Data.define(:key, :name, :gap_meaning, :gap_cost)
 
     Placement = Data.define(:tier, :grade, :level, :warning, :warning_ok)
 
@@ -37,9 +39,9 @@ module Alembic
       end
     end
 
-    attr_reader :slug, :questions, :resolver, :kicker, :headline, :blurb, :start_label, :tiers, :levels, :warnings, :bands
+    attr_reader :slug, :questions, :resolver, :kicker, :headline, :blurb, :start_label, :tiers, :levels, :warnings, :bands, :domains
 
-    def initialize(slug:, questions:, resolver: nil, kicker: nil, headline: nil, blurb: nil, start_label: "Start →", tiers: {}, levels: {}, warnings: {}, bands: [])
+    def initialize(slug:, questions:, resolver: nil, kicker: nil, headline: nil, blurb: nil, start_label: "Start →", tiers: {}, levels: {}, warnings: {}, bands: [], domains: {})
       @slug = slug
       @questions = questions
       @resolver = resolver
@@ -51,6 +53,7 @@ module Alembic
       @levels = levels
       @warnings = warnings
       @bands = bands
+      @domains = domains
     end
 
     def warning_text(key)
