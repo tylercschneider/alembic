@@ -118,6 +118,15 @@ module Alembic
       assert_equal 0, guide([ offered ]).overall_percentage({ q1: "stale" })
     end
 
+    test "blind spots name as many of the weakest domains as asked for, weakest first" do
+      strong = Q.new(id: :q1, text: "Q1", domain: :governance, options: [ Guide::Option.new(value: "full", label: "Full", hint: nil, weight: 4) ])
+      empty = Q.new(id: :q2, text: "Q2", domain: :cash, options: [ Guide::Option.new(value: "full", label: "Full", hint: nil, weight: 6) ])
+      partial = Q.new(id: :q3, text: "Q3", domain: :demand, options: [ Guide::Option.new(value: "full", label: "Full", hint: nil, weight: 8), Guide::Option.new(value: "half", label: "Half", hint: nil, weight: 4) ])
+      scored = Guide.new(slug: "t", questions: [ strong, empty, partial ], domains: domains(:governance, :cash, :demand))
+
+      assert_equal [ :cash, :demand ], scored.blind_spots({ q1: "full", q3: "half" }, count: 2)
+    end
+
     test "a band carries its description" do
       assert_equal "Just beginning.", Guide::Band.new(ceiling: 10, name: "Starter", description: "Just beginning.").description
     end
