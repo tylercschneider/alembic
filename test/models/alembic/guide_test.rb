@@ -135,6 +135,14 @@ module Alembic
       assert_equal "Flying blind", scored.result_for({ q1: "partial" }).name
     end
 
+    test "a result with no domains bands the raw score, not a percentage" do
+      question = Q.new(id: :q1, text: "Q1", options: [ Guide::Option.new(value: "full", label: "Full", hint: nil, weight: 200), Guide::Option.new(value: "partial", label: "Partial", hint: nil, weight: 60) ])
+      bands = [ Guide::Band.new(ceiling: 50, name: "Flying blind"), Guide::Band.new(ceiling: nil, name: "Well instrumented") ]
+      scored = Guide.new(slug: "t", questions: [ question ], bands: bands)
+
+      assert_equal "Well instrumented", scored.result_for({ q1: "partial" }).name
+    end
+
     test "a band carries its description" do
       assert_equal "Just beginning.", Guide::Band.new(ceiling: 10, name: "Starter", description: "Just beginning.").description
     end

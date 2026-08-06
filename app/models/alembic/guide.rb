@@ -89,7 +89,7 @@ module Alembic
     end
 
     def result_for(answers)
-      band_for(overall_percentage(answers))
+      band_for(domains.any? ? overall_percentage(answers) : score(answers))
     end
 
     def band_for(score)
