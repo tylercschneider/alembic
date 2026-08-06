@@ -110,6 +110,16 @@ module Alembic
       assert_equal "Security", loader.build.domains[:security].name
     end
 
+    test "a compiled question's domain resolves to a domain the guide carries" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      security = diagnostic.domains.create!(key: "security", name: "Security", gap_meaning: "Access is unreviewed.", gap_cost: "A leaked credential exposes everything.", position: 1)
+      diagnostic.questions.create!(key: "pii", text: "PII masked?", position: 1, domain: security)
+
+      guide = DefinitionLoader.new(DefinitionCompiler.new(diagnostic).to_definition).build
+
+      assert_equal "Security", guide.domains[guide.questions.first.domain].name
+    end
+
     test "selects the resolver named by the definition's placement key" do
       loader = DefinitionLoader.new({ "placement" => { "resolver_key" => "stats_ladder" } })
 
