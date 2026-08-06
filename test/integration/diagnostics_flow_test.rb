@@ -198,5 +198,13 @@ module Alembic
 
       assert_select "p", text: "Runway is a guess"
     end
+
+    test "a blind spot names what the gap costs" do
+      domain_diagnostic
+
+      get alembic.diagnostic_step_path("domain-flow"), params: { answers: domain_answers }
+
+      assert_select "p", text: "Payroll surprises you"
+    end
   end
 end
