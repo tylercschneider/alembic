@@ -182,5 +182,13 @@ module Alembic
 
       assert_select "li", text: /Governance.*30%/
     end
+
+    test "a domain-scored result names its weakest domains as blind spots, weakest first" do
+      domain_diagnostic
+
+      get alembic.diagnostic_step_path("domain-flow"), params: { answers: domain_answers }
+
+      assert_equal [ "Cash", "Governance" ], css_select("h3").map(&:text)
+    end
   end
 end

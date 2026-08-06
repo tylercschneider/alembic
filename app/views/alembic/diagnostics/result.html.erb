@@ -23,5 +23,14 @@
         <% end %>
       </ul>
     <% end %>
+
+    <% if @blind_spots %>
+      <h2 class="text-xs font-semibold uppercase tracking-widest text-accent-600 mb-3">Your blind spots</h2>
+      <% @blind_spots.each do |domain| %>
+        <div class="mb-5">
+          <h3 class="font-semibold text-gray-900"><%= domain.name %></h3>
+        </div>
+      <% end %>
+    <% end %>
   </div>
 </section>

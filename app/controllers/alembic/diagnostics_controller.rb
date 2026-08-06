@@ -1,5 +1,7 @@
 module Alembic
   class DiagnosticsController < ApplicationController
+    BLIND_SPOT_COUNT = 2
+
     def show
       @guide = guide
       return render :guide if @guide
@@ -34,6 +36,7 @@ module Alembic
     def assign_domain_figures
       @overall_percentage = @guide.overall_percentage(@answers)
       @domain_percentages = @guide.domain_percentages(@answers).transform_keys { |key| @guide.domains[key] }
+      @blind_spots = @guide.blind_spots(@answers, count: BLIND_SPOT_COUNT).map { |key| @guide.domains[key] }
     end
 
     def guide
