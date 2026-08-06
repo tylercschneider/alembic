@@ -67,6 +67,13 @@ module Alembic
       assert_equal "Top", banded.band_for(40).name
     end
 
+    test "a guide exposes a domain it was built with" do
+      security = Guide::Domain.new(key: :security, name: "Security", gap_meaning: "Access is unreviewed.", gap_cost: "One leaked credential exposes everything.")
+      domained = Guide.new(slug: "t", questions: [], domains: { security: security })
+
+      assert_equal "Security", domained.domains[:security].name
+    end
+
     test "a band carries its description" do
       assert_equal "Just beginning.", Guide::Band.new(ceiling: 10, name: "Starter", description: "Just beginning.").description
     end
