@@ -190,5 +190,13 @@ module Alembic
 
       assert_equal [ "Cash", "Governance" ], css_select("h3").map(&:text)
     end
+
+    test "a blind spot explains what the gap means" do
+      domain_diagnostic
+
+      get alembic.diagnostic_step_path("domain-flow"), params: { answers: domain_answers }
+
+      assert_select "p", text: "Runway is a guess"
+    end
   end
 end

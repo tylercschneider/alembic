@@ -29,6 +29,7 @@
       <% @blind_spots.each do |domain| %>
         <div class="mb-5">
           <h3 class="font-semibold text-gray-900"><%= domain.name %></h3>
+          <p class="text-gray-600"><%= domain.gap_meaning %></p>
         </div>
       <% end %>
     <% end %>
