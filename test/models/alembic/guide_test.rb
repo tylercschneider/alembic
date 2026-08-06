@@ -98,6 +98,13 @@ module Alembic
       assert_equal 100, scored.domain_percentages({ q1: "full" })[:governance]
     end
 
+    test "a domain with no weight on offer captures nothing rather than erroring" do
+      weightless = Q.new(id: :q1, text: "Q1", domain: :governance, options: [ Guide::Option.new(value: "none", label: "None", hint: nil) ])
+      scored = Guide.new(slug: "t", questions: [ weightless ], domains: domains(:governance))
+
+      assert_equal 0, scored.domain_percentages({ q1: "none" })[:governance]
+    end
+
     test "a band carries its description" do
       assert_equal "Just beginning.", Guide::Band.new(ceiling: 10, name: "Starter", description: "Just beginning.").description
     end
