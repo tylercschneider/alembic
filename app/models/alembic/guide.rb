@@ -76,6 +76,22 @@ module Alembic
       end
     end
 
+    def overall_percentage(answers)
+      percentage_of(questions, answers)
+    end
+
+    def domain_percentages(answers)
+      domains.keys.index_with { |key| percentage_of(questions_in(key), answers) }
+    end
+
+    def blind_spots(answers, count:)
+      domain_percentages(answers).min_by(count) { |_key, percentage| percentage }.map(&:first)
+    end
+
+    def result_for(answers)
+      band_for(domains.any? ? overall_percentage(answers) : score(answers))
+    end
+
     def band_for(score)
       bands.sort_by { |band| band.ceiling || Float::INFINITY }
         .find { |band| band.ceiling.nil? || score < band.ceiling }
@@ -109,6 +125,31 @@ module Alembic
 
     def self.registry
       @registry ||= GUIDES.map(&:build).to_h { |guide| [ guide.slug, guide ] }
+    end
+
+    private
+
+    def questions_in(domain_key)
+      questions.select { |question| question.domain == domain_key }
+    end
+
+    def percentage_of(questions, answers)
+      on_offer = weight_on_offer(questions)
+      return 0 if on_offer.zero?
+
+      (captured_weight(questions, answers).to_f / on_offer * 100).round
+    end
+
+    def captured_weight(questions, answers)
+      questions.sum { |question| weight_of(question, answers[question.id]) }
+    end
+
+    def weight_on_offer(questions)
+      questions.sum { |question| question.options.filter_map(&:weight).max || 0 }
+    end
+
+    def weight_of(question, value)
+      question.options.find { |option| option.value == value }&.weight || 0
     end
   end
 end
