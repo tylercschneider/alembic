@@ -105,6 +105,13 @@ module Alembic
       assert_equal 0, scored.domain_percentages({ q1: "none" })[:governance]
     end
 
+    test "an unanswered question captures none of its weight" do
+      answered = Q.new(id: :q1, text: "Q1", options: [ Guide::Option.new(value: "full", label: "Full", hint: nil, weight: 4) ])
+      skipped = Q.new(id: :q2, text: "Q2", options: [ Guide::Option.new(value: "full", label: "Full", hint: nil, weight: 4) ])
+
+      assert_equal 50, guide([ answered, skipped ]).overall_percentage({ q1: "full" })
+    end
+
     test "a band carries its description" do
       assert_equal "Just beginning.", Guide::Band.new(ceiling: 10, name: "Starter", description: "Just beginning.").description
     end
