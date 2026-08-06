@@ -26,7 +26,7 @@ module Alembic
 
     def render_result
       @score = @guide.score(@answers)
-      @band = @guide.band_for(@score)
+      @band = @guide.result_for(@answers)
       render :result
     end
 

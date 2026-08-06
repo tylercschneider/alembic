@@ -137,5 +137,34 @@ module Alembic
       assert_response :success
       assert_select "h1", text: /Event log \+ rollups/
     end
+
+    def domain_diagnostic
+      Diagnostic.create!(slug: "domain-flow", kind: "scored", definition: {
+        "slug" => "domain-flow",
+        "domains" => {
+          "governance" => { "name" => "Governance", "gap_meaning" => "No one owns the decision", "gap_cost" => "Approvals stall for weeks" },
+          "cash" => { "name" => "Cash", "gap_meaning" => "Runway is a guess", "gap_cost" => "Payroll surprises you" },
+          "demand" => { "name" => "Demand", "gap_meaning" => "Pipeline is unread", "gap_cost" => "Quarters end blind" }
+        },
+        "questions" => [
+          { "id" => "board", "text" => "Board?", "domain" => "governance", "options" => [ { "value" => "full", "label" => "Full", "weight" => 200 }, { "value" => "partial", "label" => "Partial", "weight" => 60 } ] },
+          { "id" => "runway", "text" => "Runway?", "domain" => "cash", "options" => [ { "value" => "full", "label" => "Full", "weight" => 100 }, { "value" => "none", "label" => "None", "weight" => 0 } ] },
+          { "id" => "pipeline", "text" => "Pipeline?", "domain" => "demand", "options" => [ { "value" => "full", "label" => "Full", "weight" => 80 } ] }
+        ],
+        "bands" => [ { "ceiling" => 50, "name" => "Flying blind" }, { "ceiling" => nil, "name" => "Well instrumented" } ]
+      })
+    end
+
+    def domain_answers
+      { board: "partial", runway: "none", pipeline: "full" }
+    end
+
+    test "a domain-scored result bands the overall percentage rather than the raw score" do
+      domain_diagnostic
+
+      get alembic.diagnostic_step_path("domain-flow"), params: { answers: domain_answers }
+
+      assert_select "h1", text: /Flying blind/
+    end
   end
 end
