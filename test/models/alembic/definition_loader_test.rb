@@ -104,6 +104,12 @@ module Alembic
       assert_equal :security, loader.build.questions.first.domain
     end
 
+    test "builds a question with no domain when the definition names none" do
+      loader = DefinitionLoader.new({ "questions" => [ { "id" => "need", "text" => "Need?" } ] })
+
+      assert_nil loader.build.questions.first.domain
+    end
+
     test "builds a domain keyed by symbol carrying its name" do
       loader = DefinitionLoader.new({ "domains" => { "security" => { "name" => "Security" } } })
 
