@@ -78,6 +78,14 @@ module Alembic
       assert_equal "Security", domained.domains[:security].name
     end
 
+    test "the overall percentage is the captured weight over the weight on offer" do
+      full = Guide::Option.new(value: "full", label: "Full", hint: nil, weight: 4)
+      partial = Guide::Option.new(value: "partial", label: "Partial", hint: nil, weight: 2)
+      scored = guide([ Q.new(id: :q1, text: "Q1", options: [ full, partial ]) ])
+
+      assert_equal 50, scored.overall_percentage({ q1: "partial" })
+    end
+
     test "a band carries its description" do
       assert_equal "Just beginning.", Guide::Band.new(ceiling: 10, name: "Starter", description: "Just beginning.").description
     end
