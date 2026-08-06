@@ -88,6 +88,10 @@ module Alembic
       domain_percentages(answers).min_by(count) { |_key, percentage| percentage }.map(&:first)
     end
 
+    def result_for(answers)
+      band_for(overall_percentage(answers))
+    end
+
     def band_for(score)
       bands.sort_by { |band| band.ceiling || Float::INFINITY }
         .find { |band| band.ceiling.nil? || score < band.ceiling }
