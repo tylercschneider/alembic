@@ -6,8 +6,8 @@ module Alembic
       end
     end
 
-    Question = Data.define(:id, :text, :options, :condition) do
-      def initialize(id:, text:, options: [], condition: nil)
+    Question = Data.define(:id, :text, :options, :condition, :domain) do
+      def initialize(id:, text:, options: [], condition: nil, domain: nil)
         super
       end
 
