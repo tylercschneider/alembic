@@ -174,5 +174,13 @@ module Alembic
 
       assert_includes response.body, "37%"
     end
+
+    test "a domain-scored result lists each domain with its own percentage" do
+      domain_diagnostic
+
+      get alembic.diagnostic_step_path("domain-flow"), params: { answers: domain_answers }
+
+      assert_select "li", text: /Governance.*30%/
+    end
   end
 end

@@ -15,5 +15,13 @@
         <%= ui_badge(label: "Score: #{@score}", variant: :info) %>
       <% end %>
     </div>
+
+    <% if @domain_percentages %>
+      <ul class="mb-8 divide-y divide-gray-100 border-y border-gray-100">
+        <% @domain_percentages.each do |domain, percentage| %>
+          <li class="flex items-baseline justify-between py-3"><span class="text-gray-900"><%= domain.name %></span><span class="text-sm font-semibold text-gray-500"><%= percentage %>%</span></li>
+        <% end %>
+      </ul>
+    <% end %>
   </div>
 </section>
