@@ -112,6 +112,12 @@ module Alembic
       assert_equal 50, guide([ answered, skipped ]).overall_percentage({ q1: "full" })
     end
 
+    test "an answer matching no option captures none of its weight" do
+      offered = Q.new(id: :q1, text: "Q1", options: [ Guide::Option.new(value: "full", label: "Full", hint: nil, weight: 4) ])
+
+      assert_equal 0, guide([ offered ]).overall_percentage({ q1: "stale" })
+    end
+
     test "a band carries its description" do
       assert_equal "Just beginning.", Guide::Band.new(ceiling: 10, name: "Starter", description: "Just beginning.").description
     end
