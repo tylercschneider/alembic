@@ -166,5 +166,13 @@ module Alembic
 
       assert_select "h1", text: /Flying blind/
     end
+
+    test "a domain-scored result shows its overall percentage" do
+      domain_diagnostic
+
+      get alembic.diagnostic_step_path("domain-flow"), params: { answers: domain_answers }
+
+      assert_includes response.body, "37%"
+    end
   end
 end

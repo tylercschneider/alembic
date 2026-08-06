@@ -27,6 +27,7 @@ module Alembic
     def render_result
       @score = @guide.score(@answers)
       @band = @guide.result_for(@answers)
+      @overall_percentage = @guide.overall_percentage(@answers) if @guide.domains.any?
       render :result
     end
 
