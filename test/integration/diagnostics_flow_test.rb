@@ -206,5 +206,13 @@ module Alembic
 
       assert_select "p", text: "Payroll surprises you"
     end
+
+    test "a scored diagnostic with no domains reports no blind spots" do
+      scored_diagnostic
+
+      get alembic.diagnostic_step_path("scored-flow"), params: { answers: { need: "yes", team: "no" } }
+
+      assert_not_includes response.body, "Your blind spots"
+    end
   end
 end
