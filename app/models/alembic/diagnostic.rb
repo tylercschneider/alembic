@@ -22,6 +22,14 @@ module Alembic
       end
     end
 
+    def definition
+      current_definition_version&.definition || super
+    end
+
+    def current_definition_version
+      definition_versions.order(:number).last
+    end
+
     def record_definition(payload)
       definition_versions.create!(number: next_definition_number, definition: payload)
     end

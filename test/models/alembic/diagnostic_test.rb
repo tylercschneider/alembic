@@ -45,6 +45,14 @@ module Alembic
       assert_equal 2, diagnostic.definition_versions.last.number
     end
 
+    test "reports its current definition as the highest-numbered version" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_definition({ "slug" => "first" })
+      diagnostic.record_definition({ "slug" => "second" })
+
+      assert_equal({ "slug" => "second" }, diagnostic.definition)
+    end
+
     test "compiling writes the rows into the definition" do
       diagnostic = Diagnostic.create!(slug: "demo", headline: "Compiled")
 
