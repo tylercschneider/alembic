@@ -129,6 +129,12 @@ module Alembic
       assert_equal definition, diagnostic.definition
     end
 
+    test "upserting records the imported definition as a version" do
+      Diagnostic.upsert_definition({ "slug" => "seeded", "headline" => "Hi" })
+
+      assert_equal({ "slug" => "seeded", "headline" => "Hi" }, Diagnostic.find_by(slug: "seeded").definition_versions.last.definition)
+    end
+
     test "upserts a diagnostic storing the definition keyed by its slug" do
       Diagnostic.upsert_definition({ "slug" => "seeded", "headline" => "Hi" })
 

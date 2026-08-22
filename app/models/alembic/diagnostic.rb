@@ -18,7 +18,8 @@ module Alembic
 
     def self.upsert_definition(definition)
       find_or_initialize_by(slug: definition["slug"]).tap do |diagnostic|
-        diagnostic.update!(definition: definition)
+        diagnostic.save!
+        diagnostic.record_definition(definition)
       end
     end
 
