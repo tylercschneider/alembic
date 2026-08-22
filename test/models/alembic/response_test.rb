@@ -29,5 +29,15 @@ module Alembic
 
       assert_equal recompiled, response.definition_version
     end
+
+    test "leaves an earlier response pinned to the version it began on" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      began_on = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
+      response = Response.start(diagnostic)
+
+      diagnostic.definition_versions.create!(number: 2, definition: { "slug" => "demo" })
+
+      assert_equal began_on, response.reload.definition_version
+    end
   end
 end
