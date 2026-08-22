@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_04_180100) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_22_120100) do
   create_table "alembic_bands", force: :cascade do |t|
     t.integer "ceiling"
     t.datetime "created_at", null: false
@@ -48,6 +48,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_04_180100) do
     t.datetime "updated_at", null: false
     t.index ["subject_type", "subject_id"], name: "index_alembic_conditions_on_subject"
     t.index ["tested_question_id"], name: "index_alembic_conditions_on_tested_question_id"
+  end
+
+  create_table "alembic_definition_versions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.json "definition"
+    t.integer "diagnostic_id", null: false
+    t.integer "number", null: false
+    t.index ["diagnostic_id", "number"], name: "index_alembic_definition_versions_on_diagnostic_and_number", unique: true
+    t.index ["diagnostic_id"], name: "index_alembic_definition_versions_on_diagnostic_id"
   end
 
   create_table "alembic_diagnostics", force: :cascade do |t|
@@ -166,6 +175,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_04_180100) do
   add_foreign_key "alembic_condition_options", "alembic_conditions", column: "condition_id"
   add_foreign_key "alembic_condition_options", "alembic_options", column: "option_id"
   add_foreign_key "alembic_conditions", "alembic_questions", column: "tested_question_id"
+  add_foreign_key "alembic_definition_versions", "alembic_diagnostics", column: "diagnostic_id"
   add_foreign_key "alembic_domains", "alembic_diagnostics", column: "diagnostic_id"
   add_foreign_key "alembic_nodes", "alembic_diagnostics", column: "diagnostic_id"
   add_foreign_key "alembic_options", "alembic_questions", column: "question_id"
