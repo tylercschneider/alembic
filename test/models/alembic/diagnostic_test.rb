@@ -61,6 +61,16 @@ module Alembic
       assert_equal "Compiled", diagnostic.definition_versions.last.definition["headline"]
     end
 
+    test "compiling a second time leaves the first version readable" do
+      diagnostic = Diagnostic.create!(slug: "demo", headline: "First")
+      diagnostic.compile!
+      diagnostic.update!(headline: "Second")
+
+      diagnostic.compile!
+
+      assert_equal "First", diagnostic.definition_versions.find_by(number: 1).definition["headline"]
+    end
+
     test "compiling writes the rows into the definition" do
       diagnostic = Diagnostic.create!(slug: "demo", headline: "Compiled")
 
