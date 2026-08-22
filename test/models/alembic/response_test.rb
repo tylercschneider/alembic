@@ -19,5 +19,15 @@ module Alembic
 
       assert_equal version, response.definition_version
     end
+
+    test "pins to the newer version when started after a recompile" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
+      recompiled = diagnostic.definition_versions.create!(number: 2, definition: { "slug" => "demo" })
+
+      response = Response.start(diagnostic.reload)
+
+      assert_equal recompiled, response.definition_version
+    end
   end
 end
