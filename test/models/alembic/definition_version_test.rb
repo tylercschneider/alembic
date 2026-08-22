@@ -18,5 +18,14 @@ module Alembic
 
       assert_not duplicate.valid?
     end
+
+    test "is valid when a different diagnostic already has that version number" do
+      Diagnostic.create!(slug: "taken").definition_versions.create!(number: 1, definition: { "slug" => "taken" })
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      version = diagnostic.definition_versions.build(number: 1, definition: { "slug" => "demo" })
+
+      assert version.valid?
+    end
   end
 end
