@@ -49,5 +49,14 @@ module Alembic
 
       assert_equal owner, response.reload.owner
     end
+
+    test "is valid with no owner at all" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
+
+      response = diagnostic.responses.build(definition_version: version, owner: nil)
+
+      assert response.valid?
+    end
   end
 end
