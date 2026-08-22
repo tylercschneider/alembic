@@ -58,5 +58,21 @@ module Alembic
 
       assert response.valid?
     end
+
+    test "records an answer into its stored answers" do
+      response = Response.start(diagnostic_with_a_version)
+
+      response.record_answer(:pick, "a")
+
+      assert_equal({ pick: "a" }, response.answers)
+    end
+
+    private
+
+    def diagnostic_with_a_version
+      Diagnostic.create!(slug: "demo").tap do |diagnostic|
+        diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
+      end
+    end
   end
 end
