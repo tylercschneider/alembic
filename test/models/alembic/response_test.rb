@@ -39,5 +39,15 @@ module Alembic
 
       assert_equal began_on, response.reload.definition_version
     end
+
+    test "takes an owner of any type the host application supplies" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
+      owner = diagnostic.domains.create!(key: "governance", name: "Governance")
+
+      response = diagnostic.responses.create!(definition_version: version, owner: owner)
+
+      assert_equal owner, response.reload.owner
+    end
   end
 end
