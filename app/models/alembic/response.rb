@@ -15,5 +15,9 @@ module Alembic
     def answers
       super.to_h.symbolize_keys
     end
+
+    def guide
+      DefinitionLoader.new(definition_version.definition).build
+    end
   end
 end

@@ -84,6 +84,12 @@ module Alembic
       assert_nil guide.next_question(response.reload.answers)
     end
 
+    test "builds its guide from the definition it is pinned to" do
+      response = Response.start(alembic_diagnostics(:db_guide))
+
+      assert_equal :pick, response.guide.questions.first.id
+    end
+
     private
 
     def diagnostic_with_a_version
