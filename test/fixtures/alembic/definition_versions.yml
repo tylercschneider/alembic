@@ -1,0 +1,15 @@
+db_guide_v1:
+  diagnostic: db_guide
+  number: 1
+  definition:
+    slug: db-guide
+    kicker: Demo
+    headline: A guide defined in the database
+    blurb: Loaded straight from the current definition version.
+    start_label: "Begin →"
+    questions:
+      - id: pick
+        text: Pick one option
+        options:
+          - { value: a, label: Option A }
+          - { value: b, label: Option B }
