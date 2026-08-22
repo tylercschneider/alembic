@@ -27,5 +27,12 @@ module Alembic
 
       assert version.valid?
     end
+
+    test "refuses to be updated once persisted" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
+
+      assert_raises(ActiveRecord::ReadOnlyRecord) { version.update!(definition: { "slug" => "rewritten" }) }
+    end
   end
 end
