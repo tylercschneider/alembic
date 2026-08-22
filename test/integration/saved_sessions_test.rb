@@ -63,6 +63,18 @@ module Alembic
       assert_select "form[action=?]", alembic.diagnostic_responses_path("stats-system-ladder"), count: 0
     end
 
+    test "a saved session carries a visitor from starting it through returning to its result" do
+      diagnostic = scored_diagnostic
+
+      post alembic.diagnostic_responses_path(diagnostic.slug)
+      saved = Response.last
+      patch alembic.response_path(saved), params: { answers: { need: "yes" } }
+      patch alembic.response_path(saved), params: { answers: { team: "no" } }
+      get alembic.response_path(saved)
+
+      assert_select "h1", text: /Well instrumented/
+    end
+
     private
 
     def scored_diagnostic
