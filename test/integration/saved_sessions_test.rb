@@ -15,5 +15,13 @@ module Alembic
 
       assert_select "legend", text: /Pick one option/
     end
+
+    test "answering a question in a saved session stores the answer on the response" do
+      response = Response.start(alembic_diagnostics(:db_guide))
+
+      patch alembic.response_path(response), params: { answers: { pick: "a" } }
+
+      assert_equal({ pick: "a" }, response.reload.answers)
+    end
   end
 end
