@@ -39,7 +39,7 @@ module Alembic
     end
 
     def compile!
-      update!(definition: DefinitionCompiler.new(self).to_definition)
+      record_definition(DefinitionCompiler.new(self).to_definition)
     end
 
     def revert!
