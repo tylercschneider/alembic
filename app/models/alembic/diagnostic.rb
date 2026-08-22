@@ -23,7 +23,7 @@ module Alembic
     end
 
     def record_definition(payload)
-      definition_versions.create!(number: 1, definition: payload)
+      definition_versions.create!(number: next_definition_number, definition: payload)
     end
 
     def to_guide
@@ -83,6 +83,10 @@ module Alembic
     end
 
     private
+
+    def next_definition_number
+      (definition_versions.maximum(:number) || 0) + 1
+    end
 
     def percentage_of(questions, answers)
       on_offer = weight_on_offer(questions)
