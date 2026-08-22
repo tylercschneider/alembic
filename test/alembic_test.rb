@@ -14,4 +14,10 @@ class AlembicTest < ActiveSupport::TestCase
 
     assert Alembic::Diagnostic.exists?(slug: "stats-system-ladder")
   end
+
+  test "re-seeding records no further version" do
+    2.times { Alembic.seed! }
+
+    assert_equal 1, Alembic::Diagnostic.find_by(slug: "stats-system-ladder").definition_versions.count
+  end
 end

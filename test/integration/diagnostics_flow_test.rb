@@ -77,7 +77,8 @@ module Alembic
     end
 
     def scored_diagnostic
-      Diagnostic.create!(slug: "scored-flow", kind: "scored", definition: {
+      diagnostic = Diagnostic.create!(slug: "scored-flow", kind: "scored")
+      diagnostic.record_definition({
         "slug" => "scored-flow",
         "questions" => [
           { "id" => "need", "text" => "Need?", "options" => [ { "value" => "yes", "label" => "Yes", "weight" => 5 }, { "value" => "no", "label" => "No", "weight" => 0 } ] },
@@ -85,6 +86,7 @@ module Alembic
         ],
         "bands" => [ { "ceiling" => 4, "name" => "Flying blind" }, { "ceiling" => nil, "name" => "Well instrumented" } ]
       })
+      diagnostic
     end
 
     test "completing a scored diagnostic names the band the score lands in" do
@@ -139,7 +141,8 @@ module Alembic
     end
 
     def domain_diagnostic
-      Diagnostic.create!(slug: "domain-flow", kind: "scored", definition: {
+      diagnostic = Diagnostic.create!(slug: "domain-flow", kind: "scored")
+      diagnostic.record_definition({
         "slug" => "domain-flow",
         "domains" => {
           "governance" => { "name" => "Governance", "gap_meaning" => "No one owns the decision", "gap_cost" => "Approvals stall for weeks" },
@@ -153,6 +156,7 @@ module Alembic
         ],
         "bands" => [ { "ceiling" => 50, "name" => "Flying blind" }, { "ceiling" => nil, "name" => "Well instrumented" } ]
       })
+      diagnostic
     end
 
     def domain_answers

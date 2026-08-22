@@ -53,7 +53,8 @@ module Alembic
     end
 
     test "the revert action rebuilds rows from the definition" do
-      diagnostic = Diagnostic.create!(slug: "revertable", definition: { "questions" => [ { "id" => "need", "text" => "Need?" } ] })
+      diagnostic = Diagnostic.create!(slug: "revertable")
+      diagnostic.record_definition({ "questions" => [ { "id" => "need", "text" => "Need?" } ] })
 
       post alembic.revert_manage_diagnostic_path(diagnostic)
 

@@ -18,8 +18,21 @@ module Alembic
 
     def self.upsert_definition(definition)
       find_or_initialize_by(slug: definition["slug"]).tap do |diagnostic|
-        diagnostic.update!(definition: definition)
+        diagnostic.save!
+        diagnostic.record_definition(definition) unless diagnostic.definition == definition
       end
+    end
+
+    def definition
+      current_definition_version&.definition
+    end
+
+    def current_definition_version
+      definition_versions.order(:number).last
+    end
+
+    def record_definition(payload)
+      definition_versions.create!(number: next_definition_number, definition: payload)
     end
 
     def to_guide
@@ -27,7 +40,7 @@ module Alembic
     end
 
     def compile!
-      update!(definition: DefinitionCompiler.new(self).to_definition)
+      record_definition(DefinitionCompiler.new(self).to_definition)
     end
 
     def revert!
@@ -79,6 +92,10 @@ module Alembic
     end
 
     private
+
+    def next_definition_number
+      (definition_versions.maximum(:number) || 0) + 1
+    end
 
     def percentage_of(questions, answers)
       on_offer = weight_on_offer(questions)
