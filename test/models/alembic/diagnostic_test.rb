@@ -14,12 +14,11 @@ module Alembic
       assert_not Diagnostic.new(slug: nil).valid?
     end
 
-    test "stores a definition document" do
-      assert_equal({ "slug" => "x" }, Diagnostic.new(definition: { "slug" => "x" }).definition)
-    end
+    test "builds a guide from its current definition" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_definition({ "slug" => "demo" })
 
-    test "builds a guide from its definition" do
-      assert_equal "demo", Diagnostic.new(definition: { "slug" => "demo" }).to_guide.slug
+      assert_equal "demo", diagnostic.to_guide.slug
     end
 
     test "stores guide copy and placement attributes" do
@@ -80,7 +79,8 @@ module Alembic
     end
 
     test "reverting decompiles the definition into rows" do
-      diagnostic = Diagnostic.create!(slug: "demo", definition: { "questions" => [ { "id" => "need", "text" => "Need?" } ] })
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_definition({ "questions" => [ { "id" => "need", "text" => "Need?" } ] })
 
       diagnostic.revert!
 
@@ -90,7 +90,7 @@ module Alembic
     test "reverting then compiling round-trips the bundled definition" do
       definition = Alembic.bundled_definition("stats-system-ladder")
       diagnostic = alembic_diagnostics(:stats_ladder)
-      diagnostic.update!(definition: definition)
+      diagnostic.record_definition(definition)
 
       diagnostic.revert!
       diagnostic.compile!
@@ -121,7 +121,8 @@ module Alembic
         "bands" => [ { "ceiling" => 50, "name" => "Starter", "description" => "Just beginning." } ],
         "domains" => { "governance" => { "name" => "Governance", "gap_meaning" => "No owner.", "gap_cost" => "Drift." } }
       }
-      diagnostic = Diagnostic.create!(slug: "domain-scored", kind: "scored", definition: definition)
+      diagnostic = Diagnostic.create!(slug: "domain-scored", kind: "scored")
+      diagnostic.record_definition(definition)
 
       diagnostic.revert!
       diagnostic.compile!
