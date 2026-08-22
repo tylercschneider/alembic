@@ -57,6 +57,12 @@ module Alembic
       assert_select "form[action=?]", alembic.diagnostic_responses_path("db-guide")
     end
 
+    test "a guide with no stored definition does not offer a saved session" do
+      get alembic.diagnostic_path("stats-system-ladder")
+
+      assert_select "form[action=?]", alembic.diagnostic_responses_path("stats-system-ladder"), count: 0
+    end
+
     private
 
     def scored_diagnostic
