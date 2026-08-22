@@ -10,6 +10,9 @@ module Alembic
     has_many :warnings, dependent: :destroy
     has_many :bands, dependent: :destroy
     has_many :domains, dependent: :destroy
+    # Declared before :definition_versions so responses clear first, otherwise
+    # destroying a diagnostic trips the responses -> definition_versions FK.
+    has_many :responses, dependent: :destroy
     has_many :definition_versions, dependent: :destroy
     # Declared before :results so their rule_results clear first, otherwise
     # destroying a diagnostic trips the rule_results -> results FK.
