@@ -75,7 +75,48 @@ module Alembic
       assert_select "h1", text: /Well instrumented/
     end
 
+    test "returning to a saved session resumes at the first unanswered question" do
+      response = Response.start(scored_diagnostic)
+      response.record_answer(:need, "yes")
+
+      get alembic.response_path(response)
+
+      assert_select "legend", text: /Team\?/
+    end
+
+    test "a saved session started before a recompile still serves its pinned version's questions" do
+      diagnostic = scored_diagnostic
+      response = Response.start(diagnostic)
+
+      diagnostic.record_definition(recompiled_definition)
+
+      get alembic.response_path(response)
+
+      assert_select "legend", text: /Need\?/
+    end
+
+    test "a saved session started before a recompile still bands by its pinned version" do
+      diagnostic = scored_diagnostic
+      response = Response.start(diagnostic)
+      response.record_answer(:need, "yes")
+      response.record_answer(:team, "no")
+
+      diagnostic.record_definition(recompiled_definition)
+
+      get alembic.response_path(response)
+
+      assert_select "h1", text: /Well instrumented/
+    end
+
     private
+
+    def recompiled_definition
+      {
+        "slug" => "saved-scored",
+        "questions" => [ { "id" => "rewritten", "text" => "Rewritten?", "options" => [ { "value" => "yes", "label" => "Yes", "weight" => 5 } ] } ],
+        "bands" => [ { "ceiling" => nil, "name" => "Rebanded" } ]
+      }
+    end
 
     def scored_diagnostic
       Diagnostic.create!(slug: "saved-scored", kind: "scored").tap do |diagnostic|
