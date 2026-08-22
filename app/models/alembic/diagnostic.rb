@@ -24,7 +24,7 @@ module Alembic
     end
 
     def definition
-      current_definition_version&.definition || super
+      current_definition_version&.definition
     end
 
     def current_definition_version
