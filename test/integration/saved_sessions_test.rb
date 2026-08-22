@@ -31,5 +31,34 @@ module Alembic
 
       assert_select "form[action=?]", alembic.response_path(response)
     end
+
+    test "a completed saved session names the band its stored answers land in" do
+      response = Response.start(scored_diagnostic)
+      response.record_answer(:need, "yes")
+      response.record_answer(:team, "no")
+
+      get alembic.response_path(response)
+
+      assert_select "h1", text: /Well instrumented/
+    end
+
+    private
+
+    def scored_diagnostic
+      Diagnostic.create!(slug: "saved-scored", kind: "scored").tap do |diagnostic|
+        diagnostic.record_definition(scored_definition)
+      end
+    end
+
+    def scored_definition
+      {
+        "slug" => "saved-scored",
+        "questions" => [
+          { "id" => "need", "text" => "Need?", "options" => [ { "value" => "yes", "label" => "Yes", "weight" => 5 }, { "value" => "no", "label" => "No", "weight" => 0 } ] },
+          { "id" => "team", "text" => "Team?", "options" => [ { "value" => "yes", "label" => "Yes", "weight" => 3 }, { "value" => "no", "label" => "No", "weight" => 0 } ] }
+        ],
+        "bands" => [ { "ceiling" => 4, "name" => "Flying blind" }, { "ceiling" => nil, "name" => "Well instrumented" } ]
+      }
+    end
   end
 end

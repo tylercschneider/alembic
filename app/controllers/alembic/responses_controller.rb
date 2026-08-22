@@ -7,8 +7,11 @@ module Alembic
     def show
       @response = Response.find(params[:id])
       @guide = @response.guide
-      @question = @guide.next_question(@response.answers)
-      render :step
+      @answers = @response.answers
+      @question = @guide.next_question(@answers)
+      return render :step if @question
+
+      render_result
     end
 
     def update
@@ -19,6 +22,12 @@ module Alembic
     end
 
     private
+
+    def render_result
+      @score = @guide.score(@answers)
+      @band = @guide.result_for(@answers)
+      render template: "alembic/diagnostics/result"
+    end
 
     def submitted_answer(guide)
       params.fetch(:answers, {}).permit(*guide.questions.map(&:id)).to_h.first
