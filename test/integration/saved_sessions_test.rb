@@ -7,5 +7,13 @@ module Alembic
 
       assert_redirected_to alembic.response_path(Response.last)
     end
+
+    test "a saved session renders the question it is waiting on" do
+      response = Response.start(alembic_diagnostics(:db_guide))
+
+      get alembic.response_path(response)
+
+      assert_select "legend", text: /Pick one option/
+    end
   end
 end
