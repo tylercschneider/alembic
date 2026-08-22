@@ -51,6 +51,12 @@ module Alembic
       assert_empty response.reload.answers
     end
 
+    test "the intro offers to start a saved session" do
+      get alembic.diagnostic_path("db-guide")
+
+      assert_select "form[action=?]", alembic.diagnostic_responses_path("db-guide")
+    end
+
     private
 
     def scored_diagnostic

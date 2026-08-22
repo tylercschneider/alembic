@@ -11,6 +11,9 @@
         <%= form_with url: alembic.diagnostic_step_path(@guide.slug), method: :get, data: { turbo: false } do %>
           <%= ui_button(label: @guide.start_label, type: :submit) %>
         <% end %>
+        <%= form_with url: alembic.diagnostic_responses_path(@guide.slug), method: :post, data: { turbo: false } do %>
+          <%= ui_button(label: "Save my progress", type: :submit, variant: :secondary) %>
+        <% end %>
         <%= ui_button(label: "Explore the ladder", href: "#ladder", variant: :secondary) %>
       </div>
     </div>
