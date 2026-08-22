@@ -23,5 +23,13 @@ module Alembic
 
       assert_equal({ pick: "a" }, response.reload.answers)
     end
+
+    test "a saved session submits its answers back to itself" do
+      response = Response.start(alembic_diagnostics(:db_guide))
+
+      get alembic.response_path(response)
+
+      assert_select "form[action=?]", alembic.response_path(response)
+    end
   end
 end
