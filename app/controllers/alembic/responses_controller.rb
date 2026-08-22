@@ -16,8 +16,7 @@ module Alembic
 
     def update
       response = Response.find(params[:id])
-      question_id, value = submitted_answer(response.guide)
-      response.record_answer(question_id.to_sym, value)
+      params[:back] ? response.discard_last_answer : record_submitted_answer(response)
       redirect_to response_path(response)
     end
 
@@ -29,8 +28,9 @@ module Alembic
       render template: "alembic/diagnostics/result"
     end
 
-    def submitted_answer(guide)
-      params.fetch(:answers, {}).permit(*guide.questions.map(&:id)).to_h.first
+    def record_submitted_answer(response)
+      question_id, value = params.fetch(:answers, {}).permit(*response.guide.questions.map(&:id)).to_h.first
+      response.record_answer(question_id.to_sym, value)
     end
 
     def diagnostic

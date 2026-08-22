@@ -42,6 +42,15 @@ module Alembic
       assert_select "h1", text: /Well instrumented/
     end
 
+    test "going back a step in a saved session removes its last stored answer" do
+      response = Response.start(scored_diagnostic)
+      response.record_answer(:need, "yes")
+
+      patch alembic.response_path(response), params: { back: "1" }
+
+      assert_empty response.reload.answers
+    end
+
     private
 
     def scored_diagnostic
