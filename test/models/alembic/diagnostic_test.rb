@@ -28,6 +28,14 @@ module Alembic
       assert_equal [ "k", "h", "b", "s", "r" ], [ diagnostic.kicker, diagnostic.headline, diagnostic.blurb, diagnostic.start_label, diagnostic.resolver_key ]
     end
 
+    test "recording a definition stores it as a version" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      diagnostic.record_definition({ "slug" => "demo" })
+
+      assert_equal({ "slug" => "demo" }, diagnostic.definition_versions.last.definition)
+    end
+
     test "compiling writes the rows into the definition" do
       diagnostic = Diagnostic.create!(slug: "demo", headline: "Compiled")
 

@@ -22,6 +22,10 @@ module Alembic
       end
     end
 
+    def record_definition(payload)
+      definition_versions.create!(number: 1, definition: payload)
+    end
+
     def to_guide
       DefinitionLoader.new(definition).build
     end
