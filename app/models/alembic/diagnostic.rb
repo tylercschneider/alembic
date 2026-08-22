@@ -19,7 +19,7 @@ module Alembic
     def self.upsert_definition(definition)
       find_or_initialize_by(slug: definition["slug"]).tap do |diagnostic|
         diagnostic.save!
-        diagnostic.record_definition(definition)
+        diagnostic.record_definition(definition) unless diagnostic.definition == definition
       end
     end
 
