@@ -67,6 +67,13 @@ module Alembic
       assert_equal({ pick: "a" }, response.answers)
     end
 
+    test "reads its answers back from the database with symbol keys" do
+      response = Response.start(diagnostic_with_a_version)
+      response.record_answer(:pick, "a")
+
+      assert_equal({ pick: "a" }, response.reload.answers)
+    end
+
     private
 
     def diagnostic_with_a_version
