@@ -74,6 +74,16 @@ module Alembic
       assert_equal({ pick: "a" }, response.reload.answers)
     end
 
+    test "stores answers the guide for its pinned version consumes directly" do
+      diagnostic = alembic_diagnostics(:db_guide)
+      response = Response.start(diagnostic)
+      response.record_answer(:pick, "a")
+
+      guide = DefinitionLoader.new(response.definition_version.definition).build
+
+      assert_nil guide.next_question(response.reload.answers)
+    end
+
     private
 
     def diagnostic_with_a_version
