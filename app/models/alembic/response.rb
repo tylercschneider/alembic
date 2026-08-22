@@ -15,5 +15,20 @@ module Alembic
     def answers
       super.to_h.symbolize_keys
     end
+
+    def guide
+      DefinitionLoader.new(definition_version.definition).build
+    end
+
+    def discard_last_answer
+      last = last_answered_question
+      update!(answers: answers.except(last.id)) if last
+    end
+
+    private
+
+    def last_answered_question
+      guide.applicable_questions(answers).select { |question| answers.key?(question.id) }.last
+    end
   end
 end

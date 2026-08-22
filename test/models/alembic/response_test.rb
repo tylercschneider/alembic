@@ -84,6 +84,21 @@ module Alembic
       assert_nil guide.next_question(response.reload.answers)
     end
 
+    test "builds its guide from the definition it is pinned to" do
+      response = Response.start(alembic_diagnostics(:db_guide))
+
+      assert_equal :pick, response.guide.questions.first.id
+    end
+
+    test "discards the answer it last recorded" do
+      response = Response.start(alembic_diagnostics(:db_guide))
+      response.record_answer(:pick, "a")
+
+      response.discard_last_answer
+
+      assert_empty response.reload.answers
+    end
+
     private
 
     def diagnostic_with_a_version

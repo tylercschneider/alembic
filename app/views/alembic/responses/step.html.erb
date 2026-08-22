@@ -1,0 +1,36 @@
+<% content_for(:title, @guide.headline) %>
+
+<section class="py-20 md:py-28">
+  <div class="max-w-2xl mx-auto px-6">
+    <%= link_to "← Start over", alembic.diagnostic_path(@guide.slug), class: "text-sm text-accent-600 hover:text-accent-700" %>
+
+    <p class="mt-6 mb-6 text-sm text-gray-500">Question <%= @response.answers.size + 1 %></p>
+
+    <%= form_with url: alembic.response_path(@response), method: :patch, data: { turbo: false } do %>
+      <fieldset>
+        <legend class="text-xl font-semibold text-gray-900 mb-5 leading-snug"><%= @question.text %></legend>
+        <div class="space-y-3">
+          <% @question.options.each do |option| %>
+            <label class="block cursor-pointer">
+              <%= radio_button_tag "answers[#{@question.id}]", option.value, false, required: true, class: "peer sr-only" %>
+              <span class="flex items-start gap-3 rounded-lg border-2 border-gray-200 bg-white px-4 py-3 transition hover:border-gray-400 peer-checked:border-accent-500 peer-checked:bg-accent-50">
+                <span class="text-xs font-semibold uppercase tracking-wider text-accent-600 border border-accent-200 rounded px-2 py-0.5 shrink-0 mt-0.5"><%= option.value %></span>
+                <span class="text-gray-900">
+                  <%= option.label %>
+                  <small class="block text-gray-500"><%= option.hint %></small>
+                </span>
+              </span>
+            </label>
+          <% end %>
+        </div>
+      </fieldset>
+
+      <div class="mt-8 flex items-center gap-4">
+        <%= ui_button(label: "Next", type: :submit) %>
+        <% if @response.answers.any? %>
+          <button type="submit" name="back" value="1" formnovalidate class="cursor-pointer text-sm text-gray-500 underline underline-offset-2 hover:text-gray-900">← Back</button>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</section>

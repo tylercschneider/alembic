@@ -45,7 +45,10 @@ module Alembic
 
     def defined_guide
       diagnostic = Diagnostic.find_by(slug: params[:slug])
-      diagnostic.to_guide if diagnostic&.definition.present?
+      return if diagnostic&.definition.blank?
+
+      @stored_diagnostic = diagnostic
+      diagnostic.to_guide
     end
 
     def submitted_answers
