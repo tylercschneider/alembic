@@ -57,18 +57,6 @@ module Alembic
         end
     end
 
-    def overall_percentage(answers)
-      percentage_of(questions, answers)
-    end
-
-    def domain_percentages(answers)
-      domains.index_with { |domain| percentage_of(domain.questions, answers) }
-    end
-
-    def blind_spots(answers, count:)
-      domain_percentages(answers).min_by(count) { |_domain, percentage| percentage }.map(&:first)
-    end
-
     def band_for(score)
       bands.sort_by { |band| band.ceiling || Float::INFINITY }
         .find { |band| band.ceiling.nil? || score < band.ceiling }
@@ -78,25 +66,6 @@ module Alembic
 
     def next_definition_number
       (definition_versions.maximum(:number) || 0) + 1
-    end
-
-    def percentage_of(questions, answers)
-      on_offer = weight_on_offer(questions)
-      return 0 if on_offer.zero?
-
-      (captured_weight(questions, answers).to_f / on_offer * 100).round
-    end
-
-    def captured_weight(questions, answers)
-      questions.sum { |question| weight_of(question, answers[question.key]) }
-    end
-
-    def weight_on_offer(questions)
-      questions.sum { |question| question.options.maximum(:weight) || 0 }
-    end
-
-    def weight_of(question, value)
-      question.options.find { |option| option.value == value }&.weight || 0
     end
   end
 end
