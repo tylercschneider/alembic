@@ -50,26 +50,6 @@ module Alembic
       DefinitionDecompiler.new(self).load(definition)
     end
 
-    def score(answers)
-      answers.sum do |question_key, option_value|
-        question = questions.find { |candidate| candidate.key == question_key }
-        option = question&.options&.find { |candidate| candidate.value == option_value }
-        option&.weight || 0
-      end
-    end
-
-    def result_for(answers)
-      band_for(domains.any? ? overall_percentage(answers) : score(answers))
-    end
-
-    def next_question(answers)
-      questions.ordered.find { |question| question.applies?(answers) && !answers.key?(question.key) }
-    end
-
-    def complete?(answers)
-      next_question(answers).nil?
-    end
-
     def place(answers)
       rules.ordered.select { |rule| rule.fires?(answers) }
         .each_with_object({}) do |rule, placement|
@@ -77,46 +57,10 @@ module Alembic
         end
     end
 
-    def overall_percentage(answers)
-      percentage_of(questions, answers)
-    end
-
-    def domain_percentages(answers)
-      domains.index_with { |domain| percentage_of(domain.questions, answers) }
-    end
-
-    def blind_spots(answers, count:)
-      domain_percentages(answers).min_by(count) { |_domain, percentage| percentage }.map(&:first)
-    end
-
-    def band_for(score)
-      bands.sort_by { |band| band.ceiling || Float::INFINITY }
-        .find { |band| band.ceiling.nil? || score < band.ceiling }
-    end
-
     private
 
     def next_definition_number
       (definition_versions.maximum(:number) || 0) + 1
-    end
-
-    def percentage_of(questions, answers)
-      on_offer = weight_on_offer(questions)
-      return 0 if on_offer.zero?
-
-      (captured_weight(questions, answers).to_f / on_offer * 100).round
-    end
-
-    def captured_weight(questions, answers)
-      questions.sum { |question| weight_of(question, answers[question.key]) }
-    end
-
-    def weight_on_offer(questions)
-      questions.sum { |question| question.options.maximum(:weight) || 0 }
-    end
-
-    def weight_of(question, value)
-      question.options.find { |option| option.value == value }&.weight || 0
     end
   end
 end
