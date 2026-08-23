@@ -154,14 +154,6 @@ module Alembic
       assert_equal 1, Diagnostic.where(slug: "seeded").count
     end
 
-    test "selects the band whose ceiling the score falls under" do
-      assert_equal "Flying blind", alembic_diagnostics(:business_scorecard).band_for(30).name
-    end
-
-    test "falls through to the open-ended band for high scores" do
-      assert_equal "Well instrumented", alembic_diagnostics(:business_scorecard).band_for(90).name
-    end
-
     test "places by applying the results of firing rules" do
       diagnostic = alembic_diagnostics(:stats_ladder)
       diagnostic.rules.create!(position: 1).results << alembic_results(:tier_event_log)

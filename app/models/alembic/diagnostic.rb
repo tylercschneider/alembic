@@ -57,11 +57,6 @@ module Alembic
         end
     end
 
-    def band_for(score)
-      bands.sort_by { |band| band.ceiling || Float::INFINITY }
-        .find { |band| band.ceiling.nil? || score < band.ceiling }
-    end
-
     private
 
     def next_definition_number
