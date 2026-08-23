@@ -232,18 +232,6 @@ module Alembic
       assert_equal [ cash, demand ], diagnostic.blind_spots({ "q1" => "full", "q3" => "half" }, count: 2)
     end
 
-    test "a domain-scored result bands the overall percentage, not the weight sum" do
-      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
-      diagnostic.bands.create!(ceiling: 50, name: "Flying blind")
-      diagnostic.bands.create!(ceiling: nil, name: "Well instrumented")
-      domain = diagnostic.domains.create!(key: "governance", name: "Governance")
-      question = diagnostic.questions.create!(key: "q1", position: 1, domain: domain)
-      question.options.create!(value: "full", weight: 200)
-      question.options.create!(value: "partial", weight: 60)
-
-      assert_equal "Flying blind", diagnostic.result_for({ "q1" => "partial" }).name
-    end
-
     test "a domain with no weight on offer captures nothing rather than erroring" do
       diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
       domain = diagnostic.domains.create!(key: "governance", name: "Governance")
@@ -251,10 +239,6 @@ module Alembic
         .options.create!(value: "none", weight: nil)
 
       assert_equal 0, diagnostic.domain_percentages({ "q1" => "none" })[domain]
-    end
-
-    test "the scored result is the band for the total" do
-      assert_equal "Flying blind", alembic_diagnostics(:business_scorecard).result_for({}).name
     end
 
     test "selects the band whose ceiling the score falls under" do

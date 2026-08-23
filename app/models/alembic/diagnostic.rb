@@ -58,10 +58,6 @@ module Alembic
       end
     end
 
-    def result_for(answers)
-      band_for(domains.any? ? overall_percentage(answers) : score(answers))
-    end
-
     def place(answers)
       rules.ordered.select { |rule| rule.fires?(answers) }
         .each_with_object({}) do |rule, placement|
