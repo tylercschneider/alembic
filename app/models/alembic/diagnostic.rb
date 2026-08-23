@@ -62,14 +62,6 @@ module Alembic
       band_for(domains.any? ? overall_percentage(answers) : score(answers))
     end
 
-    def next_question(answers)
-      questions.ordered.find { |question| question.applies?(answers) && !answers.key?(question.key) }
-    end
-
-    def complete?(answers)
-      next_question(answers).nil?
-    end
-
     def place(answers)
       rules.ordered.select { |rule| rule.fires?(answers) }
         .each_with_object({}) do |rule, placement|

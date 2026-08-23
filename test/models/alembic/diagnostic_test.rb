@@ -154,18 +154,6 @@ module Alembic
       assert_equal 1, Diagnostic.where(slug: "seeded").count
     end
 
-    test "the next question is the first applicable unanswered one" do
-      assert_equal "need", alembic_diagnostics(:stats_ladder).next_question({}).key
-    end
-
-    test "the next question follows the branch the answers open" do
-      assert_equal "read", alembic_diagnostics(:stats_ladder).next_question({ "need" => "now" }).key
-    end
-
-    test "complete when no applicable question remains" do
-      assert alembic_diagnostics(:stats_ladder).complete?({ "need" => "trend" })
-    end
-
     test "scores by summing the weights of the selected options" do
       diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
       question = diagnostic.questions.create!(key: "q1", position: 1)
