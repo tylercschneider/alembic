@@ -50,14 +50,6 @@ module Alembic
       DefinitionDecompiler.new(self).load(definition)
     end
 
-    def score(answers)
-      answers.sum do |question_key, option_value|
-        question = questions.find { |candidate| candidate.key == question_key }
-        option = question&.options&.find { |candidate| candidate.value == option_value }
-        option&.weight || 0
-      end
-    end
-
     def place(answers)
       rules.ordered.select { |rule| rule.fires?(answers) }
         .each_with_object({}) do |rule, placement|

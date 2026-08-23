@@ -154,15 +154,6 @@ module Alembic
       assert_equal 1, Diagnostic.where(slug: "seeded").count
     end
 
-    test "scores by summing the weights of the selected options" do
-      diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
-      question = diagnostic.questions.create!(key: "q1", position: 1)
-      question.options.create!(value: "yes", weight: 2)
-      question.options.create!(value: "no", weight: 0)
-
-      assert_equal 2, diagnostic.score({ "q1" => "yes" })
-    end
-
     test "reports the overall captured percentage of the weight on offer" do
       diagnostic = Diagnostic.create!(slug: "scoring", kind: :scored, status: :draft)
       question = diagnostic.questions.create!(key: "q1", position: 1)
