@@ -51,6 +51,22 @@ module Alembic
       assert_select "legend", text: /Pick one option/
     end
 
+    test "stepping back in the stepper retreats along the path, not down the list" do
+      diagnostic = Diagnostic.create!(slug: "jump")
+      diagnostic.record_definition(
+        "slug" => "jump",
+        "questions" => [
+          { "id" => "a", "text" => "Question A", "options" => [ { "value" => "x" } ], "transitions" => [ { "to" => "c" } ] },
+          { "id" => "b", "text" => "Question B", "options" => [ { "value" => "x" } ] },
+          { "id" => "c", "text" => "Question C", "options" => [ { "value" => "x" } ], "transitions" => [ { "to" => "b" } ] }
+        ]
+      )
+
+      get alembic.diagnostic_step_path("jump"), params: { answers: { a: "x", c: "x", b: "x" }, back: "1" }
+
+      assert_select "legend", text: /Question B/
+    end
+
     test "the stepper links back to the intro" do
       get alembic.diagnostic_step_path("stats-system-ladder")
 

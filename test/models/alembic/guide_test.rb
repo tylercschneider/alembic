@@ -26,6 +26,22 @@ module Alembic
       assert_nil guide(looped).next_question({ a: "x", b: "y" })
     end
 
+    test "answers on path drop an answer the current path no longer reaches" do
+      branching = [ Q.new(id: :path, text: "?", transitions: [ Guide::Transition.new(to: :right_q, condition: ->(answers) { answers[:path] == "right" }) ]),
+                    Q.new(id: :left_q, text: "L"),
+                    Q.new(id: :right_q, text: "R") ]
+
+      assert_equal({ path: "left" }, guide(branching).answers_on_path({ path: "left", right_q: "y" }))
+    end
+
+    test "score ignores an answer the current path no longer reaches" do
+      branching = [ Q.new(id: :path, text: "?", transitions: [ Guide::Transition.new(to: :right_q, condition: ->(answers) { answers[:path] == "right" }) ]),
+                    Q.new(id: :left_q, text: "L"),
+                    Q.new(id: :right_q, text: "R", options: [ Guide::Option.new(value: "y", label: "Y", hint: nil, weight: 10) ]) ]
+
+      assert_equal 0, guide(branching).score({ path: "left", right_q: "y" })
+    end
+
     test "next question is the first one when nothing is answered" do
       first = Q.new(id: :a, text: "A")
 
@@ -102,6 +118,14 @@ module Alembic
       scored = guide([ Q.new(id: :q1, text: "Q1", options: [ full, partial ]) ])
 
       assert_equal 50, scored.overall_percentage({ q1: "partial" })
+    end
+
+    test "the overall percentage ignores an answer the current path no longer reaches" do
+      branching = [ Q.new(id: :path, text: "?", transitions: [ Guide::Transition.new(to: :right_q, condition: ->(answers) { answers[:path] == "right" }) ]),
+                    Q.new(id: :left_q, text: "L", options: [ Guide::Option.new(value: "x", label: "X", hint: nil, weight: 1) ]),
+                    Q.new(id: :right_q, text: "R", options: [ Guide::Option.new(value: "y", label: "Y", hint: nil, weight: 10) ]) ]
+
+      assert_equal 0, guide(branching).overall_percentage({ path: "left", right_q: "y" })
     end
 
     test "a domain's percentage ignores the questions of other domains" do

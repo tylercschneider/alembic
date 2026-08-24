@@ -79,7 +79,7 @@ module Alembic
     end
 
     def score(answers)
-      answers.sum do |question_id, value|
+      answers_on_path(answers).sum do |question_id, value|
         question = questions.find { |candidate| candidate.id == question_id }
         option = question&.options&.find { |candidate| candidate.value == value }
         option&.weight || 0
@@ -87,11 +87,12 @@ module Alembic
     end
 
     def overall_percentage(answers)
-      percentage_of(questions, answers)
+      percentage_of(questions, answers_on_path(answers))
     end
 
     def domain_percentages(answers)
-      domains.keys.index_with { |key| percentage_of(questions_in(key), answers) }
+      on_path = answers_on_path(answers)
+      domains.keys.index_with { |key| percentage_of(questions_in(key), on_path) }
     end
 
     def blind_spots(answers, count:)
@@ -112,15 +113,11 @@ module Alembic
     end
 
     def next_question(answers)
-      cursor = questions.first
-      visited = []
+      traverse(answers).last
+    end
 
-      while cursor && !visited.include?(cursor.id)
-        return cursor if cursor.applies?(answers) && !answers.key?(cursor.id)
-
-        visited << cursor.id
-        cursor = successor(cursor, answers)
-      end
+    def answers_on_path(answers)
+      answers.slice(*traverse(answers).first)
     end
 
     def applicable_questions(answers)
@@ -146,6 +143,22 @@ module Alembic
     end
 
     private
+
+    def traverse(answers)
+      answered = []
+      visited = []
+      cursor = questions.first
+
+      while cursor && !visited.include?(cursor.id)
+        return [ answered, cursor ] if cursor.applies?(answers) && !answers.key?(cursor.id)
+
+        answered << cursor.id if answers.key?(cursor.id)
+        visited << cursor.id
+        cursor = successor(cursor, answers)
+      end
+
+      [ answered, nil ]
+    end
 
     def successor(question, answers)
       taken = question.transitions.find { |transition| transition.available?(answers) }
