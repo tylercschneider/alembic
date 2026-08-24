@@ -2,9 +2,7 @@
   <%= ui_page_header(title: @diagnostic.title.presence || @diagnostic.slug, subtitle: @diagnostic.slug) do |header| %>
     <% header.action do %>
       <%= ui_button(label: "Edit details", href: alembic.edit_manage_diagnostic_path(@diagnostic)) %>
-      <%= ui_form(action: alembic.compile_manage_diagnostic_path(@diagnostic), method: :post) do %>
-        <%= ui_button(label: "Update", type: :submit) %>
-      <% end %>
+      <%= ui_button(label: "Edit definition", href: alembic.edit_manage_diagnostic_definition_path(@diagnostic)) %>
       <%= ui_form(action: alembic.revert_manage_diagnostic_path(@diagnostic), method: :post) do %>
         <%= ui_button(label: "Revert", type: :submit, variant: :secondary) %>
       <% end %>
