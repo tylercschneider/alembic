@@ -1,8 +1,8 @@
 module Alembic
   module Flow
     class Layout
-      COLUMN = 240
-      ROW = 130
+      COLUMN = 300
+      ROW = 150
 
       def initialize(document)
         @document = document

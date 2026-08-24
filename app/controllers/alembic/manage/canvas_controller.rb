@@ -6,7 +6,7 @@ module Alembic
       end
 
       def add_step
-        apply { |flow| placed_on_edge? ? flow.insert(new_step, on: edge_endpoints) : flow.add(new_step) }
+        apply { |flow| placed_on_edge? ? flow.insert(new_step, on: edge_endpoints, leaving: first_port) : flow.add(new_step) }
       end
 
       def configure_step
@@ -44,6 +44,11 @@ module Alembic
 
       def new_step
         { "id" => params.require(:id), "type" => params.require(:type) }
+      end
+
+      def first_port
+        registry = Flow.registry
+        registry.fetch(params[:type]).ports.first&.to_s if registry.registered?(params[:type])
       end
 
       def placed_on_edge?

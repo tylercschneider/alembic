@@ -126,6 +126,18 @@ module Alembic
         assert_includes endpoints(result), [ "a", "c" ]
       end
 
+      test "inserting a step can name the port its own outgoing edge leaves by" do
+        result = two_step_flow.insert({ "id" => "x", "type" => "plain" }, on: [ "a", "b" ], leaving: "yes")
+
+        assert_equal "yes", result.edges_from("x").first.on
+      end
+
+      test "inserting a step leaves its outgoing edge unported by default" do
+        result = two_step_flow.insert({ "id" => "x", "type" => "plain" }, on: [ "a", "b" ])
+
+        assert_nil result.edges_from("x").first.on
+      end
+
       test "inserting a step keeps the port the replaced edge left by" do
         document = Document.new({ "entry" => "a",
                                   "nodes" => [ { "id" => "a" }, { "id" => "b" } ],
