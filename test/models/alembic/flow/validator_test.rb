@@ -7,6 +7,12 @@ module Alembic
         Validator.new(Document.new(document)).violations
       end
 
+      test "reports an edge leaving a node that does not exist" do
+        document = { "entry" => "a", "nodes" => [ { "id" => "a" } ], "edges" => [ { "from" => "ghost", "to" => "a" } ] }
+
+        assert_equal [ :missing_edge_source ], violations(document).map(&:problem)
+      end
+
       test "anchors a missing edge target on the node the edge leaves" do
         document = { "entry" => "a", "nodes" => [ { "id" => "a" } ], "edges" => [ { "from" => "a", "to" => "ghost" } ] }
 

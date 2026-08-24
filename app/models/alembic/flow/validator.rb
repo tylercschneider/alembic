@@ -6,7 +6,7 @@ module Alembic
       end
 
       def violations
-        missing_edge_targets
+        missing_edge_targets + missing_edge_sources
       end
 
       private
@@ -14,6 +14,11 @@ module Alembic
       def missing_edge_targets
         @document.edges.reject { |edge| known?(edge.to) }
           .map { |edge| Violation.new(node: edge.from, problem: :missing_edge_target, detail: edge.to) }
+      end
+
+      def missing_edge_sources
+        @document.edges.reject { |edge| known?(edge.from) }
+          .map { |edge| Violation.new(node: edge.to, problem: :missing_edge_source, detail: edge.from) }
       end
 
       def known?(id)
