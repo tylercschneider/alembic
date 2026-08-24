@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_22_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_24_120000) do
   create_table "alembic_bands", force: :cascade do |t|
     t.integer "ceiling"
     t.datetime "created_at", null: false
@@ -175,6 +175,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_140000) do
     t.index ["diagnostic_id"], name: "index_alembic_rules_on_diagnostic_id"
   end
 
+  create_table "alembic_transitions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "from_question_id", null: false
+    t.integer "to_question_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["from_question_id"], name: "index_alembic_transitions_on_from_question_id"
+    t.index ["to_question_id"], name: "index_alembic_transitions_on_to_question_id"
+  end
+
   create_table "alembic_warnings", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "diagnostic_id", null: false
@@ -201,5 +210,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_140000) do
   add_foreign_key "alembic_rule_results", "alembic_results", column: "result_id"
   add_foreign_key "alembic_rule_results", "alembic_rules", column: "rule_id"
   add_foreign_key "alembic_rules", "alembic_diagnostics", column: "diagnostic_id"
+  add_foreign_key "alembic_transitions", "alembic_questions", column: "from_question_id"
+  add_foreign_key "alembic_transitions", "alembic_questions", column: "to_question_id"
   add_foreign_key "alembic_warnings", "alembic_diagnostics", column: "diagnostic_id"
 end
