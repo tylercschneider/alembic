@@ -38,6 +38,26 @@ module Alembic
         with(nodes: raw_nodes + [ node ], edges: (raw_edges - [ replaced ]) + bridged)
       end
 
+      def add(node)
+        with(nodes: raw_nodes + [ node ], edges: raw_edges)
+      end
+
+      def connect(from:, to:, on: nil)
+        with(nodes: raw_nodes, edges: raw_edges + [ { "from" => from, "to" => to, "on" => on }.compact ])
+      end
+
+      def disconnect(from:, to:)
+        with(nodes: raw_nodes, edges: raw_edges.reject { |edge| edge["from"] == from && edge["to"] == to })
+      end
+
+      def configure(id, config)
+        reconfigured = raw_nodes.map do |node|
+          node["id"] == id ? node.slice("id", "type").merge(config) : node
+        end
+
+        with(nodes: reconfigured, edges: raw_edges)
+      end
+
       def rewire(from:, to:, target:)
         rewritten = raw_edges.map do |edge|
           edge["from"] == from && edge["to"] == to ? edge.merge("to" => target) : edge
@@ -72,7 +92,7 @@ module Alembic
 
       def with(nodes:, edges:)
         Document.new(@document.merge("nodes" => nodes, "edges" => edges)).tap do |edited|
-          broken = Validator.new(edited).structural_violations
+          broken = Validator.new(edited).malformations
           raise InvalidEdit, broken.map { |violation| "#{violation.node}: #{violation.problem}" }.join(", ") if broken.any?
         end
       end

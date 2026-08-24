@@ -19,18 +19,30 @@ module Alembic
                        "edges" => [ { "from" => "a", "to" => "x" }, { "from" => "x", "to" => "b" } ] })
       end
 
-      test "refuses an edit that would strand a step" do
+      test "allows a step that nothing points at yet" do
+        result = two_step_flow.add({ "id" => "loose", "type" => "plain" })
+
+        assert_equal [ "a", "b", "loose" ], result.nodes.map(&:id)
+      end
+
+      test "refuses an edit that would point an edge at nothing" do
         assert_raises InvalidEdit do
-          three_step_flow.rewire(from: "a", to: "x", target: "b")
+          three_step_flow.rewire(from: "a", to: "x", target: "ghost")
         end
       end
 
       test "leaves the document alone when it refuses an edit" do
         document = three_step_flow
 
-        assert_raises(InvalidEdit) { document.rewire(from: "a", to: "x", target: "b") }
+        assert_raises(InvalidEdit) { document.rewire(from: "a", to: "x", target: "ghost") }
 
         assert_equal [ [ "a", "x" ], [ "x", "b" ] ], endpoints(document)
+      end
+
+      test "refuses an edit that would repeat a step's id" do
+        assert_raises InvalidEdit do
+          two_step_flow.add({ "id" => "a", "type" => "plain" })
+        end
       end
 
       test "rewiring an edge sends it to a different step" do

@@ -11,7 +11,11 @@ module Alembic
       end
 
       def structural_violations
-        missing_edge_targets + missing_edge_sources + duplicate_ids + missing_entry + unreachable
+        malformations + unreachable
+      end
+
+      def malformations
+        missing_edge_targets + missing_edge_sources + duplicate_ids + missing_entry
       end
 
       private
