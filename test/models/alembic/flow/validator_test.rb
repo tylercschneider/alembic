@@ -3,8 +3,69 @@ require "test_helper"
 module Alembic
   module Flow
     class ValidatorTest < ActiveSupport::TestCase
-      def violations(document)
-        Validator.new(Document.new(document)).violations
+      def violations(document, registry = Flow.registry)
+        Validator.new(Document.new(document), registry: registry).violations
+      end
+
+      def needy_registry
+        Registry.new.tap do |registry|
+          registry.register(StepType.define(:needy) { requires { |node| [ node.config["needs"] ].compact } })
+          registry.register(StepType.define(:plain) { })
+        end
+      end
+
+      def needy_document(edges)
+        { "entry" => "a",
+          "nodes" => [ { "id" => "a", "type" => "plain" }, { "id" => "r", "type" => "plain" },
+                       { "id" => "x", "type" => "needy", "needs" => "r" } ],
+          "edges" => edges }
+      end
+
+      test "accepts a requirement that lies on the only path to the step" do
+        document = needy_document([ { "from" => "a", "to" => "r" }, { "from" => "r", "to" => "x" } ])
+
+        assert_empty violations(document, needy_registry)
+      end
+
+      test "reports a requirement that lies on only one of two paths to the step" do
+        document = needy_document([ { "from" => "a", "to" => "r" }, { "from" => "r", "to" => "x" }, { "from" => "a", "to" => "x" } ])
+
+        assert_equal [ :unmet_requirement ], violations(document, needy_registry).map(&:problem)
+      end
+
+      test "identifies the step and the requirement that is unmet" do
+        document = needy_document([ { "from" => "a", "to" => "r" }, { "from" => "a", "to" => "x" } ])
+        violation = violations(document, needy_registry).first
+
+        assert_equal [ "x", "r" ], [ violation.node, violation.detail ]
+      end
+
+      test "reports a requirement naming a step the document does not carry" do
+        document = { "entry" => "a",
+                     "nodes" => [ { "id" => "a", "type" => "plain" }, { "id" => "x", "type" => "needy", "needs" => "ghost" } ],
+                     "edges" => [ { "from" => "a", "to" => "x" } ] }
+
+        assert_equal [ :unmet_requirement ], violations(document, needy_registry).map(&:problem)
+      end
+
+      test "never reports a step that requires nothing" do
+        document = { "entry" => "a",
+                     "nodes" => [ { "id" => "a", "type" => "plain" }, { "id" => "x", "type" => "plain" } ],
+                     "edges" => [ { "from" => "a", "to" => "x" } ] }
+
+        assert_empty violations(document, needy_registry)
+      end
+
+      test "checks requirements on a document whose edges form a cycle" do
+        document = needy_document([ { "from" => "a", "to" => "r" }, { "from" => "r", "to" => "x" }, { "from" => "x", "to" => "r" } ])
+
+        assert_empty violations(document, needy_registry)
+      end
+
+      test "reports a requirement that lies on no path to the step" do
+        document = needy_document([ { "from" => "a", "to" => "r" }, { "from" => "a", "to" => "x" } ])
+
+        assert_equal [ :unmet_requirement ], violations(document, needy_registry).map(&:problem)
       end
 
       test "reports nothing for a whole document with none of these problems" do

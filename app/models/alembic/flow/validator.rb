@@ -1,12 +1,13 @@
 module Alembic
   module Flow
     class Validator
-      def initialize(document)
+      def initialize(document, registry: Flow.registry)
         @document = document
+        @registry = registry
       end
 
       def violations
-        missing_edge_targets + missing_edge_sources + duplicate_ids + missing_entry + unreachable
+        missing_edge_targets + missing_edge_sources + duplicate_ids + missing_entry + unreachable + unmet_requirements
       end
 
       private
@@ -32,18 +33,35 @@ module Alembic
         [ Violation.new(node: @document.entry, problem: :missing_entry) ]
       end
 
+      def unmet_requirements
+        @document.nodes.flat_map do |node|
+          requirements_for(node).reject { |required| precedes_every_path?(required, node.id) }
+            .map { |required| Violation.new(node: node.id, problem: :unmet_requirement, detail: required) }
+        end
+      end
+
+      def requirements_for(node)
+        return [] unless @registry.registered?(node.type)
+
+        @registry.fetch(node.type).requirements_for(node)
+      end
+
+      def precedes_every_path?(required, id)
+        known?(required) && !reachable(without: required).include?(id)
+      end
+
       def unreachable
         return [] unless known?(@document.entry)
 
         (@document.nodes.map(&:id).uniq - reachable).map { |id| Violation.new(node: id, problem: :unreachable) }
       end
 
-      def reachable
+      def reachable(without: nil)
         found = []
         frontier = [ @document.entry ]
 
         while (id = frontier.shift)
-          next if found.include?(id)
+          next if found.include?(id) || id == without
 
           found << id
           frontier.concat(@document.edges_from(id).map(&:to))
