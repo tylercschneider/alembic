@@ -4,6 +4,7 @@ module Alembic
 
     class UnknownFieldType < ArgumentError; end
     class UnknownStepType < KeyError; end
+    class InvalidEdit < StandardError; end
 
     class << self
       def step(id, &declaration)

@@ -7,7 +7,11 @@ module Alembic
       end
 
       def violations
-        missing_edge_targets + missing_edge_sources + duplicate_ids + missing_entry + unreachable + unmet_requirements
+        structural_violations + unmet_requirements
+      end
+
+      def structural_violations
+        missing_edge_targets + missing_edge_sources + duplicate_ids + missing_entry + unreachable
       end
 
       private
