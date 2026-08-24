@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_24_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_24_140000) do
   create_table "alembic_definition_versions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.json "definition"
@@ -23,6 +23,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_130000) do
   create_table "alembic_diagnostics", force: :cascade do |t|
     t.text "blurb"
     t.datetime "created_at", null: false
+    t.integer "definition_cursor"
     t.string "headline"
     t.string "kicker"
     t.string "kind"

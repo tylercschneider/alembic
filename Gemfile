@@ -17,6 +17,10 @@ gem "tailwindcss-rails"
 # here it's for the dummy app and view tests.
 gem "keystone_ui", github: "tylercschneider/keystone_ui"
 
+# Drives the flow canvas in a real browser; the request tests cannot reach it.
+gem "capybara"
+gem "selenium-webdriver"
+
 # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
 gem "rubocop-rails-omakase", require: false
 

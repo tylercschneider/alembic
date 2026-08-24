@@ -44,6 +44,63 @@ module Alembic
       assert_equal 2, diagnostic.definition_versions.last.number
     end
 
+    test "undoing steps the definition back to the version before it" do
+      diagnostic = Diagnostic.create!(slug: "undo")
+      diagnostic.record_definition({ "slug" => "one" })
+      diagnostic.record_definition({ "slug" => "two" })
+
+      diagnostic.undo_definition
+
+      assert_equal({ "slug" => "one" }, diagnostic.definition)
+    end
+
+    test "redoing steps the definition forward again" do
+      diagnostic = Diagnostic.create!(slug: "undo")
+      diagnostic.record_definition({ "slug" => "one" })
+      diagnostic.record_definition({ "slug" => "two" })
+      diagnostic.undo_definition
+
+      diagnostic.redo_definition
+
+      assert_equal({ "slug" => "two" }, diagnostic.definition)
+    end
+
+    test "undoing keeps every version it stepped past" do
+      diagnostic = Diagnostic.create!(slug: "undo")
+      diagnostic.record_definition({ "slug" => "one" })
+      diagnostic.record_definition({ "slug" => "two" })
+
+      assert_no_difference -> { diagnostic.definition_versions.count } do
+        diagnostic.undo_definition
+      end
+    end
+
+    test "there is nothing to undo before the first version" do
+      diagnostic = Diagnostic.create!(slug: "undo")
+      diagnostic.record_definition({ "slug" => "one" })
+
+      assert_not diagnostic.undoable?
+    end
+
+    test "there is nothing to redo until something is undone" do
+      diagnostic = Diagnostic.create!(slug: "undo")
+      diagnostic.record_definition({ "slug" => "one" })
+      diagnostic.record_definition({ "slug" => "two" })
+
+      assert_not diagnostic.redoable?
+    end
+
+    test "a fresh edit after undoing leaves nothing to redo" do
+      diagnostic = Diagnostic.create!(slug: "undo")
+      diagnostic.record_definition({ "slug" => "one" })
+      diagnostic.record_definition({ "slug" => "two" })
+      diagnostic.undo_definition
+
+      diagnostic.record_definition({ "slug" => "three" })
+
+      assert_not diagnostic.redoable?
+    end
+
     test "reports its current definition as the highest-numbered version" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition({ "slug" => "first" })

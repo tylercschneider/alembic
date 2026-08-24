@@ -18,7 +18,8 @@ module Alembic
 
       def show
         @diagnostic = Diagnostic.find(params[:id])
-        @steps = Array(@diagnostic.definition&.fetch("questions", nil))
+        @canvas = Flow::Canvas.new(Flow::Document.new(@diagnostic.definition || {})).to_h
+          .merge("undoable" => @diagnostic.undoable?, "redoable" => @diagnostic.redoable?)
       end
 
       def edit

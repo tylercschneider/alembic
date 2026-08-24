@@ -76,6 +76,18 @@ module Alembic
         assert_not_predicate step_type, :single_output?
       end
 
+      test "can declare which field names an instance of it" do
+        step_type = StepType.define(:ask) { field :text, :text; names_by :text }
+
+        assert_equal :text, step_type.naming_field
+      end
+
+      test "names an instance by nothing unless it says so" do
+        step_type = StepType.define(:branch) { field :answer, :string }
+
+        assert_nil step_type.naming_field
+      end
+
       test "carries the fields it declares" do
         step_type = StepType.define(:agent) { field :prompt, :text }
 

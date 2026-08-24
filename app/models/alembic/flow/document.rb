@@ -29,13 +29,40 @@ module Alembic
         @document
       end
 
-      def insert(node, on:)
+      def insert(node, on:, leaving: nil)
         source, target = on
         replaced = raw_edges.find { |edge| edge["from"] == source && edge["to"] == target }
         bridged = [ { "from" => source, "to" => node["id"], "on" => replaced&.fetch("on", nil) }.compact,
-                    { "from" => node["id"], "to" => target } ]
+                    { "from" => node["id"], "to" => target, "on" => leaving }.compact ]
 
         with(nodes: raw_nodes + [ node ], edges: (raw_edges - [ replaced ]) + bridged)
+      end
+
+      def add(node)
+        with(nodes: raw_nodes + [ node ], edges: raw_edges)
+      end
+
+      def connect(from:, to:, on: nil)
+        with(nodes: raw_nodes, edges: raw_edges + [ { "from" => from, "to" => to, "on" => on }.compact ])
+      end
+
+      def disconnect(from:, to:)
+        with(nodes: raw_nodes, edges: raw_edges.reject { |edge| edge["from"] == from && edge["to"] == to })
+      end
+
+      def move(id, on:, leaving: nil)
+        step = raw_nodes.find { |node| node["id"] == id }
+        return self unless step
+
+        remove(id).insert(step, on: on, leaving: leaving)
+      end
+
+      def configure(id, config)
+        reconfigured = raw_nodes.map do |node|
+          node["id"] == id ? node.slice("id", "type").merge(config) : node
+        end
+
+        with(nodes: reconfigured, edges: raw_edges)
       end
 
       def rewire(from:, to:, target:)
@@ -72,7 +99,7 @@ module Alembic
 
       def with(nodes:, edges:)
         Document.new(@document.merge("nodes" => nodes, "edges" => edges)).tap do |edited|
-          broken = Validator.new(edited).structural_violations
+          broken = Validator.new(edited).malformations
           raise InvalidEdit, broken.map { |violation| "#{violation.node}: #{violation.problem}" }.join(", ") if broken.any?
         end
       end

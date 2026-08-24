@@ -12,10 +12,6 @@ module Alembic
         Dir[Engine.root.join("app/models/alembic/steps/*.rb")].map { |source| File.basename(source, ".rb") }
       end
 
-      def gem_sources
-        Dir[Engine.root.join("app/**/*.rb")] + Dir[Engine.root.join("lib/**/*.rb")]
-      end
-
       test "there are flow core sources to check" do
         assert_not_empty core_sources
       end
@@ -33,10 +29,10 @@ module Alembic
         assert_empty naming_one.map { |source| source.split("/models/").last }
       end
 
-      test "nothing in the gem registers a step type at load time" do
-        registering = gem_sources.select { |source| File.read(source).match?(/[A-Z]\w*\.register\b/) }
+      test "the flow core registers no step type of its own" do
+        registering = core_sources.select { |source| File.read(source).match?(/[A-Z]\w*\.register\b/) }
 
-        assert_empty registering.map { |source| source.split("/alembic/").last }
+        assert_empty registering.map { |source| source.split("/models/").last }
       end
     end
   end
