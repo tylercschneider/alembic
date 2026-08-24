@@ -5,13 +5,18 @@ module Alembic
     end
 
     def reorder(ids)
-      @definition.merge("questions" => ids.filter_map { |id| question(id) })
+      ordered = ids.filter_map { |id| question(id) }
+      @definition.merge("questions" => ordered + (questions - ordered))
     end
 
     private
 
+    def questions
+      Array(@definition["questions"])
+    end
+
     def question(id)
-      Array(@definition["questions"]).find { |question| question["id"] == id }
+      questions.find { |question| question["id"] == id }
     end
   end
 end
