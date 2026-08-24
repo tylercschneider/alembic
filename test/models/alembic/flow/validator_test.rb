@@ -1,0 +1,29 @@
+require "test_helper"
+
+module Alembic
+  module Flow
+    class ValidatorTest < ActiveSupport::TestCase
+      def violations(document)
+        Validator.new(Document.new(document)).violations
+      end
+
+      test "anchors a missing edge target on the node the edge leaves" do
+        document = { "entry" => "a", "nodes" => [ { "id" => "a" } ], "edges" => [ { "from" => "a", "to" => "ghost" } ] }
+
+        assert_equal "a", violations(document).first.node
+      end
+
+      test "names the missing target as the violation's detail" do
+        document = { "entry" => "a", "nodes" => [ { "id" => "a" } ], "edges" => [ { "from" => "a", "to" => "ghost" } ] }
+
+        assert_equal "ghost", violations(document).first.detail
+      end
+
+      test "reports an edge pointing at a node that does not exist" do
+        document = { "entry" => "a", "nodes" => [ { "id" => "a" } ], "edges" => [ { "from" => "a", "to" => "ghost" } ] }
+
+        assert_equal [ :missing_edge_target ], violations(document).map(&:problem)
+      end
+    end
+  end
+end
