@@ -12,6 +12,13 @@ module Alembic
       keys.to_h { |key| [ key, Guide::Domain.new(key: key, name: key.to_s, gap_meaning: nil, gap_cost: nil) ] }
     end
 
+    test "next question follows a transition past the question that is next in order" do
+      target = Q.new(id: :c, text: "C")
+      start = Q.new(id: :a, text: "A", transitions: [ Guide::Transition.new(to: :c) ])
+
+      assert_equal target, guide([ start, Q.new(id: :b, text: "B"), target ]).next_question({ a: "x" })
+    end
+
     test "next question is the first one when nothing is answered" do
       first = Q.new(id: :a, text: "A")
 

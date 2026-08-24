@@ -6,8 +6,18 @@ module Alembic
       end
     end
 
-    Question = Data.define(:id, :text, :options, :condition, :domain) do
-      def initialize(id:, text:, options: [], condition: nil, domain: nil)
+    Transition = Data.define(:to, :condition) do
+      def initialize(to:, condition: nil)
+        super
+      end
+
+      def available?(answers)
+        condition.nil? || condition.call(answers)
+      end
+    end
+
+    Question = Data.define(:id, :text, :options, :condition, :domain, :transitions) do
+      def initialize(id:, text:, options: [], condition: nil, domain: nil, transitions: [])
         super
       end
 
@@ -102,7 +112,15 @@ module Alembic
     end
 
     def next_question(answers)
-      questions.find { |question| question.applies?(answers) && !answers.key?(question.id) }
+      cursor = questions.first
+      visited = []
+
+      while cursor && !visited.include?(cursor.id)
+        return cursor if cursor.applies?(answers) && !answers.key?(cursor.id)
+
+        visited << cursor.id
+        cursor = successor(cursor, answers)
+      end
     end
 
     def applicable_questions(answers)
@@ -128,6 +146,13 @@ module Alembic
     end
 
     private
+
+    def successor(question, answers)
+      taken = question.transitions.find { |transition| transition.available?(answers) }
+      return questions.find { |candidate| candidate.id == taken.to } if taken
+
+      questions[questions.index(question) + 1]
+    end
 
     def questions_in(domain_key)
       questions.select { |question| question.domain == domain_key }
