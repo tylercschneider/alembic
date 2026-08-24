@@ -11,6 +11,16 @@ module Alembic
       assert_select "legend", text: /Right question/
     end
 
+    test "a completed saved session lists the answers behind its result" do
+      response = Response.start(scored_diagnostic)
+      response.record_answer(:need, "yes")
+      response.record_answer(:team, "no")
+
+      get alembic.response_path(response)
+
+      assert_select "[data-answer=?]", "need", text: /Yes/m
+    end
+
     test "starting a saved session sends the visitor to its durable URL" do
       post alembic.diagnostic_responses_path("db-guide")
 
