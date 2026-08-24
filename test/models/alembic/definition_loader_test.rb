@@ -146,12 +146,13 @@ module Alembic
       assert_empty loader.build.domains
     end
 
-    test "a compiled question's domain resolves to a domain the guide carries" do
-      diagnostic = Diagnostic.create!(slug: "demo")
-      security = diagnostic.domains.create!(key: "security", name: "Security", gap_meaning: "Access is unreviewed.", gap_cost: "A leaked credential exposes everything.", position: 1)
-      diagnostic.questions.create!(key: "pii", text: "PII masked?", position: 1, domain: security)
+    test "a question's domain resolves to a domain the guide carries" do
+      loader = DefinitionLoader.new({
+        "domains" => { "security" => { "name" => "Security", "gap_meaning" => "Access is unreviewed.", "gap_cost" => "A leaked credential exposes everything." } },
+        "questions" => [ { "id" => "pii", "text" => "PII masked?", "domain" => "security" } ]
+      })
 
-      guide = DefinitionLoader.new(DefinitionCompiler.new(diagnostic).to_definition).build
+      guide = loader.build
 
       assert_equal "Security", guide.domains[guide.questions.first.domain].name
     end

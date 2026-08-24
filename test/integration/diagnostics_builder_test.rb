@@ -44,23 +44,6 @@ module Alembic
       assert_select "a[href=?]", alembic.edit_manage_diagnostic_path(diagnostic)
     end
 
-    test "the update action compiles the rows into the definition" do
-      diagnostic = Diagnostic.create!(slug: "compilable", headline: "Compiled")
-
-      post alembic.compile_manage_diagnostic_path(diagnostic)
-
-      assert_equal "Compiled", diagnostic.reload.definition["headline"]
-    end
-
-    test "the revert action rebuilds rows from the definition" do
-      diagnostic = Diagnostic.create!(slug: "revertable")
-      diagnostic.record_definition({ "questions" => [ { "id" => "need", "text" => "Need?" } ] })
-
-      post alembic.revert_manage_diagnostic_path(diagnostic)
-
-      assert_equal [ "need" ], diagnostic.reload.questions.ordered.map(&:key)
-    end
-
     test "the builder index offers a form to create a diagnostic" do
       get alembic.manage_diagnostics_path
 
@@ -93,21 +76,6 @@ module Alembic
       assert_not Diagnostic.exists?(diagnostic.id)
     end
 
-    test "deleting a diagnostic removes its dependent rows" do
-      diagnostic = Diagnostic.create!(slug: "cascade")
-      diagnostic.questions.create!(key: "need")
-      diagnostic.nodes.create!(key: "tier_one", kind: "tier")
-      diagnostic.warnings.create!(key: "watch_out", text: "Careful.")
-      diagnostic.bands.create!(name: "Low", ceiling: 5)
-      diagnostic.rules.create!(position: 1)
-        .results << diagnostic.results.create!(key: "r1", slot: "tier")
-
-      delete alembic.manage_diagnostic_path(diagnostic)
-
-      assert_empty [ Question, Node, Warning, Band, Result, Rule ]
-        .flat_map { |model| model.where(diagnostic_id: diagnostic.id) }
-    end
-
     test "the hub links to the steps screen" do
       diagnostic = alembic_diagnostics(:business_scorecard)
 
@@ -122,22 +90,6 @@ module Alembic
       get alembic.manage_diagnostic_path(diagnostic)
 
       assert_select "a[href=?]", alembic.edit_manage_diagnostic_definition_path(diagnostic)
-    end
-
-    test "the hub no longer offers a compile that would overwrite the definition" do
-      diagnostic = alembic_diagnostics(:business_scorecard)
-
-      get alembic.manage_diagnostic_path(diagnostic)
-
-      assert_select "form[action=?]", alembic.compile_manage_diagnostic_path(diagnostic), count: 0
-    end
-
-    test "the hub still offers revert to pull the definition into the editing screens" do
-      diagnostic = alembic_diagnostics(:business_scorecard)
-
-      get alembic.manage_diagnostic_path(diagnostic)
-
-      assert_select "form[action=?]", alembic.revert_manage_diagnostic_path(diagnostic)
     end
   end
 end

@@ -2,22 +2,14 @@
   <%= ui_page_header(title: @diagnostic.title.presence || @diagnostic.slug, subtitle: @diagnostic.slug) do |header| %>
     <% header.action do %>
       <%= ui_button(label: "Edit details", href: alembic.edit_manage_diagnostic_path(@diagnostic)) %>
-      <%= ui_button(label: "Edit definition", href: alembic.edit_manage_diagnostic_definition_path(@diagnostic)) %>
-      <%= ui_form(action: alembic.revert_manage_diagnostic_path(@diagnostic), method: :post) do %>
-        <%= ui_button(label: "Revert", type: :submit, variant: :secondary) %>
-      <% end %>
       <%= ui_button(label: "All diagnostics", href: alembic.manage_diagnostics_path, variant: :secondary) %>
     <% end %>
   <% end %>
 
-  <%= ui_section(title: "Modules", subtitle: "Click into a part to edit it") do %>
-    <%= ui_grid(cols: { default: 1, sm: 2, lg: 4 }, gap: :lg) do %>
-      <%= ui_card(title: "Steps", summary: "#{Array(@diagnostic.definition&.fetch("questions", nil)).size} steps in the definition", link: alembic.manage_diagnostic_steps_path(@diagnostic), cta: "Order the flow") %>
-      <%= ui_card(title: "Questions", summary: "#{@diagnostic.questions.count} questions", link: alembic.manage_diagnostic_questions_path(@diagnostic), cta: "Edit questions") %>
-      <%= ui_card(title: "Tiers", summary: "#{@diagnostic.nodes.where(kind: "tier").count} tiers", link: alembic.manage_diagnostic_nodes_path(@diagnostic), cta: "Edit tiers & levels") %>
-      <%= ui_card(title: "Levels", summary: "#{@diagnostic.nodes.where(kind: "level").count} levels", link: alembic.manage_diagnostic_nodes_path(@diagnostic), cta: "Edit tiers & levels") %>
-      <%= ui_card(title: "Warnings", summary: "#{@diagnostic.warnings.count} warnings", link: alembic.manage_diagnostic_warnings_path(@diagnostic), cta: "Edit warnings") %>
-      <%= ui_card(title: "Bands", summary: "#{@diagnostic.bands.count} bands", link: alembic.manage_diagnostic_bands_path(@diagnostic), cta: "Edit bands") %>
+  <%= ui_section(title: "Flow", subtitle: "The definition is what visitors walk") do %>
+    <%= ui_grid(cols: { default: 1, sm: 2 }, gap: :lg) do %>
+      <%= ui_card(title: "Steps", summary: "#{@steps.size} steps", link: alembic.manage_diagnostic_steps_path(@diagnostic), cta: "Order the flow") %>
+      <%= ui_card(title: "Definition", summary: "Version #{@diagnostic.current_definition_version&.number || 0}", link: alembic.edit_manage_diagnostic_definition_path(@diagnostic), cta: "Edit the document") %>
     <% end %>
   <% end %>
 <% end %>

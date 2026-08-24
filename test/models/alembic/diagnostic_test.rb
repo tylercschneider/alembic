@@ -52,84 +52,6 @@ module Alembic
       assert_equal({ "slug" => "second" }, diagnostic.definition)
     end
 
-    test "compiling records the compiled definition as a new version" do
-      diagnostic = Diagnostic.create!(slug: "demo", headline: "Compiled")
-
-      diagnostic.compile!
-
-      assert_equal "Compiled", diagnostic.definition_versions.last.definition["headline"]
-    end
-
-    test "compiling a second time leaves the first version readable" do
-      diagnostic = Diagnostic.create!(slug: "demo", headline: "First")
-      diagnostic.compile!
-      diagnostic.update!(headline: "Second")
-
-      diagnostic.compile!
-
-      assert_equal "First", diagnostic.definition_versions.find_by(number: 1).definition["headline"]
-    end
-
-    test "compiling writes the rows into the definition" do
-      diagnostic = Diagnostic.create!(slug: "demo", headline: "Compiled")
-
-      diagnostic.compile!
-
-      assert_equal "Compiled", diagnostic.definition["headline"]
-    end
-
-    test "reverting decompiles the definition into rows" do
-      diagnostic = Diagnostic.create!(slug: "demo")
-      diagnostic.record_definition({ "questions" => [ { "id" => "need", "text" => "Need?" } ] })
-
-      diagnostic.revert!
-
-      assert_equal [ "need" ], diagnostic.questions.ordered.map(&:key)
-    end
-
-    test "reverting then compiling round-trips the bundled definition" do
-      definition = Alembic.bundled_definition("stats-system-ladder")
-      diagnostic = alembic_diagnostics(:stats_ladder)
-      diagnostic.record_definition(definition)
-
-      diagnostic.revert!
-      diagnostic.compile!
-
-      assert_equal definition, diagnostic.definition
-    end
-
-    test "compiling then reverting round-trips a scored diagnostic's bands and weights" do
-      diagnostic = Diagnostic.create!(slug: "scored", kind: "scored")
-      question = diagnostic.questions.create!(key: "need", text: "Need?", position: 1)
-      question.options.create!(value: "yes", label: "Yes", weight: 3, position: 1)
-      diagnostic.bands.create!(ceiling: 10, name: "Starter", description: "Just beginning.")
-
-      diagnostic.compile!
-      compiled = diagnostic.definition
-      diagnostic.revert!
-      diagnostic.compile!
-
-      assert_equal compiled, diagnostic.definition
-    end
-
-    test "reverting then compiling round-trips a domain-scored definition" do
-      definition = {
-        "slug" => "domain-scored", "kicker" => nil, "headline" => nil, "blurb" => nil, "start_label" => nil,
-        "placement" => { "resolver_key" => nil },
-        "questions" => [ { "id" => "need", "text" => "Need?", "options" => [ { "value" => "yes", "label" => "Yes", "hint" => nil, "weight" => 3 } ], "domain" => "governance" } ],
-        "tiers" => {}, "levels" => {}, "warnings" => {},
-        "bands" => [ { "ceiling" => 50, "name" => "Starter", "description" => "Just beginning." } ],
-        "domains" => { "governance" => { "name" => "Governance", "gap_meaning" => "No owner.", "gap_cost" => "Drift." } }
-      }
-      diagnostic = Diagnostic.create!(slug: "domain-scored", kind: "scored")
-      diagnostic.record_definition(definition)
-
-      diagnostic.revert!
-      diagnostic.compile!
-
-      assert_equal definition, diagnostic.definition
-    end
-
     test "upserting records the imported definition as a version" do
       Diagnostic.upsert_definition({ "slug" => "seeded", "headline" => "Hi" })
 
@@ -152,22 +74,6 @@ module Alembic
       2.times { Diagnostic.upsert_definition({ "slug" => "seeded" }) }
 
       assert_equal 1, Diagnostic.where(slug: "seeded").count
-    end
-
-    test "places by applying the results of firing rules" do
-      diagnostic = alembic_diagnostics(:stats_ladder)
-      diagnostic.rules.create!(position: 1).results << alembic_results(:tier_event_log)
-
-      assert_equal "Event log + rollups", diagnostic.place({})["tier"].title
-    end
-
-    test "a later rule overrides an earlier one on the same slot" do
-      diagnostic = alembic_diagnostics(:stats_ladder)
-      lossy = diagnostic.results.create!(slot: :level, key: "l0", title: "Telemetry sink", position: 1)
-      diagnostic.rules.create!(position: 1).results << lossy
-      diagnostic.rules.create!(position: 2).results << alembic_results(:level_outbox)
-
-      assert_equal "Outbox · durable", diagnostic.place({})["level"].title
     end
   end
 end
