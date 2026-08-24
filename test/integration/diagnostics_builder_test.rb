@@ -108,6 +108,14 @@ module Alembic
         .flat_map { |model| model.where(diagnostic_id: diagnostic.id) }
     end
 
+    test "the hub links to the definition editor" do
+      diagnostic = alembic_diagnostics(:business_scorecard)
+
+      get alembic.manage_diagnostic_path(diagnostic)
+
+      assert_select "a[href=?]", alembic.edit_manage_diagnostic_definition_path(diagnostic)
+    end
+
     test "the hub has update and revert buttons" do
       diagnostic = alembic_diagnostics(:business_scorecard)
 
