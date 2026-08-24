@@ -24,6 +24,32 @@ module Alembic
       def edges_from(id)
         edges.select { |edge| edge.from == id }
       end
+
+      def to_h
+        @document
+      end
+
+      def insert(node, on:)
+        source, target = on
+        rewritten = raw_edges.reject { |edge| edge["from"] == source && edge["to"] == target }
+        bridged = [ { "from" => source, "to" => node["id"] }, { "from" => node["id"], "to" => target } ]
+
+        with(nodes: raw_nodes + [ node ], edges: rewritten + bridged)
+      end
+
+      private
+
+      def raw_nodes
+        Array(@document["nodes"])
+      end
+
+      def raw_edges
+        Array(@document["edges"])
+      end
+
+      def with(nodes:, edges:)
+        Document.new(@document.merge("nodes" => nodes, "edges" => edges))
+      end
     end
   end
 end
