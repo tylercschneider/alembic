@@ -3,6 +3,24 @@ require "test_helper"
 module Alembic
   module Flow
     class DocumentTest < ActiveSupport::TestCase
+      test "exposes the entry node id" do
+        document = Document.new({ "entry" => "a" })
+
+        assert_equal "a", document.entry
+      end
+
+      test "finds a node by its id" do
+        document = Document.new({ "nodes" => [ { "id" => "a" }, { "id" => "b" } ] })
+
+        assert_equal "b", document.node("b").id
+      end
+
+      test "finds no node for an id the document does not carry" do
+        document = Document.new({ "nodes" => [ { "id" => "a" } ] })
+
+        assert_nil document.node("missing")
+      end
+
       test "exposes an edge's source and target" do
         document = Document.new({ "edges" => [ { "from" => "a", "to" => "b" } ] })
 

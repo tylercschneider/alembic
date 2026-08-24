@@ -12,6 +12,14 @@ module Alembic
       def edges
         Array(@document["edges"]).map { |edge| Edge.new(from: edge["from"], to: edge["to"], on: edge["on"]) }
       end
+
+      def entry
+        @document["entry"]
+      end
+
+      def node(id)
+        nodes.find { |node| node.id == id }
+      end
     end
   end
 end
