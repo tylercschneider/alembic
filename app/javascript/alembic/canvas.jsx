@@ -17,7 +17,7 @@ const S = {
 }
 
 const Port = ({ name, connected, armed, onArm, connecting }) => (
-  <button onClick={(event) => { if (connecting) return; event.stopPropagation(); onArm() }}
+  <button onClick={(event) => { if (connecting) return; event.stopPropagation(); onArm(event) }}
           title={armed ? "Now choose a step to connect to" : "Connect this branch"}
           style={{
             padding: "1px 8px", marginRight: 4, borderRadius: 999, fontSize: 11, cursor: "pointer",
@@ -49,7 +49,7 @@ const StepCard = ({ node, selected, armed, connecting, onSelect, onArm, onDragEn
     <div style={{ marginTop: 10 }}>
       {(node.ports.length ? node.ports : [ null ]).map((port) => (
         <Port key={port || "next"} name={port} connected={node.connected.includes(port)}
-              connecting={connecting} armed={armed === (port || "")} onArm={() => onArm(port || "")} />
+              connecting={connecting} armed={armed === (port || "")} onArm={(event) => onArm(port || "", event)} />
       ))}
     </div>
   </div>
@@ -101,8 +101,8 @@ const Inspector = ({ node, fields, onSave, onDelete, onClose }) => {
   )
 }
 
-const TypePicker = ({ entries, at, onPick, onDismiss }) => (
-  <div style={{ position: "absolute", zIndex: 9, top: at.y, left: at.x, width: 200, padding: 8, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, boxShadow: "0 6px 20px rgba(0,0,0,.15)" }}>
+const TypePicker = ({ entries, at, onPick, onConnect, onDismiss }) => (
+  <div style={{ position: "absolute", zIndex: 9, top: at.y, left: at.x, width: 210, padding: 8, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, boxShadow: "0 6px 20px rgba(0,0,0,.15)" }}>
     <p style={{ margin: "0 0 6px", fontSize: 11, color: "#6b7280" }}>Add a step</p>
     {entries.map((entry) => (
       <button key={entry.type} style={S.action} onClick={() => onPick(entry)}>
@@ -110,6 +110,9 @@ const TypePicker = ({ entries, at, onPick, onDismiss }) => (
         <span style={{ display: "block", color: "#6b7280", fontSize: 11 }}>{entry.type}</span>
       </button>
     ))}
+    {onConnect && (
+      <button style={{ ...S.action, textAlign: "center" }} onClick={onConnect}>Connect to a step already here</button>
+    )}
     <button style={{ ...S.action, textAlign: "center", marginBottom: 0 }} onClick={onDismiss}>Cancel</button>
   </div>
 )
@@ -282,7 +285,14 @@ const Canvas = ({ base, token, initial }) => {
                 armed={armed && armed[0] === node.id ? armed[1] : null}
                 connecting={Boolean(armed) && armed[0] !== node.id}
                 onSelect={() => (armed ? connectTo(node.id) : setSelected(node.id))}
-                onArm={(port) => setArmed([ node.id, port ])}
+                onArm={(port, event) => {
+                  const frame = surface.current.getBoundingClientRect()
+                  setAdding({
+                    from: node.id, on: port,
+                    at: { x: event.clientX - frame.left + surface.current.scrollLeft + 8,
+                          y: event.clientY - frame.top + surface.current.scrollTop + 8 }
+                  })
+                }}
                 onDragEnd={() => setDragging(null)}
                 onDragStart={() => setDragging(node.id)}
               />
@@ -292,10 +302,11 @@ const Canvas = ({ base, token, initial }) => {
 
         {adding && (
           <TypePicker entries={flow.palette} at={adding.at} onDismiss={() => setAdding(null)}
+                      onConnect={adding.on !== undefined ? () => { setArmed([ adding.from, adding.on ]); setAdding(null) } : null}
                       onPick={(entry) => {
                         const where = adding
                         setAdding(null)
-                        send("/steps", "POST", { id: nextId(entry.type), type: entry.type, from: where.from, to: where.to })
+                        send("/steps", "POST", { id: nextId(entry.type), type: entry.type, from: where.from, to: where.to, on: where.on })
                       }} />
         )}
       </div>

@@ -50,6 +50,18 @@ module Alembic
       assert_equal [ "a", "b", "c" ], nodes
     end
 
+    test "adding a step from a port connects it to that branch" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b", on: "no" }
+
+      assert_includes diagnostic.reload.definition["edges"], { "from" => "b", "to" => "c", "on" => "no" }
+    end
+
+    test "adding a step from a port leaves the other branches alone" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b", on: "no" }
+
+      assert_includes diagnostic.reload.definition["edges"].map { |edge| edge["to"] }, "b"
+    end
+
     test "adding a step on an edge puts it between the two steps" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "a", to: "b" }
 

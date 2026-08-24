@@ -6,7 +6,12 @@ module Alembic
       end
 
       def add_step
-        apply { |flow| placed_on_edge? ? flow.insert(new_step, on: edge_endpoints, leaving: first_port) : flow.add(new_step) }
+        apply do |flow|
+          next flow.insert(new_step, on: edge_endpoints, leaving: first_port) if placed_on_edge?
+          next flow.add(new_step).connect(from: params[:from], to: params[:id], on: params[:on].presence) if branched_from?
+
+          flow.add(new_step)
+        end
       end
 
       def configure_step
@@ -64,6 +69,10 @@ module Alembic
 
       def placed_on_edge?
         params[:from].present? && params[:to].present?
+      end
+
+      def branched_from?
+        params[:from].present?
       end
 
       def edge_endpoints
