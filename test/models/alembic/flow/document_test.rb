@@ -3,6 +3,24 @@ require "test_helper"
 module Alembic
   module Flow
     class DocumentTest < ActiveSupport::TestCase
+      test "exposes an edge's source and target" do
+        document = Document.new({ "edges" => [ { "from" => "a", "to" => "b" } ] })
+
+        assert_equal [ [ "a", "b" ] ], document.edges.map { |edge| [ edge.from, edge.to ] }
+      end
+
+      test "exposes the named output port an edge leaves by" do
+        document = Document.new({ "edges" => [ { "from" => "a", "to" => "b", "on" => "yes" } ] })
+
+        assert_equal "yes", document.edges.first.on
+      end
+
+      test "leaves the port empty when an edge names none" do
+        document = Document.new({ "edges" => [ { "from" => "a", "to" => "b" } ] })
+
+        assert_nil document.edges.first.on
+      end
+
       test "exposes a node's type" do
         document = Document.new({ "nodes" => [ { "id" => "a", "type" => "question" } ] })
 
