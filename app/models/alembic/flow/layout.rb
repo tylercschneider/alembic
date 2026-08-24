@@ -1,18 +1,17 @@
 module Alembic
   module Flow
     class Layout
+      SPREAD = 2
+
       def initialize(document)
         @document = document
       end
 
       def positions
-        taken = Hash.new(0)
+        rows = depths
+        columns = columns_for(rows)
 
-        depths.to_h do |id, depth|
-          column = taken[depth]
-          taken[depth] += 1
-          [ id, { "row" => depth, "column" => column } ]
-        end
+        rows.to_h { |id, row| [ id, { "row" => row, "column" => columns[id] } ] }
       end
 
       private
@@ -20,7 +19,7 @@ module Alembic
       def depths
         walked = walk_from_entry
 
-        walked.merge(stranded(walked).index_with(next_column(walked)))
+        walked.merge(stranded(walked).index_with(next_row(walked)))
       end
 
       def walk_from_entry
@@ -38,11 +37,39 @@ module Alembic
         seen
       end
 
+      def columns_for(rows)
+        @columns = {}
+        @next_leaf = 0
+        rows.keys.each { |id| place(id, branches(rows)) }
+        @columns
+      end
+
+      def branches(rows)
+        claimed = {}
+
+        rows.keys.to_h do |id|
+          mine = @document.edges_from(id).map(&:to).uniq
+            .select { |child| rows[child] == rows[id] + 1 && !claimed.key?(child) }
+          mine.each { |child| claimed[child] = true }
+          [ id, mine ]
+        end
+      end
+
+      def place(id, branches)
+        return @columns[id] if @columns.key?(id)
+
+        mine = branches[id].to_a
+        return @columns[id] = (@next_leaf += SPREAD) - SPREAD if mine.empty?
+
+        spans = mine.map { |child| place(child, branches) }
+        @columns[id] = (spans.min + spans.max) / 2
+      end
+
       def stranded(walked)
         @document.nodes.map(&:id).uniq - walked.keys
       end
 
-      def next_column(walked)
+      def next_row(walked)
         (walked.values.max || -1) + 1
       end
 

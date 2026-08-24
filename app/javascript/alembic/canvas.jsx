@@ -8,7 +8,7 @@ const GAP_Y = 64
 const S = {
   page: { display: "flex", height: "100%", minHeight: 0, fontSize: 13, color: "#111827" },
   scroll: { flex: 1, overflow: "auto", position: "relative", background: "#fafafa" },
-  grid: { display: "grid", gap: `${GAP_Y}px ${GAP_X}px`, padding: 40, justifyContent: "center", position: "relative" },
+  grid: { display: "grid", rowGap: GAP_Y, columnGap: 0, padding: 40, justifyContent: "center", position: "relative" },
   card: { width: CARD, boxSizing: "border-box", padding: "12px 14px", background: "#fff", borderRadius: 8, cursor: "grab" },
   panel: { width: 280, padding: 20, overflowY: "auto", background: "#fff", borderLeft: "1px solid #e5e7eb" },
   control: { width: "100%", marginBottom: 12, padding: "6px 8px", border: "1px solid #d1d5db", borderRadius: 4, fontSize: 13, boxSizing: "border-box" },
@@ -26,13 +26,13 @@ const Port = ({ name, connected, armed, onArm, connecting }) => (
           }}>{name || "next"}</button>
 )
 
-const StepCard = ({ node, selected, armed, connecting, onSelect, onArm, onDropOnto, onDragStart }) => (
+const StepCard = ({ node, selected, armed, connecting, onSelect, onArm, onDragEnd, onDragStart }) => (
   <div ref={node.ref}
        data-step={node.id}
        draggable
-       onDragStart={onDragStart}
+       onDragStart={(event) => { event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", node.id); onDragStart() }}
+       onDragEnd={onDragEnd}
        onClick={onSelect}
-       onMouseUp={onDropOnto}
        style={{
          ...S.card,
          cursor: connecting ? "crosshair" : "grab",
@@ -118,9 +118,12 @@ const Connector = ({ link, onInsert, onDrop, dragging }) => {
   const [ over, setOver ] = useState(false)
 
   return (
-    <div style={{ position: "absolute", left: link.midX - 22, top: link.midY - 22, width: 44, height: 44, zIndex: 3 }}
+    <div data-connector={`${link.source}-${link.target}`}
+         style={{ position: "absolute", left: link.midX - 22, top: link.midY - 22, width: 44, height: 44, zIndex: 4 }}
          onMouseEnter={() => setOver(true)} onMouseLeave={() => setOver(false)}
-         onMouseUp={() => dragging && onDrop()}>
+         onDragEnter={() => setOver(true)} onDragLeave={() => setOver(false)}
+         onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = "move" }}
+         onDrop={(event) => { event.preventDefault(); setOver(false); onDrop() }}>
       <button title={dragging ? "Move the step here" : "Insert a step here"}
               onClick={onInsert}
               style={{ ...S.plus, position: "absolute", left: 10, top: 10,
@@ -151,6 +154,8 @@ const Canvas = ({ base, token, initial }) => {
     setFlow(await (await fetch(base + ".json", { headers: { Accept: "application/json" } })).json())
   }, [ base, token ])
 
+  const byId = useMemo(() => Object.fromEntries(flow.nodes.map((node) => [ node.id, node ])), [ flow.nodes ])
+
   const violationsFor = useMemo(() => {
     const grouped = {}
     flow.violations.forEach((violation) => (grouped[violation.node] ||= []).push(violation))
@@ -165,15 +170,27 @@ const Canvas = ({ base, token, initial }) => {
       setLinks(flow.edges.flatMap((edge) => {
         const from = cards.current[edge.source]?.getBoundingClientRect()
         const to = cards.current[edge.target]?.getBoundingClientRect()
-        if (!from || !to) return []
+        const source = byId[edge.source]
+        const target = byId[edge.target]
+        if (!from || !to || !source || !target) return []
 
         const scroll = { x: surface.current.scrollLeft, y: surface.current.scrollTop }
-        const x1 = from.left - frame.left + scroll.x + from.width / 2
-        const y1 = from.bottom - frame.top + scroll.y
-        const x2 = to.left - frame.left + scroll.x + to.width / 2
-        const y2 = to.top - frame.top + scroll.y
+        const left = (box) => box.left - frame.left + scroll.x
+        const top = (box) => box.top - frame.top + scroll.y
+        const sideways = target.column !== source.column && target.row > source.row
 
-        return [ { ...edge, x1, y1, x2, y2, midX: (x1 + x2) / 2, midY: (y1 + y2) / 2 } ]
+        const leftward = target.column < source.column
+        const x1 = sideways ? left(from) + (leftward ? 0 : from.width) : left(from) + from.width / 2
+        const y1 = sideways ? top(from) + from.height / 2 : top(from) + from.height
+        const x2 = left(to) + to.width / 2
+        const y2 = top(to)
+        const gutter = sideways ? x1 + (leftward ? -24 : 24) : x1
+        const lane = (top(from) + from.height + y2) / 2
+        const path = sideways
+          ? `M ${x1} ${y1} H ${gutter} V ${lane} H ${x2} V ${y2 - 3}`
+          : `M ${x1} ${y1} V ${lane} H ${x2} V ${y2 - 3}`
+
+        return [ { ...edge, path, x1, y1, midX: sideways ? gutter : x1, midY: lane } ]
       }))
     }
 
@@ -187,7 +204,7 @@ const Canvas = ({ base, token, initial }) => {
       window.removeEventListener("resize", measure)
       watcher.disconnect()
     }
-  }, [ flow, selected ])
+  }, [ flow, selected, byId ])
 
   const rows = Math.max(0, ...flow.nodes.map((node) => node.row)) + 1
   const columns = Math.max(0, ...flow.nodes.map((node) => node.column)) + 1
@@ -235,10 +252,13 @@ const Canvas = ({ base, token, initial }) => {
             </marker>
           </defs>
           {links.map((link) => (
-            <path key={link.id} fill="none" stroke="#9ca3af" strokeWidth="1.5" markerEnd="url(#alembic-arrow)"
-                  d={`M ${link.x1} ${link.y1} V ${link.midY} H ${link.x2} V ${link.y2 - 3}`} />
+            <path key={link.id} fill="none" stroke="#9ca3af" strokeWidth="1.5" markerEnd="url(#alembic-arrow)" d={link.path} />
           ))}
         </svg>
+
+        {links.filter((link) => link.label).map((link) => (
+          <div key={`${link.id}-label`} style={{ position: "absolute", left: link.x1 - 14, top: link.y1 - 20, zIndex: 3, fontSize: 11, color: "#6b7280", background: "#fafafa", padding: "0 3px" }}>{link.label}</div>
+        ))}
 
         {links.map((link) => (
           <Connector key={link.id} link={link} dragging={Boolean(dragging)}
@@ -246,9 +266,9 @@ const Canvas = ({ base, token, initial }) => {
                      onDrop={() => { const held = dragging; setDragging(null); send("/steps/" + held + "/move", "PATCH", { from: link.source, to: link.target }) }} />
         ))}
 
-        <div style={{ ...S.grid, gridTemplateColumns: `repeat(${columns}, ${CARD}px)`, gridTemplateRows: `repeat(${rows}, auto)` }}>
+        <div style={{ ...S.grid, gridTemplateColumns: `repeat(${columns + 1}, ${(CARD + GAP_X) / 2}px)`, gridTemplateRows: `repeat(${rows}, auto)` }}>
           {flow.nodes.map((node) => (
-            <div key={node.id} style={{ gridRow: node.row + 1, gridColumn: node.column + 1, zIndex: 2 }}>
+            <div key={node.id} style={{ gridRow: node.row + 1, gridColumn: `${node.column + 1} / span 2`, zIndex: 2 }}>
               <StepCard
                 node={{
                   ...node,
@@ -261,7 +281,7 @@ const Canvas = ({ base, token, initial }) => {
                 connecting={Boolean(armed) && armed[0] !== node.id}
                 onSelect={() => (armed ? connectTo(node.id) : setSelected(node.id))}
                 onArm={(port) => setArmed([ node.id, port ])}
-                onDropOnto={() => dragging && setDragging(null)}
+                onDragEnd={() => setDragging(null)}
                 onDragStart={() => setDragging(node.id)}
               />
             </div>

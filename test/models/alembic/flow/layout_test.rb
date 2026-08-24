@@ -12,6 +12,18 @@ module Alembic
           "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "a", "to" => "c" } ] }
       end
 
+      test "centres a branching step between its branches" do
+        placed = positions_for(branching)
+
+        assert_equal (placed["b"]["column"] + placed["c"]["column"]) / 2.0, placed["a"]["column"]
+      end
+
+      test "puts one branch to the left of the other" do
+        placed = positions_for(branching)
+
+        assert_operator placed["b"]["column"], :<, placed["c"]["column"]
+      end
+
       test "gives the same document the same positions every time" do
         assert_equal positions_for(branching), positions_for(branching)
       end
