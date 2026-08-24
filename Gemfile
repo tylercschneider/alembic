@@ -13,9 +13,9 @@ gem "propshaft"
 # compiled stylesheet.
 gem "tailwindcss-rails"
 
-# UI components for the engine views. The host app provides this at runtime;
-# here it's for the dummy app and view tests.
-gem "keystone_ui", github: "tylercschneider/keystone_ui"
+# UI components for every view the engine renders itself. The host app
+# provides this at runtime; here it's for the dummy app and view tests.
+gem "keystone_ui"
 
 # Drives the flow canvas in a real browser; the request tests cannot reach it.
 gem "capybara"
