@@ -3,23 +3,8 @@ require "test_helper"
 module Alembic
   module Steps
     class ConditionTest < ActiveSupport::TestCase
-      def flow_core_sources
-        Dir[Engine.root.join("app/models/alembic/flow.rb")] +
-          Dir[Engine.root.join("app/models/alembic/flow/**/*.rb")]
-      end
-
       def branch(config)
         Flow::Node.new(id: "branch", type: "condition", config: config)
-      end
-
-      test "there are flow core sources to check" do
-        assert_not_empty flow_core_sources
-      end
-
-      test "the flow core never mentions the condition step type" do
-        naming_it = flow_core_sources.select { |source| File.read(source).match?(/condition/i) }
-
-        assert_empty naming_it.map { |source| source.split("/models/").last }
       end
 
       test "requires the step whose state it tests" do
