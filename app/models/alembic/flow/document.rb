@@ -38,7 +38,29 @@ module Alembic
         with(nodes: raw_nodes + [ node ], edges: (raw_edges - [ replaced ]) + bridged)
       end
 
+      def rewire(from:, to:, target:)
+        rewritten = raw_edges.map do |edge|
+          edge["from"] == from && edge["to"] == to ? edge.merge("to" => target) : edge
+        end
+
+        with(nodes: raw_nodes, edges: rewritten)
+      end
+
+      def remove(id)
+        incoming = raw_edges.select { |edge| edge["to"] == id }
+        outgoing = raw_edges.select { |edge| edge["from"] == id }
+
+        with(nodes: raw_nodes.reject { |node| node["id"] == id },
+             edges: (raw_edges - incoming - outgoing) + bridges(incoming, outgoing))
+      end
+
       private
+
+      def bridges(incoming, outgoing)
+        incoming.product(outgoing).map do |arriving, leaving|
+          { "from" => arriving["from"], "to" => leaving["to"], "on" => arriving["on"] }.compact
+        end
+      end
 
       def raw_nodes
         Array(@document["nodes"])
