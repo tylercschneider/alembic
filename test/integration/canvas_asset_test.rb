@@ -8,16 +8,10 @@ module Alembic
       assert_response :success
     end
 
-    test "the canvas stylesheet is served by the asset pipeline" do
-      get ActionController::Base.helpers.asset_path("alembic/canvas.css")
-
-      assert_response :success
-    end
-
-    test "the canvas bundle carries the flow library it was built from" do
+    test "the canvas bundle carries the library it was built from" do
       bundle = Engine.root.join("app/assets/builds/alembic/canvas.js").read
 
-      assert_includes bundle, "react-flow"
+      assert_includes bundle, "react.transitional.element"
     end
   end
 end

@@ -16,31 +16,9 @@ module Alembic
         placed = Layout.new(@document).positions
 
         @document.nodes.map do |node|
-          { "id" => node.id, "type" => node.type, "position" => placed[node.id],
-            "label" => label_for(node), "config" => node.config, "ports" => ports_for(node),
-            "sourcePosition" => source_side(node, placed), "targetPosition" => target_side(node, placed) }
+          { "id" => node.id, "type" => node.type, "label" => label_for(node),
+            "config" => node.config, "ports" => ports_for(node), **placed[node.id] }
         end
-      end
-
-      def source_side(node, placed)
-        beside = alongside(node, placed, @document.edges_from(node.id).map(&:to))
-        return "bottom" unless beside
-
-        beside["x"] > placed[node.id]["x"] ? "right" : "left"
-      end
-
-      def target_side(node, placed)
-        arriving = @document.edges.select { |edge| edge.to == node.id }.map(&:from)
-        beside = alongside(node, placed, arriving)
-        return "top" unless beside
-
-        beside["x"] < placed[node.id]["x"] ? "left" : "right"
-      end
-
-      def alongside(node, placed, neighbours)
-        here = placed[node.id]
-
-        neighbours.filter_map { |id| placed[id] }.find { |there| there["y"] == here["y"] }
       end
 
       def edges

@@ -19,6 +19,26 @@ module Alembic
                        "edges" => [ { "from" => "a", "to" => "x" }, { "from" => "x", "to" => "b" } ] })
       end
 
+      test "moving a step splices it onto another edge" do
+        document = Document.new({ "entry" => "a",
+                                  "nodes" => [ { "id" => "a" }, { "id" => "b" }, { "id" => "c" }, { "id" => "loose" } ],
+                                  "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "c" } ] })
+
+        result = document.move("loose", on: [ "b", "c" ])
+
+        assert_equal [ [ "a", "b" ], [ "b", "loose" ], [ "loose", "c" ] ], endpoints(result)
+      end
+
+      test "moving a step keeps its configuration" do
+        document = Document.new({ "entry" => "a",
+                                  "nodes" => [ { "id" => "a" }, { "id" => "b" }, { "id" => "loose", "type" => "ask", "text" => "Kept" } ],
+                                  "edges" => [ { "from" => "a", "to" => "b" } ] })
+
+        result = document.move("loose", on: [ "a", "b" ])
+
+        assert_equal "Kept", result.node("loose").config["text"]
+      end
+
       test "connecting two steps adds an edge between them" do
         result = two_step_flow.add({ "id" => "c", "type" => "plain" }).connect(from: "b", to: "c")
 

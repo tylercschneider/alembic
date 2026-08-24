@@ -1,68 +1,71 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { createRoot } from "react-dom/client"
-import { ReactFlow, Background, Controls, Handle, Position } from "@xyflow/react"
-import "@xyflow/react/dist/style.css"
 
-const PANEL = { width: 260, padding: 16, overflowY: "auto", background: "#fff", borderLeft: "1px solid #e5e7eb", fontSize: 13 }
-const BUTTON = { display: "block", width: "100%", marginBottom: 6, padding: "6px 10px", textAlign: "left", cursor: "pointer", border: "1px solid #d1d5db", borderRadius: 6, background: "#fff" }
-const ADD = { width: 34, height: 34, borderRadius: "50%", border: "1px solid #d1d5db", background: "#fff", cursor: "pointer", fontSize: 20, lineHeight: "20px", boxShadow: "0 1px 3px rgba(0,0,0,.15)" }
-const CONTROL = { width: "100%", marginBottom: 10, padding: "5px 7px", border: "1px solid #d1d5db", borderRadius: 4, fontSize: 13, boxSizing: "border-box" }
+const CARD = 240
+const GAP_X = 40
+const GAP_Y = 64
 
-const SIDES = { top: Position.Top, bottom: Position.Bottom, left: Position.Left, right: Position.Right }
-
-const spread = (side, index, count) => {
-  const along = `${((index + 1) * 100) / (count + 1)}%`
-
-  return side === "left" || side === "right" ? { top: along } : { left: along }
+const S = {
+  page: { display: "flex", height: "100%", minHeight: 0, fontSize: 13, color: "#111827" },
+  scroll: { flex: 1, overflow: "auto", position: "relative", background: "#fafafa" },
+  grid: { display: "grid", gap: `${GAP_Y}px ${GAP_X}px`, padding: 40, justifyContent: "center", position: "relative" },
+  card: { width: CARD, boxSizing: "border-box", padding: "12px 14px", background: "#fff", borderRadius: 8, cursor: "grab" },
+  panel: { width: 280, padding: 20, overflowY: "auto", background: "#fff", borderLeft: "1px solid #e5e7eb" },
+  control: { width: "100%", marginBottom: 12, padding: "6px 8px", border: "1px solid #d1d5db", borderRadius: 4, fontSize: 13, boxSizing: "border-box" },
+  action: { display: "block", width: "100%", marginBottom: 6, padding: "7px 10px", textAlign: "left", cursor: "pointer", border: "1px solid #d1d5db", borderRadius: 6, background: "#fff", fontSize: 13 },
+  plus: { width: 24, height: 24, borderRadius: "50%", border: "1px solid #d1d5db", background: "#fff", cursor: "pointer", fontSize: 15, lineHeight: "15px", color: "#374151" }
 }
 
-const StepNode = ({ data, selected }) => {
-  const ports = data.ports.length ? data.ports : [ null ]
-  const leaves = data.sourcePosition || "bottom"
+const Port = ({ name, connected, armed, onArm }) => (
+  <button onClick={(event) => { event.stopPropagation(); onArm() }}
+          title={armed ? "Now choose a step to connect to" : "Connect this branch"}
+          style={{
+            padding: "1px 8px", marginRight: 4, borderRadius: 999, fontSize: 11, cursor: "pointer",
+            border: `1px solid ${armed ? "#2563eb" : connected ? "#d1d5db" : "#f59e0b"}`,
+            background: armed ? "#2563eb" : "#fff", color: armed ? "#fff" : connected ? "#6b7280" : "#b45309"
+          }}>{name || "next"}</button>
+)
 
-  return (
-    <div style={{
-      minWidth: 170, padding: "8px 12px", borderRadius: 6, background: "#fff", fontSize: 13,
-      border: `2px solid ${data.violations.length ? "#dc2626" : selected ? "#2563eb" : "#9ca3af"}`
-    }}>
-      <Handle type="target" position={SIDES[data.targetPosition] || Position.Top} />
-      <div style={{ fontWeight: 600 }}>{data.label}</div>
-      <div style={{ color: "#6b7280", fontSize: 11 }}>{data.type}</div>
-      {data.violations.map((violation) => (
-        <div key={violation.problem + violation.detail} style={{ color: "#dc2626", fontSize: 11, marginTop: 4 }}>
-          {violation.problem.replace(/_/g, " ")}{violation.detail ? `: ${violation.detail}` : ""}
-        </div>
+const StepCard = ({ node, selected, armed, onSelect, onArm, onDropOnto, onDragStart }) => (
+  <div ref={node.ref}
+       draggable
+       onDragStart={onDragStart}
+       onClick={onSelect}
+       onMouseUp={onDropOnto}
+       style={{
+         ...S.card,
+         border: `2px solid ${node.violations.length ? "#dc2626" : selected ? "#2563eb" : "#d1d5db"}`,
+         boxShadow: selected ? "0 0 0 3px rgba(37,99,235,.15)" : "0 1px 2px rgba(0,0,0,.05)"
+       }}>
+    <div style={{ fontWeight: 600, lineHeight: 1.3 }}>{node.label}</div>
+    <div style={{ color: "#6b7280", fontSize: 11, marginTop: 2 }}>{node.type}</div>
+    {node.violations.map((violation) => (
+      <div key={violation.problem + violation.detail} style={{ color: "#dc2626", fontSize: 11, marginTop: 6 }}>
+        {violation.problem.replace(/_/g, " ")}{violation.detail ? `: ${violation.detail}` : ""}
+      </div>
+    ))}
+    <div style={{ marginTop: 10 }}>
+      {(node.ports.length ? node.ports : [ null ]).map((port) => (
+        <Port key={port || "next"} name={port} connected={node.connected.includes(port)}
+              armed={armed === (port || "")} onArm={() => onArm(port || "")} />
       ))}
-      {ports.map((port, index) => (
-        <Handle key={port || "out"} id={port || undefined} type="source" position={SIDES[leaves]}
-                style={spread(leaves, index, ports.length)} />
-      ))}
-      {data.ports.length > 0 && leaves === "bottom" && (
-        <div style={{ display: "flex", justifyContent: "space-around", marginTop: 6, fontSize: 10, color: "#6b7280" }}>
-          {data.ports.map((port) => <span key={port}>{port}</span>)}
-        </div>
-      )}
     </div>
-  )
-}
+  </div>
+)
 
 const Control = ({ type, value, onChange, onSettle }) => {
-  if (type === "boolean") {
-    return <input type="checkbox" checked={Boolean(value)} onChange={(e) => onSettle(e.target.checked)} />
-  }
+  if (type === "boolean") return <input type="checkbox" checked={Boolean(value)} onChange={(e) => onSettle(e.target.checked)} />
   if (type === "list") {
-    const lines = Array.isArray(value) ? value.join("\n") : value ?? ""
     const split = (text) => text.split("\n").filter(Boolean)
-    return <textarea style={{ ...CONTROL, height: 70 }} value={lines}
-                     onChange={(e) => onChange(split(e.target.value))}
-                     onBlur={(e) => onSettle(split(e.target.value))} />
+    return <textarea style={{ ...S.control, height: 74 }} value={Array.isArray(value) ? value.join("\n") : value ?? ""}
+                     onChange={(e) => onChange(split(e.target.value))} onBlur={(e) => onSettle(split(e.target.value))} />
   }
   if (type === "text") {
-    return <textarea style={{ ...CONTROL, height: 60 }} value={value ?? ""}
+    return <textarea style={{ ...S.control, height: 64 }} value={value ?? ""}
                      onChange={(e) => onChange(e.target.value)} onBlur={(e) => onSettle(e.target.value)} />
   }
 
-  return <input style={CONTROL} type={type === "number" ? "number" : "text"} value={value ?? ""}
+  return <input style={S.control} type={type === "number" ? "number" : "text"} value={value ?? ""}
                 onChange={(e) => onChange(e.target.value)} onBlur={(e) => onSettle(e.target.value)} />
 }
 
@@ -76,38 +79,47 @@ const Inspector = ({ node, fields, onSave, onDelete }) => {
   }
 
   return (
-    <aside style={PANEL}>
+    <aside style={S.panel}>
       <h2 style={{ fontWeight: 600, marginBottom: 2 }}>{node.label}</h2>
-      <p style={{ color: "#6b7280", fontSize: 11, marginBottom: 12 }}>{node.id} · {node.type}</p>
+      <p style={{ color: "#6b7280", fontSize: 11, marginBottom: 16 }}>{node.id} · {node.type}</p>
       {Object.entries(fields).map(([ name, type ]) => (
-        <label key={name} style={{ display: "block", marginBottom: 4 }}>
-          <span style={{ display: "block", marginBottom: 2, color: "#374151" }}>{name}</span>
+        <label key={name} style={{ display: "block" }}>
+          <span style={{ display: "block", marginBottom: 3, color: "#374151" }}>{name}</span>
           <Control type={type} value={draft[name]}
                    onChange={(next) => setDraft({ ...draft, [name]: next })}
                    onSettle={(next) => settle({ ...draft, [name]: next })} />
         </label>
       ))}
-      <button style={{ ...BUTTON, textAlign: "center", color: "#dc2626" }} onClick={onDelete}>Delete step</button>
+      <button style={{ ...S.action, textAlign: "center", color: "#dc2626" }} onClick={onDelete}>Delete step</button>
     </aside>
   )
 }
 
-const AddStep = ({ entries, onAdd }) => {
-  const [ open, setOpen ] = useState(false)
+const TypePicker = ({ entries, at, onPick, onDismiss }) => (
+  <div style={{ position: "absolute", zIndex: 9, top: at.y, left: at.x, width: 200, padding: 8, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, boxShadow: "0 6px 20px rgba(0,0,0,.15)" }}>
+    <p style={{ margin: "0 0 6px", fontSize: 11, color: "#6b7280" }}>Add a step</p>
+    {entries.map((entry) => (
+      <button key={entry.type} style={S.action} onClick={() => onPick(entry)}>
+        {entry.label}
+        <span style={{ display: "block", color: "#6b7280", fontSize: 11 }}>{entry.type}</span>
+      </button>
+    ))}
+    <button style={{ ...S.action, textAlign: "center", marginBottom: 0 }} onClick={onDismiss}>Cancel</button>
+  </div>
+)
+
+const Connector = ({ link, onInsert, onDrop, dragging }) => {
+  const [ over, setOver ] = useState(false)
 
   return (
-    <div style={{ position: "absolute", zIndex: 5, top: 12, left: 12 }}>
-      <button style={ADD} title="Add a step" onClick={() => setOpen(!open)}>+</button>
-      {open && (
-        <div style={{ marginTop: 6, width: 190, padding: 8, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,.12)" }}>
-          {entries.map((entry) => (
-            <button key={entry.type} style={BUTTON} onClick={() => { setOpen(false); onAdd(entry) }}>
-              {entry.label}
-              <span style={{ display: "block", color: "#6b7280", fontSize: 11 }}>{entry.type}</span>
-            </button>
-          ))}
-        </div>
-      )}
+    <div style={{ position: "absolute", left: link.midX - 22, top: link.midY - 22, width: 44, height: 44, zIndex: 3 }}
+         onMouseEnter={() => setOver(true)} onMouseLeave={() => setOver(false)}
+         onMouseUp={() => dragging && onDrop()}>
+      <button title={dragging ? "Move the step here" : "Insert a step here"}
+              onClick={onInsert}
+              style={{ ...S.plus, position: "absolute", left: 10, top: 10,
+                       opacity: over || dragging ? 1 : 0, transition: "opacity .12s",
+                       borderColor: dragging && over ? "#2563eb" : "#d1d5db" }}>+</button>
     </div>
   )
 }
@@ -116,17 +128,19 @@ const Canvas = ({ base, token, initial }) => {
   const [ flow, setFlow ] = useState(initial)
   const [ selected, setSelected ] = useState(null)
   const [ error, setError ] = useState(null)
+  const [ adding, setAdding ] = useState(null)
+  const [ armed, setArmed ] = useState(null)
+  const [ dragging, setDragging ] = useState(null)
+  const [ links, setLinks ] = useState([])
+  const cards = useRef({})
+  const surface = useRef(null)
 
   const send = useCallback(async (path, method, body) => {
     const response = await fetch(base + path, {
-      method,
-      headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
-      body: body && JSON.stringify(body)
+      method, headers: { "Content-Type": "application/json", "X-CSRF-Token": token }, body: body && JSON.stringify(body)
     })
-    if (!response.ok) {
-      setError((await response.json().catch(() => ({}))).error || "That change was refused")
-      return
-    }
+    if (!response.ok) return setError((await response.json().catch(() => ({}))).error || "That change was refused")
+
     setError(null)
     setFlow(await (await fetch(base + ".json", { headers: { Accept: "application/json" } })).json())
   }, [ base, token ])
@@ -137,14 +151,33 @@ const Canvas = ({ base, token, initial }) => {
     return grouped
   }, [ flow.violations ])
 
-  const nodes = useMemo(() => flow.nodes.map((node) => ({
-    id: node.id, position: node.position, type: "step", selected: node.id === selected,
-    data: { ...node, violations: violationsFor[node.id] || [] }
-  })), [ flow.nodes, violationsFor, selected ])
+  useLayoutEffect(() => {
+    const measure = () => {
+      const frame = surface.current?.getBoundingClientRect()
+      if (!frame) return
 
-  const edges = useMemo(() => flow.edges.map((edge) => ({
-    ...edge, sourceHandle: edge.label || null
-  })), [ flow.edges ])
+      setLinks(flow.edges.flatMap((edge) => {
+        const from = cards.current[edge.source]?.getBoundingClientRect()
+        const to = cards.current[edge.target]?.getBoundingClientRect()
+        if (!from || !to) return []
+
+        const scroll = { x: surface.current.scrollLeft, y: surface.current.scrollTop }
+        const x1 = from.left - frame.left + scroll.x + from.width / 2
+        const y1 = from.bottom - frame.top + scroll.y
+        const x2 = to.left - frame.left + scroll.x + to.width / 2
+        const y2 = to.top - frame.top + scroll.y
+
+        return [ { ...edge, x1, y1, x2, y2, midX: (x1 + x2) / 2, midY: (y1 + y2) / 2 } ]
+      }))
+    }
+
+    measure()
+    window.addEventListener("resize", measure)
+    return () => window.removeEventListener("resize", measure)
+  }, [ flow ])
+
+  const rows = Math.max(0, ...flow.nodes.map((node) => node.row)) + 1
+  const columns = Math.max(0, ...flow.nodes.map((node) => node.column)) + 1
 
   const nextId = (type) => {
     const taken = new Set(flow.nodes.map((node) => node.id))
@@ -154,36 +187,74 @@ const Canvas = ({ base, token, initial }) => {
     return candidate
   }
 
+  const connectTo = (target) => {
+    if (!armed) return
+
+    const [ source, port ] = armed
+    setArmed(null)
+    if (source !== target) send("/edges", "POST", { from: source, to: target, on: port || null })
+  }
+
   const selectedNode = flow.nodes.find((node) => node.id === selected)
-  const selectedFields = flow.palette.find((entry) => entry.type === selectedNode?.type)?.fields || {}
+  const fieldsFor = flow.palette.find((entry) => entry.type === selectedNode?.type)?.fields || {}
 
   return (
-    <div style={{ display: "flex", height: "100%" }}>
-      <div style={{ flex: 1, position: "relative" }}>
-        <AddStep entries={flow.palette} onAdd={(entry) => send("/steps", "POST", { id: nextId(entry.type), type: entry.type })} />
-        {error && <div style={{ position: "absolute", zIndex: 6, top: 14, left: 58, padding: "6px 10px", background: "#fee2e2", color: "#991b1b", borderRadius: 6, fontSize: 12 }}>{error}</div>}
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={{ step: StepNode }}
-          onNodeClick={(_event, node) => setSelected(node.id)}
-          onPaneClick={() => setSelected(null)}
-          onConnect={(connection) => send("/edges", "POST", { from: connection.source, to: connection.target, on: connection.sourceHandle })}
-          onEdgesDelete={(removed) => removed.forEach((edge) => send("/edges", "DELETE", { from: edge.source, to: edge.target }))}
-          onNodesDelete={(removed) => removed.forEach((node) => send(`/steps/${node.id}`, "DELETE"))}
-          fitView
-        >
-          <Background />
-          <Controls />
-        </ReactFlow>
+    <div style={S.page} onMouseUp={() => setDragging(null)}>
+      <div ref={surface} style={S.scroll}>
+        {error && <div style={{ position: "sticky", zIndex: 8, top: 8, margin: "8px auto 0", width: "fit-content", padding: "6px 12px", background: "#fee2e2", color: "#991b1b", borderRadius: 6, fontSize: 12 }}>{error}</div>}
+        {flow.nodes.length === 0 && (
+          <button style={{ ...S.plus, position: "absolute", top: 16, left: 16, zIndex: 5 }}
+                  title="Add a step" onClick={() => setAdding({ at: { x: 16, y: 52 } })}>+</button>
+        )}
+
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 1 }}>
+          {links.map((link) => (
+            <path key={link.id} fill="none" stroke="#9ca3af" strokeWidth="1.5"
+                  d={`M ${link.x1} ${link.y1} V ${link.midY} H ${link.x2} V ${link.y2}`} />
+          ))}
+        </svg>
+
+        {links.map((link) => (
+          <Connector key={link.id} link={link} dragging={Boolean(dragging)}
+                     onInsert={() => setAdding({ from: link.source, to: link.target, at: { x: link.midX + 20, y: link.midY } })}
+                     onDrop={() => { const held = dragging; setDragging(null); send("/steps/" + held + "/move", "PATCH", { from: link.source, to: link.target }) }} />
+        ))}
+
+        <div style={{ ...S.grid, gridTemplateColumns: `repeat(${columns}, ${CARD}px)`, gridTemplateRows: `repeat(${rows}, auto)` }}>
+          {flow.nodes.map((node) => (
+            <div key={node.id} style={{ gridRow: node.row + 1, gridColumn: node.column + 1, zIndex: 2 }}>
+              <StepCard
+                node={{
+                  ...node,
+                  ref: (element) => { cards.current[node.id] = element },
+                  violations: violationsFor[node.id] || [],
+                  connected: flow.edges.filter((edge) => edge.source === node.id).map((edge) => edge.label || null)
+                }}
+                selected={node.id === selected}
+                armed={armed && armed[0] === node.id ? armed[1] : null}
+                onSelect={() => (armed ? connectTo(node.id) : setSelected(node.id))}
+                onArm={(port) => setArmed([ node.id, port ])}
+                onDropOnto={() => dragging && setDragging(null)}
+                onDragStart={() => setDragging(node.id)}
+              />
+            </div>
+          ))}
+        </div>
+
+        {adding && (
+          <TypePicker entries={flow.palette} at={adding.at} onDismiss={() => setAdding(null)}
+                      onPick={(entry) => {
+                        const where = adding
+                        setAdding(null)
+                        send("/steps", "POST", { id: nextId(entry.type), type: entry.type, from: where.from, to: where.to })
+                      }} />
+        )}
       </div>
+
       {selectedNode && (
-        <Inspector
-          node={selectedNode}
-          fields={selectedFields}
-          onSave={(config) => send(`/steps/${selectedNode.id}`, "PATCH", { config })}
-          onDelete={() => { setSelected(null); send(`/steps/${selectedNode.id}`, "DELETE") }}
-        />
+        <Inspector node={selectedNode} fields={fieldsFor}
+                   onSave={(config) => send(`/steps/${selectedNode.id}`, "PATCH", { config })}
+                   onDelete={() => { setSelected(null); send(`/steps/${selectedNode.id}`, "DELETE") }} />
       )}
     </div>
   )

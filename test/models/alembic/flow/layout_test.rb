@@ -21,19 +21,19 @@ module Alembic
                      "edges" => [ { "from" => "a", "to" => "b" } ] }
         placed = positions_for(document)
 
-        assert_operator placed["b"]["y"], :>, placed["a"]["y"]
+        assert_operator placed["b"]["row"], :>, placed["a"]["row"]
       end
 
       test "keeps a branching step's successors from overlapping" do
         placed = positions_for(branching)
 
-        assert_not_equal placed["b"]["x"], placed["c"]["x"]
+        assert_not_equal placed["b"]["column"], placed["c"]["column"]
       end
 
       test "places a branching step's successors at the same depth" do
         placed = positions_for(branching)
 
-        assert_equal placed["b"]["y"], placed["c"]["y"]
+        assert_equal placed["b"]["row"], placed["c"]["row"]
       end
 
       test "lays out a document whose edges form a cycle" do

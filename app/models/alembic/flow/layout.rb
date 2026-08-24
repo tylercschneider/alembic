@@ -1,9 +1,6 @@
 module Alembic
   module Flow
     class Layout
-      COLUMN = 300
-      ROW = 150
-
       def initialize(document)
         @document = document
       end
@@ -12,9 +9,9 @@ module Alembic
         taken = Hash.new(0)
 
         depths.to_h do |id, depth|
-          row = taken[depth]
+          column = taken[depth]
           taken[depth] += 1
-          [ id, { "x" => row * COLUMN, "y" => depth * ROW } ]
+          [ id, { "row" => depth, "column" => column } ]
         end
       end
 

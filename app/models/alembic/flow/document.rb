@@ -50,6 +50,13 @@ module Alembic
         with(nodes: raw_nodes, edges: raw_edges.reject { |edge| edge["from"] == from && edge["to"] == to })
       end
 
+      def move(id, on:, leaving: nil)
+        step = raw_nodes.find { |node| node["id"] == id }
+        return self unless step
+
+        remove(id).insert(step, on: on, leaving: leaving)
+      end
+
       def configure(id, config)
         reconfigured = raw_nodes.map do |node|
           node["id"] == id ? node.slice("id", "type").merge(config) : node

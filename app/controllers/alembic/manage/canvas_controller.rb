@@ -13,6 +13,10 @@ module Alembic
         apply { |flow| flow.configure(params[:step], configuration) }
       end
 
+      def move_step
+        apply { |flow| flow.move(params[:step], on: edge_endpoints, leaving: port_for(params[:step])) }
+      end
+
       def remove_step
         apply { |flow| flow.remove(params[:step]) }
       end
@@ -47,8 +51,15 @@ module Alembic
       end
 
       def first_port
-        registry = Flow.registry
-        registry.fetch(params[:type]).ports.first&.to_s if registry.registered?(params[:type])
+        port_for_type(params[:type])
+      end
+
+      def port_for(id)
+        port_for_type(document.node(id)&.type)
+      end
+
+      def port_for_type(type)
+        Flow.registry.fetch(type).ports.first&.to_s if Flow.registry.registered?(type)
       end
 
       def placed_on_edge?
