@@ -1,0 +1,24 @@
+<%= ui_page(max_width: :xl) do %>
+  <%= ui_page_header(title: "Steps", subtitle: @diagnostic.title.presence || @diagnostic.slug) do |header| %>
+    <% header.action do %>
+      <%= ui_button(label: "Edit definition", href: alembic.edit_manage_diagnostic_definition_path(@diagnostic), variant: :secondary) %>
+      <%= ui_button(label: "Back to diagnostic", href: alembic.manage_diagnostic_path(@diagnostic), variant: :secondary) %>
+    <% end %>
+  <% end %>
+
+  <% if @steps.any? %>
+    <ul class="mt-6 space-y-2">
+      <% @steps.each do |step| %>
+        <li data-step-id="<%= step["id"] %>" class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900">
+          <span class="mt-0.5 select-none text-gray-400">⠿</span>
+          <div>
+            <p class="font-medium text-gray-900 dark:text-white"><%= step["text"] %></p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400"><%= step["id"] %> · <%= Array(step["options"]).size %> options</p>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="mt-6 text-gray-500 dark:text-gray-400">No steps in this definition yet.</p>
+  <% end %>
+<% end %>
