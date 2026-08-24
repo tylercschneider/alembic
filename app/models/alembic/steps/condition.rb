@@ -9,8 +9,13 @@ module Alembic
           field :in, :list
           outputs :yes, :no
 
+          requires { |node| [ node.config["answer"] ].compact }
           route { |node, state| Condition.holds?(node.config, state) ? :yes : :no }
         end
+      end
+
+      def self.register(registry = Flow.registry)
+        registry.register(step_type)
       end
 
       def self.holds?(config, state)

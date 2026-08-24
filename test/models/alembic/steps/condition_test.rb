@@ -7,6 +7,24 @@ module Alembic
         Flow::Node.new(id: "branch", type: "condition", config: config)
       end
 
+      test "requires the step whose state it tests" do
+        node = branch({ "answer" => "budget", "equals" => "high" })
+
+        assert_equal [ "budget" ], Condition.step_type.requirements_for(node)
+      end
+
+      test "requires nothing when it names no step to test" do
+        assert_empty Condition.step_type.requirements_for(branch({}))
+      end
+
+      test "registers through the public step-type API" do
+        registry = Flow::Registry.new
+
+        Condition.register(registry)
+
+        assert_equal :condition, registry.fetch("condition").id
+      end
+
       test "leaves by the yes port when the tested state equals the value" do
         node = branch({ "answer" => "budget", "equals" => "high" })
 
