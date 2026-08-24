@@ -7,6 +7,36 @@ module Alembic
         Validator.new(Document.new(document)).violations
       end
 
+      test "reports nothing for a whole document with none of these problems" do
+        document = {
+          "entry" => "ask", "nodes" => [ { "id" => "ask" }, { "id" => "branch" }, { "id" => "yes_step" }, { "id" => "no_step" } ],
+          "edges" => [ { "from" => "ask", "to" => "branch" },
+                       { "from" => "branch", "to" => "yes_step", "on" => "yes" },
+                       { "from" => "branch", "to" => "no_step", "on" => "no" } ]
+        }
+
+        assert_empty violations(document)
+      end
+
+      test "reports a node that cannot be reached from the entry" do
+        document = { "entry" => "a", "nodes" => [ { "id" => "a" }, { "id" => "stranded" } ], "edges" => [] }
+
+        assert_equal [ :unreachable ], violations(document).map(&:problem)
+      end
+
+      test "reaches a node by following an edge from the entry" do
+        document = { "entry" => "a", "nodes" => [ { "id" => "a" }, { "id" => "b" } ], "edges" => [ { "from" => "a", "to" => "b" } ] }
+
+        assert_empty violations(document)
+      end
+
+      test "terminates on a document whose edges form a cycle" do
+        document = { "entry" => "a", "nodes" => [ { "id" => "a" }, { "id" => "b" } ],
+                     "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "a" } ] }
+
+        assert_empty violations(document)
+      end
+
       test "reports an entry naming a node that does not exist" do
         document = { "entry" => "ghost", "nodes" => [ { "id" => "a" } ] }
 

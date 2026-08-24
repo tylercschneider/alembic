@@ -6,7 +6,7 @@ module Alembic
       end
 
       def violations
-        missing_edge_targets + missing_edge_sources + duplicate_ids + missing_entry
+        missing_edge_targets + missing_edge_sources + duplicate_ids + missing_entry + unreachable
       end
 
       private
@@ -30,6 +30,26 @@ module Alembic
         return [] if known?(@document.entry)
 
         [ Violation.new(node: @document.entry, problem: :missing_entry) ]
+      end
+
+      def unreachable
+        return [] unless known?(@document.entry)
+
+        (@document.nodes.map(&:id).uniq - reachable).map { |id| Violation.new(node: id, problem: :unreachable) }
+      end
+
+      def reachable
+        found = []
+        frontier = [ @document.entry ]
+
+        while (id = frontier.shift)
+          next if found.include?(id)
+
+          found << id
+          frontier.concat(@document.edges_from(id).map(&:to))
+        end
+
+        found
       end
 
       def known?(id)
