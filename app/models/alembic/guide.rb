@@ -87,11 +87,12 @@ module Alembic
     end
 
     def overall_percentage(answers)
-      percentage_of(questions, answers)
+      percentage_of(questions, answers_on_path(answers))
     end
 
     def domain_percentages(answers)
-      domains.keys.index_with { |key| percentage_of(questions_in(key), answers) }
+      on_path = answers_on_path(answers)
+      domains.keys.index_with { |key| percentage_of(questions_in(key), on_path) }
     end
 
     def blind_spots(answers, count:)

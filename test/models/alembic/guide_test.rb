@@ -120,6 +120,14 @@ module Alembic
       assert_equal 50, scored.overall_percentage({ q1: "partial" })
     end
 
+    test "the overall percentage ignores an answer the current path no longer reaches" do
+      branching = [ Q.new(id: :path, text: "?", transitions: [ Guide::Transition.new(to: :right_q, condition: ->(answers) { answers[:path] == "right" }) ]),
+                    Q.new(id: :left_q, text: "L", options: [ Guide::Option.new(value: "x", label: "X", hint: nil, weight: 1) ]),
+                    Q.new(id: :right_q, text: "R", options: [ Guide::Option.new(value: "y", label: "Y", hint: nil, weight: 10) ]) ]
+
+      assert_equal 0, guide(branching).overall_percentage({ path: "left", right_q: "y" })
+    end
+
     test "a domain's percentage ignores the questions of other domains" do
       light = Q.new(id: :q1, text: "Q1", domain: :governance, options: [ Guide::Option.new(value: "full", label: "Full", hint: nil, weight: 4) ])
       heavy = Q.new(id: :q2, text: "Q2", domain: :cash, options: [ Guide::Option.new(value: "full", label: "Full", hint: nil, weight: 6) ])
