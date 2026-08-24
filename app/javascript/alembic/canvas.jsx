@@ -117,21 +117,26 @@ const TypePicker = ({ entries, at, onPick, onConnect, onDismiss }) => (
   </div>
 )
 
-const Connector = ({ link, onInsert, onDrop, dragging }) => {
+const Connector = ({ link, onInsert, onRemove, onDrop, dragging }) => {
   const [ over, setOver ] = useState(false)
+  const showing = over || dragging
 
   return (
     <div data-connector={`${link.source}-${link.target}`}
-         style={{ position: "absolute", left: link.midX - 22, top: link.midY - 22, width: 44, height: 44, zIndex: 4 }}
+         style={{ position: "absolute", left: link.midX - 34, top: link.midY - 20, width: 68, height: 40, zIndex: 4 }}
          onMouseEnter={() => setOver(true)} onMouseLeave={() => setOver(false)}
          onDragEnter={() => setOver(true)} onDragLeave={() => setOver(false)}
          onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = "move" }}
          onDrop={(event) => { event.preventDefault(); setOver(false); onDrop() }}>
-      <button title={dragging ? "Move the step here" : "Insert a step here"}
-              onClick={onInsert}
-              style={{ ...S.plus, position: "absolute", left: 10, top: 10,
-                       opacity: over || dragging ? 1 : 0, transition: "opacity .12s",
-                       borderColor: dragging && over ? "#2563eb" : "#d1d5db" }}>+</button>
+      <div style={{ display: "flex", gap: 4, justifyContent: "center", alignItems: "center", height: "100%",
+                    opacity: showing ? 1 : 0, transition: "opacity .12s" }}>
+        <button title={dragging ? "Move the step here" : "Insert a step here"} onClick={onInsert}
+                style={{ ...S.plus, borderColor: dragging && over ? "#2563eb" : "#d1d5db" }}>+</button>
+        {!dragging && (
+          <button title="Remove this connection" onClick={onRemove}
+                  style={{ ...S.plus, color: "#dc2626", borderColor: "#e5b4b4" }}>×</button>
+        )}
+      </div>
     </div>
   )
 }
@@ -293,7 +298,8 @@ const Canvas = ({ base, token, initial }) => {
 
         {links.map((link) => (
           <Connector key={link.id} link={link} dragging={Boolean(dragging)}
-                     onInsert={() => setAdding({ from: link.source, to: link.target, at: { x: link.midX + 20, y: link.midY } })}
+                     onInsert={() => setAdding({ from: link.source, to: link.target, at: { x: link.midX + 30, y: link.midY } })}
+                     onRemove={() => { setSelected(null); send("/edges", "DELETE", { from: link.source, to: link.target }) }}
                      onDrop={() => { const held = dragging; setDragging(null); send("/steps/" + held + "/move", "PATCH", { from: link.source, to: link.target }) }} />
         ))}
 
