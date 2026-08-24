@@ -2,6 +2,24 @@ require "test_helper"
 
 module Alembic
   class ResponseTest < ActiveSupport::TestCase
+    test "going back removes the last answer along the path, not the last in list order" do
+      diagnostic = Diagnostic.create!(slug: "jump")
+      diagnostic.definition_versions.create!(number: 1, definition: {
+        "slug" => "jump",
+        "questions" => [
+          { "id" => "a", "text" => "A", "options" => [ { "value" => "x" } ], "transitions" => [ { "to" => "c" } ] },
+          { "id" => "b", "text" => "B", "options" => [ { "value" => "x" } ] },
+          { "id" => "c", "text" => "C", "options" => [ { "value" => "x" } ], "transitions" => [ { "to" => "b" } ] }
+        ]
+      })
+      response = Response.start(diagnostic)
+      response.update!(answers: { a: "x", c: "x", b: "x" })
+
+      response.discard_last_answer
+
+      assert_equal({ a: "x", c: "x" }, response.reload.answers)
+    end
+
     test "belongs to a diagnostic" do
       diagnostic = Diagnostic.create!(slug: "demo")
       version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })

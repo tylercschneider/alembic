@@ -21,14 +21,8 @@ module Alembic
     end
 
     def discard_last_answer
-      last = last_answered_question
-      update!(answers: answers.except(last.id)) if last
-    end
-
-    private
-
-    def last_answered_question
-      guide.applicable_questions(answers).select { |question| answers.key?(question.id) }.last
+      last = guide.answers_on_path(answers).keys.last
+      update!(answers: answers.except(last)) if last
     end
   end
 end
