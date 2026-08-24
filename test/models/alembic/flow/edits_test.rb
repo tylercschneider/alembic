@@ -19,6 +19,36 @@ module Alembic
                        "edges" => [ { "from" => "a", "to" => "x" }, { "from" => "x", "to" => "b" } ] })
       end
 
+      test "connecting two steps adds an edge between them" do
+        result = two_step_flow.add({ "id" => "c", "type" => "plain" }).connect(from: "b", to: "c")
+
+        assert_includes endpoints(result), [ "b", "c" ]
+      end
+
+      test "connecting can name the port the edge leaves by" do
+        result = two_step_flow.add({ "id" => "c", "type" => "plain" }).connect(from: "b", to: "c", on: "yes")
+
+        assert_equal "yes", result.edges_from("b").first.on
+      end
+
+      test "disconnecting removes the edge between two steps" do
+        result = two_step_flow.disconnect(from: "a", to: "b")
+
+        assert_empty endpoints(result)
+      end
+
+      test "configuring a step replaces its configuration" do
+        result = two_step_flow.configure("a", { "text" => "Budget?" })
+
+        assert_equal({ "text" => "Budget?" }, result.node("a").config)
+      end
+
+      test "configuring a step leaves its id and type alone" do
+        result = two_step_flow.configure("a", { "text" => "Budget?" })
+
+        assert_equal "plain", result.node("a").type
+      end
+
       test "allows a step that nothing points at yet" do
         result = two_step_flow.add({ "id" => "loose", "type" => "plain" })
 
