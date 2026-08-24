@@ -5,7 +5,7 @@ module Alembic
     class CanvasTest < ActiveSupport::TestCase
       def registry
         Registry.new.tap do |built|
-          built.register(StepType.define(:ask) { label "Ask"; field :text, :text })
+          built.register(StepType.define(:ask) { label "Ask"; field :text, :text; names_by :text })
           built.register(StepType.define(:branch) { label "Branch"; outputs :yes, :no })
         end
       end
@@ -30,11 +30,11 @@ module Alembic
         assert_equal [ 0, 0 ], canvas(flow)["nodes"].first.values_at("row", "column")
       end
 
-      test "labels a node from its first declared field when it has one" do
+      test "labels a node from the field its type says names it" do
         assert_equal "Budget?", canvas(flow)["nodes"].first["label"]
       end
 
-      test "falls back to the node id when no field names it" do
+      test "falls back to the node id when its type names no field" do
         assert_equal "b", canvas(flow)["nodes"].last["label"]
       end
 

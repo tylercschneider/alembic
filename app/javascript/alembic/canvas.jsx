@@ -16,8 +16,8 @@ const S = {
   plus: { width: 24, height: 24, borderRadius: "50%", border: "1px solid #d1d5db", background: "#fff", cursor: "pointer", fontSize: 15, lineHeight: "15px", color: "#374151" }
 }
 
-const Port = ({ name, connected, armed, onArm }) => (
-  <button onClick={(event) => { event.stopPropagation(); onArm() }}
+const Port = ({ name, connected, armed, onArm, connecting }) => (
+  <button onClick={(event) => { if (connecting) return; event.stopPropagation(); onArm() }}
           title={armed ? "Now choose a step to connect to" : "Connect this branch"}
           style={{
             padding: "1px 8px", marginRight: 4, borderRadius: 999, fontSize: 11, cursor: "pointer",
@@ -26,15 +26,17 @@ const Port = ({ name, connected, armed, onArm }) => (
           }}>{name || "next"}</button>
 )
 
-const StepCard = ({ node, selected, armed, onSelect, onArm, onDropOnto, onDragStart }) => (
+const StepCard = ({ node, selected, armed, connecting, onSelect, onArm, onDropOnto, onDragStart }) => (
   <div ref={node.ref}
+       data-step={node.id}
        draggable
        onDragStart={onDragStart}
        onClick={onSelect}
        onMouseUp={onDropOnto}
        style={{
          ...S.card,
-         border: `2px solid ${node.violations.length ? "#dc2626" : selected ? "#2563eb" : "#d1d5db"}`,
+         cursor: connecting ? "crosshair" : "grab",
+         border: `2px solid ${connecting ? "#2563eb" : node.violations.length ? "#dc2626" : selected ? "#2563eb" : "#d1d5db"}`,
          boxShadow: selected ? "0 0 0 3px rgba(37,99,235,.15)" : "0 1px 2px rgba(0,0,0,.05)"
        }}>
     <div style={{ fontWeight: 600, lineHeight: 1.3 }}>{node.label}</div>
@@ -47,7 +49,7 @@ const StepCard = ({ node, selected, armed, onSelect, onArm, onDropOnto, onDragSt
     <div style={{ marginTop: 10 }}>
       {(node.ports.length ? node.ports : [ null ]).map((port) => (
         <Port key={port || "next"} name={port} connected={node.connected.includes(port)}
-              armed={armed === (port || "")} onArm={() => onArm(port || "")} />
+              connecting={connecting} armed={armed === (port || "")} onArm={() => onArm(port || "")} />
       ))}
     </div>
   </div>
@@ -69,7 +71,7 @@ const Control = ({ type, value, onChange, onSettle }) => {
                 onChange={(e) => onChange(e.target.value)} onBlur={(e) => onSettle(e.target.value)} />
 }
 
-const Inspector = ({ node, fields, onSave, onDelete }) => {
+const Inspector = ({ node, fields, onSave, onDelete, onClose }) => {
   const [ draft, setDraft ] = useState(node.config)
   useEffect(() => setDraft(node.config), [ node.id, node.config ])
 
@@ -80,7 +82,11 @@ const Inspector = ({ node, fields, onSave, onDelete }) => {
 
   return (
     <aside style={S.panel}>
-      <h2 style={{ fontWeight: 600, marginBottom: 2 }}>{node.label}</h2>
+      <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", gap: 8 }}>
+        <h2 style={{ fontWeight: 600, marginBottom: 2 }}>{node.label}</h2>
+        <button title="Close" onClick={onClose}
+                style={{ border: "none", background: "none", cursor: "pointer", fontSize: 18, lineHeight: 1, color: "#6b7280" }}>×</button>
+      </div>
       <p style={{ color: "#6b7280", fontSize: 11, marginBottom: 16 }}>{node.id} · {node.type}</p>
       {Object.entries(fields).map(([ name, type ]) => (
         <label key={name} style={{ display: "block" }}>
@@ -173,8 +179,15 @@ const Canvas = ({ base, token, initial }) => {
 
     measure()
     window.addEventListener("resize", measure)
-    return () => window.removeEventListener("resize", measure)
-  }, [ flow ])
+
+    const watcher = new ResizeObserver(measure)
+    if (surface.current) watcher.observe(surface.current)
+
+    return () => {
+      window.removeEventListener("resize", measure)
+      watcher.disconnect()
+    }
+  }, [ flow, selected ])
 
   const rows = Math.max(0, ...flow.nodes.map((node) => node.row)) + 1
   const columns = Math.max(0, ...flow.nodes.map((node) => node.column)) + 1
@@ -199,9 +212,17 @@ const Canvas = ({ base, token, initial }) => {
   const fieldsFor = flow.palette.find((entry) => entry.type === selectedNode?.type)?.fields || {}
 
   return (
-    <div style={S.page} onMouseUp={() => setDragging(null)}>
-      <div ref={surface} style={S.scroll}>
+    <div style={S.page} onMouseUp={() => setDragging(null)}
+         onKeyDown={(event) => { if (event.key === "Escape") { setSelected(null); setArmed(null); setAdding(null) } }}
+         tabIndex={-1}>
+      <div ref={surface} style={S.scroll}
+           onClick={(event) => { if (event.target === surface.current) { setSelected(null); setArmed(null) } }}>
         {error && <div style={{ position: "sticky", zIndex: 8, top: 8, margin: "8px auto 0", width: "fit-content", padding: "6px 12px", background: "#fee2e2", color: "#991b1b", borderRadius: 6, fontSize: 12 }}>{error}</div>}
+        {armed && !error && (
+          <div style={{ position: "sticky", zIndex: 8, top: 8, margin: "8px auto 0", width: "fit-content", padding: "6px 12px", background: "#dbeafe", color: "#1e40af", borderRadius: 6, fontSize: 12 }}>
+            Choose the step “{armed[1] || "next"}” should lead to — <button onClick={() => setArmed(null)} style={{ border: "none", background: "none", color: "#1e40af", textDecoration: "underline", cursor: "pointer", fontSize: 12, padding: 0 }}>cancel</button>
+          </div>
+        )}
         {flow.nodes.length === 0 && (
           <button style={{ ...S.plus, position: "absolute", top: 16, left: 16, zIndex: 5 }}
                   title="Add a step" onClick={() => setAdding({ at: { x: 16, y: 52 } })}>+</button>
@@ -232,6 +253,7 @@ const Canvas = ({ base, token, initial }) => {
                 }}
                 selected={node.id === selected}
                 armed={armed && armed[0] === node.id ? armed[1] : null}
+                connecting={Boolean(armed) && armed[0] !== node.id}
                 onSelect={() => (armed ? connectTo(node.id) : setSelected(node.id))}
                 onArm={(port) => setArmed([ node.id, port ])}
                 onDropOnto={() => dragging && setDragging(null)}
@@ -252,7 +274,7 @@ const Canvas = ({ base, token, initial }) => {
       </div>
 
       {selectedNode && (
-        <Inspector node={selectedNode} fields={fieldsFor}
+        <Inspector node={selectedNode} fields={fieldsFor} onClose={() => setSelected(null)}
                    onSave={(config) => send(`/steps/${selectedNode.id}`, "PATCH", { config })}
                    onDelete={() => { setSelected(null); send(`/steps/${selectedNode.id}`, "DELETE") }} />
       )}

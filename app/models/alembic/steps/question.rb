@@ -6,6 +6,7 @@ module Alembic
           label "Question"
           field :text, :text
           field :options, :list
+          names_by :text
           awaits_input
         end
       end

@@ -5,9 +5,9 @@ module Alembic
         Declaration.new(id).tap { |decl| decl.instance_eval(&declaration) }.to_step_type
       end
 
-      attr_reader :id, :label, :fields, :ports
+      attr_reader :id, :label, :fields, :ports, :naming_field
 
-      def initialize(id:, label:, fields:, ports:, awaits_input:, requirements:, behaviour:, routing:)
+      def initialize(id:, label:, fields:, ports:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil)
         @id = id
         @label = label
         @fields = fields
@@ -16,6 +16,7 @@ module Alembic
         @requirements = requirements
         @behaviour = behaviour
         @routing = routing
+        @naming_field = naming_field
       end
 
       def process(node, state)
@@ -67,6 +68,10 @@ module Alembic
           @awaits_input = true
         end
 
+        def names_by(field)
+          @naming_field = field
+        end
+
         def outputs(*names)
           @ports = names
         end
@@ -78,7 +83,7 @@ module Alembic
         end
 
         def to_step_type
-          StepType.new(id: @id, label: @label, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing)
+          StepType.new(id: @id, label: @label, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field)
         end
       end
     end

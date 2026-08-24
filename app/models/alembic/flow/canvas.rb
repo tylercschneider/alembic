@@ -42,7 +42,7 @@ module Alembic
       end
 
       def label_for(node)
-        naming_field = step_type_for(node)&.fields&.keys&.first
+        naming_field = step_type_for(node)&.naming_field
 
         (naming_field && node.config[naming_field.to_s].presence) || node.id
       end
