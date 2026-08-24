@@ -7,6 +7,12 @@ module Alembic
         Validator.new(Document.new(document)).violations
       end
 
+      test "reports an entry naming a node that does not exist" do
+        document = { "entry" => "ghost", "nodes" => [ { "id" => "a" } ] }
+
+        assert_includes violations(document).map(&:problem), :missing_entry
+      end
+
       test "reports two nodes sharing an id" do
         document = { "entry" => "a", "nodes" => [ { "id" => "a" }, { "id" => "a" } ] }
 

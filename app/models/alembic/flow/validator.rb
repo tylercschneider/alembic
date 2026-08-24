@@ -6,7 +6,7 @@ module Alembic
       end
 
       def violations
-        missing_edge_targets + missing_edge_sources + duplicate_ids
+        missing_edge_targets + missing_edge_sources + duplicate_ids + missing_entry
       end
 
       private
@@ -24,6 +24,12 @@ module Alembic
       def duplicate_ids
         @document.nodes.map(&:id).tally.select { |_id, count| count > 1 }
           .map { |id, _count| Violation.new(node: id, problem: :duplicate_id) }
+      end
+
+      def missing_entry
+        return [] if known?(@document.entry)
+
+        [ Violation.new(node: @document.entry, problem: :missing_entry) ]
       end
 
       def known?(id)
