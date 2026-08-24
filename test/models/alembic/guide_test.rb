@@ -42,6 +42,13 @@ module Alembic
       assert_equal 0, guide(branching).score({ path: "left", right_q: "y" })
     end
 
+    test "the summary pairs an answered question with the option chosen" do
+      option = Guide::Option.new(value: "yes", label: "Yes", hint: nil, weight: 1)
+      question = Q.new(id: :q1, text: "Q1", options: [ option ])
+
+      assert_equal "Yes", guide([ question ]).summary({ q1: "yes" }).first.option.label
+    end
+
     test "next question is the first one when nothing is answered" do
       first = Q.new(id: :a, text: "A")
 
