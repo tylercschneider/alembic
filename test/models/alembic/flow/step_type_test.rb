@@ -14,7 +14,7 @@ module Alembic
       end
 
       test "contributes nothing when it declares no behaviour" do
-        step_type = StepType.define(:agent) {}
+        step_type = StepType.define(:agent) { }
 
         assert_nil step_type.process(node_testing("a"), {})
       end
@@ -29,7 +29,7 @@ module Alembic
       end
 
       test "chooses no port when it declares no routing" do
-        step_type = StepType.define(:agent) {}
+        step_type = StepType.define(:agent) { }
 
         assert_nil step_type.route(node_testing("a"), {})
       end
@@ -41,7 +41,7 @@ module Alembic
       end
 
       test "requires nothing when it declares no requirements" do
-        step_type = StepType.define(:agent) {}
+        step_type = StepType.define(:agent) { }
 
         assert_empty step_type.requirements_for(node_testing("a"))
       end
@@ -53,7 +53,7 @@ module Alembic
       end
 
       test "does not await external input by default" do
-        step_type = StepType.define(:agent) {}
+        step_type = StepType.define(:agent) { }
 
         assert_not_predicate step_type, :awaits_input?
       end
@@ -65,7 +65,7 @@ module Alembic
       end
 
       test "has a single unnamed output when it declares no ports" do
-        step_type = StepType.define(:agent) {}
+        step_type = StepType.define(:agent) { }
 
         assert_predicate step_type, :single_output?
       end
@@ -95,7 +95,7 @@ module Alembic
       end
 
       test "falls back to its identifier when no label is given" do
-        step_type = StepType.define(:agent) {}
+        step_type = StepType.define(:agent) { }
 
         assert_equal "agent", step_type.label
       end
