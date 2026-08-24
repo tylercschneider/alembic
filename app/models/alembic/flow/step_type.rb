@@ -7,12 +7,17 @@ module Alembic
 
       attr_reader :id, :label, :fields, :ports
 
-      def initialize(id:, label:, fields:, ports:, awaits_input:)
+      def initialize(id:, label:, fields:, ports:, awaits_input:, requirements:)
         @id = id
         @label = label
         @fields = fields
         @ports = ports
         @awaits_input = awaits_input
+        @requirements = requirements
+      end
+
+      def requirements_for(node)
+        Array(@requirements&.call(node))
       end
 
       def awaits_input?
@@ -30,6 +35,10 @@ module Alembic
           @fields = {}
           @ports = []
           @awaits_input = false
+        end
+
+        def requires(&derivation)
+          @requirements = derivation
         end
 
         def label(value)
@@ -51,7 +60,7 @@ module Alembic
         end
 
         def to_step_type
-          StepType.new(id: @id, label: @label, fields: @fields, ports: @ports, awaits_input: @awaits_input)
+          StepType.new(id: @id, label: @label, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements)
         end
       end
     end

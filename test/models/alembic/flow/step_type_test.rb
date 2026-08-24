@@ -3,6 +3,22 @@ require "test_helper"
 module Alembic
   module Flow
     class StepTypeTest < ActiveSupport::TestCase
+      def node_testing(id)
+        Node.new(id: "branch", type: "condition", config: { "answer" => id })
+      end
+
+      test "derives its required predecessors from a node's configuration" do
+        step_type = StepType.define(:condition) { requires { |node| [ node.config["answer"] ] } }
+
+        assert_equal [ "a" ], step_type.requirements_for(node_testing("a"))
+      end
+
+      test "requires nothing when it declares no requirements" do
+        step_type = StepType.define(:agent) {}
+
+        assert_empty step_type.requirements_for(node_testing("a"))
+      end
+
       test "awaits external input when it declares so" do
         step_type = StepType.define(:question) { awaits_input }
 
