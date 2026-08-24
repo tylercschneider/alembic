@@ -8,6 +8,12 @@ Alembic::Engine.routes.draw do
 
       resource :definition, only: [ :edit, :update ]
 
+      resources :steps, only: :index do
+        collection do
+          patch :reorder
+        end
+      end
+
       resources :questions, only: [ :index, :create, :edit, :update, :destroy ] do
         member do
           post :move_up
