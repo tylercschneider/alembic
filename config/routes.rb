@@ -6,6 +6,8 @@ Alembic::Engine.routes.draw do
         post :revert
       end
 
+      resource :definition, only: [ :edit, :update ]
+
       resources :questions, only: [ :index, :create, :edit, :update, :destroy ] do
         member do
           post :move_up
