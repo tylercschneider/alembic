@@ -19,6 +19,13 @@ module Alembic
       assert_equal target, guide([ start, Q.new(id: :b, text: "B"), target ]).next_question({ a: "x" })
     end
 
+    test "next question ends the walk when a loop of answered questions repeats" do
+      looped = [ Q.new(id: :a, text: "A", transitions: [ Guide::Transition.new(to: :b) ]),
+                 Q.new(id: :b, text: "B", transitions: [ Guide::Transition.new(to: :a) ]) ]
+
+      assert_nil guide(looped).next_question({ a: "x", b: "y" })
+    end
+
     test "next question is the first one when nothing is answered" do
       first = Q.new(id: :a, text: "A")
 
