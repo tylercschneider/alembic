@@ -167,6 +167,9 @@ const Canvas = ({ base, token, initial }) => {
       const frame = surface.current?.getBoundingClientRect()
       if (!frame) return
 
+      const leaving = {}
+      flow.edges.forEach((edge) => { leaving[edge.source] = (leaving[edge.source] || 0) + 1 })
+
       setLinks(flow.edges.flatMap((edge) => {
         const from = cards.current[edge.source]?.getBoundingClientRect()
         const to = cards.current[edge.target]?.getBoundingClientRect()
@@ -177,20 +180,19 @@ const Canvas = ({ base, token, initial }) => {
         const scroll = { x: surface.current.scrollLeft, y: surface.current.scrollTop }
         const left = (box) => box.left - frame.left + scroll.x
         const top = (box) => box.top - frame.top + scroll.y
-        const sideways = target.column !== source.column && target.row > source.row
-
+        const branching = leaving[edge.source] > 1 && target.column !== source.column
         const leftward = target.column < source.column
-        const x1 = sideways ? left(from) + (leftward ? 0 : from.width) : left(from) + from.width / 2
-        const y1 = sideways ? top(from) + from.height / 2 : top(from) + from.height
         const x2 = left(to) + to.width / 2
         const y2 = top(to)
-        const gutter = sideways ? x1 + (leftward ? -24 : 24) : x1
         const lane = (top(from) + from.height + y2) / 2
-        const path = sideways
-          ? `M ${x1} ${y1} H ${gutter} V ${lane} H ${x2} V ${y2 - 3}`
+
+        const x1 = branching ? left(from) + (leftward ? 0 : from.width) : left(from) + from.width / 2
+        const y1 = branching ? top(from) + from.height / 2 : top(from) + from.height
+        const path = branching
+          ? `M ${x1} ${y1} H ${x2} V ${y2 - 3}`
           : `M ${x1} ${y1} V ${lane} H ${x2} V ${y2 - 3}`
 
-        return [ { ...edge, path, x1, y1, midX: sideways ? gutter : x1, midY: lane } ]
+        return [ { ...edge, path, x1, y1, midX: branching ? (x1 + x2) / 2 : x1, midY: branching ? y1 : lane } ]
       }))
     }
 
