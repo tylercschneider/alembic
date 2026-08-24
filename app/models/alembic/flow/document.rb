@@ -71,7 +71,10 @@ module Alembic
       end
 
       def with(nodes:, edges:)
-        Document.new(@document.merge("nodes" => nodes, "edges" => edges))
+        Document.new(@document.merge("nodes" => nodes, "edges" => edges)).tap do |edited|
+          broken = Validator.new(edited).structural_violations
+          raise InvalidEdit, broken.map { |violation| "#{violation.node}: #{violation.problem}" }.join(", ") if broken.any?
+        end
       end
     end
   end

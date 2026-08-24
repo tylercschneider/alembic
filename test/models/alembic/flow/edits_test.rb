@@ -19,14 +19,29 @@ module Alembic
                        "edges" => [ { "from" => "a", "to" => "x" }, { "from" => "x", "to" => "b" } ] })
       end
 
+      test "refuses an edit that would strand a step" do
+        assert_raises InvalidEdit do
+          three_step_flow.rewire(from: "a", to: "x", target: "b")
+        end
+      end
+
+      test "leaves the document alone when it refuses an edit" do
+        document = three_step_flow
+
+        assert_raises(InvalidEdit) { document.rewire(from: "a", to: "x", target: "b") }
+
+        assert_equal [ [ "a", "x" ], [ "x", "b" ] ], endpoints(document)
+      end
+
       test "rewiring an edge sends it to a different step" do
         document = Document.new({ "entry" => "a",
-                                  "nodes" => [ { "id" => "a" }, { "id" => "b" }, { "id" => "c" } ],
-                                  "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "c" } ] })
+                                  "nodes" => [ { "id" => "a" }, { "id" => "b" }, { "id" => "c" }, { "id" => "d" } ],
+                                  "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "a", "to" => "d" },
+                                               { "from" => "b", "to" => "d" } ] })
 
-        result = document.rewire(from: "a", to: "b", target: "c")
+        result = document.rewire(from: "b", to: "d", target: "c")
 
-        assert_includes endpoints(result), [ "a", "c" ]
+        assert_includes endpoints(result), [ "b", "c" ]
       end
 
       test "removing a step takes it out of the document's nodes" do
