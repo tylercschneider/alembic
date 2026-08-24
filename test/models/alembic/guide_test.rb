@@ -26,6 +26,14 @@ module Alembic
       assert_nil guide(looped).next_question({ a: "x", b: "y" })
     end
 
+    test "answers on path drop an answer the current path no longer reaches" do
+      branching = [ Q.new(id: :path, text: "?", transitions: [ Guide::Transition.new(to: :right_q, condition: ->(answers) { answers[:path] == "right" }) ]),
+                    Q.new(id: :left_q, text: "L"),
+                    Q.new(id: :right_q, text: "R") ]
+
+      assert_equal({ path: "left" }, guide(branching).answers_on_path({ path: "left", right_q: "y" }))
+    end
+
     test "next question is the first one when nothing is answered" do
       first = Q.new(id: :a, text: "A")
 

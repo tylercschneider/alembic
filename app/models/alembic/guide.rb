@@ -112,15 +112,11 @@ module Alembic
     end
 
     def next_question(answers)
-      cursor = questions.first
-      visited = []
+      traverse(answers).last
+    end
 
-      while cursor && !visited.include?(cursor.id)
-        return cursor if cursor.applies?(answers) && !answers.key?(cursor.id)
-
-        visited << cursor.id
-        cursor = successor(cursor, answers)
-      end
+    def answers_on_path(answers)
+      answers.slice(*traverse(answers).first)
     end
 
     def applicable_questions(answers)
@@ -146,6 +142,22 @@ module Alembic
     end
 
     private
+
+    def traverse(answers)
+      answered = []
+      visited = []
+      cursor = questions.first
+
+      while cursor && !visited.include?(cursor.id)
+        return [ answered, cursor ] if cursor.applies?(answers) && !answers.key?(cursor.id)
+
+        answered << cursor.id if answers.key?(cursor.id)
+        visited << cursor.id
+        cursor = successor(cursor, answers)
+      end
+
+      [ answered, nil ]
+    end
 
     def successor(question, answers)
       taken = question.transitions.find { |transition| transition.available?(answers) }
