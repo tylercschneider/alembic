@@ -9,6 +9,21 @@ module Alembic
         assert_equal "Probe", Flow.registry.fetch("probe").label
       end
 
+      test "knows whether a step type is registered" do
+        registry = Registry.new
+        registry.register(StepType.define(:question) { })
+
+        assert registry.registered?("question")
+      end
+
+      test "does not claim a step type it was never given" do
+        assert_not Registry.new.registered?("question")
+      end
+
+      test "does not claim a step type for a node carrying no type at all" do
+        assert_not Registry.new.registered?(nil)
+      end
+
       test "starts with no step types registered" do
         assert_empty Registry.new.step_types
       end
