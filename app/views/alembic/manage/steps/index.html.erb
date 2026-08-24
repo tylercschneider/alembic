@@ -1,3 +1,7 @@
+<% content_for :head do %>
+  <%= javascript_include_tag "alembic/step_reorder", defer: true %>
+<% end %>
+
 <%= ui_page(max_width: :xl) do %>
   <%= ui_page_header(title: "Steps", subtitle: @diagnostic.title.presence || @diagnostic.slug) do |header| %>
     <% header.action do %>
@@ -7,9 +11,9 @@
   <% end %>
 
   <% if @steps.any? %>
-    <ul class="mt-6 space-y-2">
+    <ul data-step-list data-reorder-url="<%= alembic.reorder_manage_diagnostic_steps_path(@diagnostic) %>" data-csrf-token="<%= form_authenticity_token %>" class="mt-6 space-y-2">
       <% @steps.each do |step| %>
-        <li data-step-id="<%= step["id"] %>" class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900">
+        <li data-step-id="<%= step["id"] %>" draggable="true" class="flex cursor-grab items-start gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 data-[dragging]:opacity-50 dark:border-zinc-700 dark:bg-zinc-900">
           <span class="mt-0.5 select-none text-gray-400">⠿</span>
           <div>
             <p class="font-medium text-gray-900 dark:text-white"><%= step["text"] %></p>
