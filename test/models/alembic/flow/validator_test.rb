@@ -7,6 +7,12 @@ module Alembic
         Validator.new(Document.new(document)).violations
       end
 
+      test "reports two nodes sharing an id" do
+        document = { "entry" => "a", "nodes" => [ { "id" => "a" }, { "id" => "a" } ] }
+
+        assert_equal [ :duplicate_id ], violations(document).map(&:problem)
+      end
+
       test "reports an edge leaving a node that does not exist" do
         document = { "entry" => "a", "nodes" => [ { "id" => "a" } ], "edges" => [ { "from" => "ghost", "to" => "a" } ] }
 
