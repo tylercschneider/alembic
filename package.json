@@ -1,0 +1,29 @@
+{
+  "name": "alembic",
+  "version": "0.1.0",
+  "description": "Flow canvas assets for the Alembic Rails engine",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "build": "esbuild app/javascript/alembic/canvas.jsx --bundle --minify --format=iife --target=es2020 --define:process.env.NODE_ENV=\\\"production\\\" --outdir=app/assets/builds/alembic"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tylercschneider/alembic.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tylercschneider/alembic/issues"
+  },
+  "homepage": "https://github.com/tylercschneider/alembic#readme",
+  "dependencies": {
+    "@xyflow/react": "12.11.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  },
+  "private": true
+}

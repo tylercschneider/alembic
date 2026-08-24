@@ -64,6 +64,24 @@ Alembic.layout = "application"
 Alembic.admin_layout = "admin"
 ```
 
+## The flow canvas
+
+The builder's flow canvas is a React Flow application, built here and shipped
+as a committed bundle — a gem cannot run a JavaScript build on the host's
+machine. Host applications need no Node toolchain and no configuration; the
+bundle is served by the asset pipeline like any other engine asset.
+
+Working on the canvas source in `app/javascript/alembic` means rebuilding it:
+
+```bash
+$ npm install
+$ npm run build
+```
+
+That writes `app/assets/builds/alembic/canvas.js` and its stylesheet, both of
+which are committed. CI rebuilds the bundle and fails if it differs from what
+is committed, so the artifact cannot drift away from its source.
+
 ## Contributing
 Contribution directions go here.
 
