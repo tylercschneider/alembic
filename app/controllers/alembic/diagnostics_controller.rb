@@ -4,7 +4,7 @@ module Alembic
 
     def show
       @guide = guide
-      return render :guide if @guide
+      return render :guide if @guide&.scored?
 
       @diagnostic = Diagnostic.find_by!(slug: params[:slug])
     end
@@ -17,6 +17,7 @@ module Alembic
       @answers = without_last_answer(@answers) if params[:back]
       @question = @guide.next_question(@answers)
       return render :step if @question
+      return render_completion unless @guide.scored?
 
       return render_result if @guide.bands.any?
 
@@ -25,6 +26,11 @@ module Alembic
     end
 
     private
+
+    def render_completion
+      @answered = @guide.answers_on_path(@answers)
+      render :complete
+    end
 
     def render_result
       @score = @guide.score(@answers)

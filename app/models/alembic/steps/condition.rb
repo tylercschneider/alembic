@@ -20,7 +20,7 @@ module Alembic
 
       def self.holds?(config, state)
         tested = state[config["answer"]]
-        return Array(config["in"]).include?(tested) if config.key?("in")
+        return Array(config["in"]).include?(tested) if config["in"].present?
 
         tested == config["equals"]
       end

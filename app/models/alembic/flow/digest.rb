@@ -14,6 +14,10 @@ module Alembic
         @document.node(id)
       end
 
+      def steps
+        @document.nodes
+      end
+
       def requirements(id)
         node = step(id)
         step_type(node)&.requirements_for(node).to_a

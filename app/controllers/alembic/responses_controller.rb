@@ -10,6 +10,7 @@ module Alembic
       @answers = @response.answers
       @question = @guide.next_question(@answers)
       return render :step if @question
+      return render_completion unless @guide.scored?
 
       render_result
     end
@@ -21,6 +22,11 @@ module Alembic
     end
 
     private
+
+    def render_completion
+      @answered = @guide.answers_on_path(@answers)
+      render template: "alembic/diagnostics/complete"
+    end
 
     def render_result
       @score = @guide.score(@answers)
