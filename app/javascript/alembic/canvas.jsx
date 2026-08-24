@@ -149,6 +149,7 @@ const Canvas = ({ base, token, initial }) => {
   const [ armed, setArmed ] = useState(null)
   const [ dragging, setDragging ] = useState(null)
   const [ links, setLinks ] = useState([])
+  const [ extent, setExtent ] = useState({ width: "100%", height: "100%" })
   const cards = useRef({})
   const surface = useRef(null)
 
@@ -174,6 +175,8 @@ const Canvas = ({ base, token, initial }) => {
     const measure = () => {
       const frame = surface.current?.getBoundingClientRect()
       if (!frame) return
+
+      setExtent({ width: surface.current.scrollWidth, height: surface.current.scrollHeight })
 
       const anchor = (box, side) => {
         const l = box.left - frame.left + surface.current.scrollLeft
@@ -278,7 +281,8 @@ const Canvas = ({ base, token, initial }) => {
                            opacity: flow.redoable ? 1 : 0.4, cursor: flow.redoable ? "pointer" : "default" }}>↷ Redo</button>
         </div>
 
-        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 1 }}>
+        <svg width={extent.width} height={extent.height}
+             style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none", zIndex: 1 }}>
           <defs>
             <marker id="alembic-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
               <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af" />
