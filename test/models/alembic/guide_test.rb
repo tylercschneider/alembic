@@ -49,6 +49,14 @@ module Alembic
       assert_equal "Yes", guide([ question ]).summary({ q1: "yes" }).first.option.label
     end
 
+    test "the summary leaves out an answer the current path no longer reaches" do
+      branching = [ Q.new(id: :path, text: "?", transitions: [ Guide::Transition.new(to: :right_q, condition: ->(answers) { answers[:path] == "right" }) ]),
+                    Q.new(id: :left_q, text: "L"),
+                    Q.new(id: :right_q, text: "R", options: [ Guide::Option.new(value: "y", label: "Y", hint: nil, weight: 1) ]) ]
+
+      assert_equal [ :path ], guide(branching).summary({ path: "left", right_q: "y" }).map { |answer| answer.question.id }
+    end
+
     test "next question is the first one when nothing is answered" do
       first = Q.new(id: :a, text: "A")
 
