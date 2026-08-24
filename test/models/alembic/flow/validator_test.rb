@@ -3,8 +3,28 @@ require "test_helper"
 module Alembic
   module Flow
     class ValidatorTest < ActiveSupport::TestCase
-      def violations(document)
-        Validator.new(Document.new(document)).violations
+      def violations(document, registry = Flow.registry)
+        Validator.new(Document.new(document), registry: registry).violations
+      end
+
+      def needy_registry
+        Registry.new.tap do |registry|
+          registry.register(StepType.define(:needy) { requires { |node| [ node.config["needs"] ].compact } })
+          registry.register(StepType.define(:plain) {})
+        end
+      end
+
+      def needy_document(edges)
+        { "entry" => "a",
+          "nodes" => [ { "id" => "a", "type" => "plain" }, { "id" => "r", "type" => "plain" },
+                       { "id" => "x", "type" => "needy", "needs" => "r" } ],
+          "edges" => edges }
+      end
+
+      test "reports a requirement that lies on no path to the step" do
+        document = needy_document([ { "from" => "a", "to" => "r" }, { "from" => "a", "to" => "x" } ])
+
+        assert_equal [ :unmet_requirement ], violations(document, needy_registry).map(&:problem)
       end
 
       test "reports nothing for a whole document with none of these problems" do
