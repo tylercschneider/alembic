@@ -183,12 +183,27 @@ const Canvas = ({ base, token, initial }) => {
         const scroll = { x: surface.current.scrollLeft, y: surface.current.scrollTop }
         const left = (box) => box.left - frame.left + scroll.x
         const top = (box) => box.top - frame.top + scroll.y
-        const branching = leaving[edge.source] > 1 && target.column !== source.column
         const leftward = target.column < source.column
+        const descends = target.row > source.row
+        const branching = descends && leaving[edge.source] > 1 && target.column !== source.column
+
+        if (!descends) {
+          const x1 = left(from) + (leftward ? 0 : from.width)
+          const y1 = top(from) + from.height / 2
+          const x2 = left(to) + (leftward ? to.width : 0)
+          const y2 = top(to) + to.height / 2
+          const level = target.row === source.row
+          const detour = leftward ? Math.min(x1, x2) - 28 : Math.max(x1, x2) + 28
+          const path = level
+            ? `M ${x1} ${y1} H ${x2 + (leftward ? 3 : -3)}`
+            : `M ${x1} ${y1} H ${detour} V ${y2} H ${x2 + (leftward ? 3 : -3)}`
+
+          return [ { ...edge, path, x1, y1, midX: (x1 + x2) / 2, midY: level ? y1 : (y1 + y2) / 2 } ]
+        }
+
         const x2 = left(to) + to.width / 2
         const y2 = top(to)
         const lane = (top(from) + from.height + y2) / 2
-
         const x1 = branching ? left(from) + (leftward ? 0 : from.width) : left(from) + from.width / 2
         const y1 = branching ? top(from) + from.height / 2 : top(from) + from.height
         const path = branching
