@@ -175,47 +175,44 @@ const Canvas = ({ base, token, initial }) => {
       const frame = surface.current?.getBoundingClientRect()
       if (!frame) return
 
-      const leaving = {}
-      flow.edges.forEach((edge) => { leaving[edge.source] = (leaving[edge.source] || 0) + 1 })
+      const anchor = (box, side) => {
+        const l = box.left - frame.left + surface.current.scrollLeft
+        const t = box.top - frame.top + surface.current.scrollTop
+
+        if (side === "left") return { x: l, y: t + box.height / 2 }
+        if (side === "right") return { x: l + box.width, y: t + box.height / 2 }
+        if (side === "top") return { x: l + box.width / 2, y: t }
+        return { x: l + box.width / 2, y: t + box.height }
+      }
+
+      const shy = (point, side) => {
+        if (side === "top") return { x: point.x, y: point.y - 3 }
+        if (side === "left") return { x: point.x - 3, y: point.y }
+        if (side === "right") return { x: point.x + 3, y: point.y }
+        return { x: point.x, y: point.y + 3 }
+      }
 
       setLinks(flow.edges.flatMap((edge) => {
-        const from = cards.current[edge.source]?.getBoundingClientRect()
-        const to = cards.current[edge.target]?.getBoundingClientRect()
-        const source = byId[edge.source]
-        const target = byId[edge.target]
-        if (!from || !to || !source || !target) return []
+        const fromBox = cards.current[edge.source]?.getBoundingClientRect()
+        const toBox = cards.current[edge.target]?.getBoundingClientRect()
+        if (!fromBox || !toBox) return []
 
-        const scroll = { x: surface.current.scrollLeft, y: surface.current.scrollTop }
-        const left = (box) => box.left - frame.left + scroll.x
-        const top = (box) => box.top - frame.top + scroll.y
-        const leftward = target.column < source.column
-        const descends = target.row > source.row
-        const branching = descends && leaving[edge.source] > 1 && target.column !== source.column
+        const a = anchor(fromBox, edge.leaves)
+        const b = shy(anchor(toBox, edge.enters), edge.enters)
+        const lane = (anchor(fromBox, "bottom").y + anchor(toBox, "top").y) / 2
+        const detour = edge.leaves === "left" ? Math.min(a.x, b.x) - 28 : Math.max(a.x, b.x) + 28
 
-        if (!descends) {
-          const x1 = left(from) + (leftward ? 0 : from.width)
-          const y1 = top(from) + from.height / 2
-          const x2 = left(to) + (leftward ? to.width : 0)
-          const y2 = top(to) + to.height / 2
-          const level = target.row === source.row
-          const detour = leftward ? Math.min(x1, x2) - 28 : Math.max(x1, x2) + 28
-          const path = level
-            ? `M ${x1} ${y1} H ${x2 + (leftward ? 3 : -3)}`
-            : `M ${x1} ${y1} H ${detour} V ${y2} H ${x2 + (leftward ? 3 : -3)}`
+        const path = {
+          straight: `M ${a.x} ${a.y} L ${b.x} ${b.y}`,
+          turn: `M ${a.x} ${a.y} H ${b.x} V ${b.y}`,
+          lane: `M ${a.x} ${a.y} V ${lane} H ${b.x} V ${b.y}`,
+          detour: `M ${a.x} ${a.y} H ${detour} V ${b.y} H ${b.x}`
+        }[edge.route]
 
-          return [ { ...edge, path, x1, y1, midX: (x1 + x2) / 2, midY: level ? y1 : (y1 + y2) / 2 } ]
-        }
+        const midX = edge.route === "detour" ? detour : (a.x + b.x) / 2
+        const midY = edge.route === "lane" ? lane : (a.y + b.y) / 2
 
-        const x2 = left(to) + to.width / 2
-        const y2 = top(to)
-        const lane = (top(from) + from.height + y2) / 2
-        const x1 = branching ? left(from) + (leftward ? 0 : from.width) : left(from) + from.width / 2
-        const y1 = branching ? top(from) + from.height / 2 : top(from) + from.height
-        const path = branching
-          ? `M ${x1} ${y1} H ${x2} V ${y2 - 3}`
-          : `M ${x1} ${y1} V ${lane} H ${x2} V ${y2 - 3}`
-
-        return [ { ...edge, path, x1, y1, midX: branching ? (x1 + x2) / 2 : x1, midY: branching ? y1 : lane } ]
+        return [ { ...edge, path, midX, midY } ]
       }))
     }
 
@@ -293,7 +290,7 @@ const Canvas = ({ base, token, initial }) => {
         </svg>
 
         {links.filter((link) => link.label).map((link) => (
-          <div key={`${link.id}-label`} style={{ position: "absolute", left: link.x1 - 14, top: link.y1 - 20, zIndex: 3, fontSize: 11, color: "#6b7280", background: "#fafafa", padding: "0 3px" }}>{link.label}</div>
+          <div key={`${link.id}-label`} style={{ position: "absolute", left: link.midX - 10, top: link.midY - 18, zIndex: 3, fontSize: 11, color: "#6b7280", background: "#fafafa", padding: "0 3px" }}>{link.label}</div>
         ))}
 
         {links.map((link) => (

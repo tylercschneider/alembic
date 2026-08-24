@@ -50,6 +50,57 @@ module Alembic
         assert_equal [ "yes", "no" ], canvas(flow)["palette"].last["ports"]
       end
 
+      def routed(document, from, to)
+        canvas(document)["edges"].find { |edge| edge["source"] == from && edge["target"] == to }
+      end
+
+      def branching_flow
+        { "entry" => "a",
+          "nodes" => [ { "id" => "a", "type" => "branch" }, { "id" => "l", "type" => "ask" },
+                       { "id" => "r", "type" => "ask" }, { "id" => "end", "type" => "ask" } ],
+          "edges" => [ { "from" => "a", "to" => "l", "on" => "yes" }, { "from" => "a", "to" => "r", "on" => "no" },
+                       { "from" => "l", "to" => "end" }, { "from" => "r", "to" => "end" } ] }
+      end
+
+      test "a step leading to the one below it goes straight down" do
+        edge = routed(flow, "a", "b")
+
+        assert_equal [ "bottom", "top", "straight" ], edge.values_at("leaves", "enters", "route")
+      end
+
+      test "a branch leaves the side its target lies on" do
+        assert_equal "left", routed(branching_flow, "a", "l")["leaves"]
+      end
+
+      test "a branch leaves the other side for its other target" do
+        assert_equal "right", routed(branching_flow, "a", "r")["leaves"]
+      end
+
+      test "a branch turns once into the top of its target" do
+        assert_equal [ "top", "turn" ], routed(branching_flow, "a", "l").values_at("enters", "route")
+      end
+
+      test "a step merging across into a shared step takes the lane between rows" do
+        assert_equal [ "bottom", "top", "lane" ], routed(branching_flow, "r", "end").values_at("leaves", "enters", "route")
+      end
+
+      test "a step rejoining one beside it goes straight across" do
+        rejoining = { "entry" => "a",
+                      "nodes" => [ { "id" => "a", "type" => "branch" }, { "id" => "l", "type" => "ask" }, { "id" => "r", "type" => "ask" } ],
+                      "edges" => [ { "from" => "a", "to" => "l", "on" => "yes" }, { "from" => "a", "to" => "r", "on" => "no" },
+                                   { "from" => "r", "to" => "l" } ] }
+
+        assert_equal [ "left", "right", "straight" ], routed(rejoining, "r", "l").values_at("leaves", "enters", "route")
+      end
+
+      test "a step looping back up detours around" do
+        looping = { "entry" => "a",
+                    "nodes" => [ { "id" => "a", "type" => "ask" }, { "id" => "b", "type" => "ask" } ],
+                    "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "a" } ] }
+
+        assert_equal "detour", routed(looping, "b", "a")["route"]
+      end
+
       test "carries the document's edges" do
         assert_equal [ [ "a", "b" ] ], canvas(flow)["edges"].map { |edge| [ edge["source"], edge["target"] ] }
       end

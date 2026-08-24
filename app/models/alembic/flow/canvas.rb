@@ -22,9 +22,39 @@ module Alembic
       end
 
       def edges
+        placed = Layout.new(@document).positions
+
         @document.edges.each_with_index.map do |edge, index|
           { "id" => "#{edge.from}-#{edge.to}-#{index}", "source" => edge.from, "target" => edge.to, "label" => edge.on }
+            .merge(routing(edge, placed))
         end
+      end
+
+      def routing(edge, placed)
+        from = placed[edge.from]
+        to = placed[edge.to]
+        return { "leaves" => "bottom", "enters" => "top", "route" => "straight" } unless from && to
+
+        return alongside_routing(from, to) unless to["row"] > from["row"]
+        return branch_routing(from, to) if branching?(edge, from, to)
+
+        { "leaves" => "bottom", "enters" => "top",
+          "route" => to["column"] == from["column"] ? "straight" : "lane" }
+      end
+
+      def branch_routing(from, to)
+        { "leaves" => to["column"] < from["column"] ? "left" : "right", "enters" => "top", "route" => "turn" }
+      end
+
+      def alongside_routing(from, to)
+        leftward = to["column"] < from["column"]
+
+        { "leaves" => leftward ? "left" : "right", "enters" => leftward ? "right" : "left",
+          "route" => to["row"] == from["row"] ? "straight" : "detour" }
+      end
+
+      def branching?(edge, from, to)
+        to["column"] != from["column"] && @document.edges_from(edge.from).size > 1
       end
 
       def palette
