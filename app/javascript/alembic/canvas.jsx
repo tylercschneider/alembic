@@ -4,8 +4,8 @@ import { ReactFlow, Background, Controls, Handle, Position } from "@xyflow/react
 import "@xyflow/react/dist/style.css"
 
 const PANEL = { width: 260, padding: 16, overflowY: "auto", background: "#fff", borderLeft: "1px solid #e5e7eb", fontSize: 13 }
-const SIDEBAR = { ...PANEL, borderLeft: "none", borderRight: "1px solid #e5e7eb" }
 const BUTTON = { display: "block", width: "100%", marginBottom: 6, padding: "6px 10px", textAlign: "left", cursor: "pointer", border: "1px solid #d1d5db", borderRadius: 6, background: "#fff" }
+const ADD = { width: 34, height: 34, borderRadius: "50%", border: "1px solid #d1d5db", background: "#fff", cursor: "pointer", fontSize: 20, lineHeight: "20px", boxShadow: "0 1px 3px rgba(0,0,0,.15)" }
 const CONTROL = { width: "100%", marginBottom: 10, padding: "5px 7px", border: "1px solid #d1d5db", borderRadius: 4, fontSize: 13, boxSizing: "border-box" }
 
 const StepNode = ({ data, selected }) => {
@@ -16,7 +16,7 @@ const StepNode = ({ data, selected }) => {
       minWidth: 170, padding: "8px 12px", borderRadius: 6, background: "#fff", fontSize: 13,
       border: `2px solid ${data.violations.length ? "#dc2626" : selected ? "#2563eb" : "#9ca3af"}`
     }}>
-      <Handle type="target" position={Position.Left} />
+      <Handle type="target" position={Position.Top} />
       <div style={{ fontWeight: 600 }}>{data.label}</div>
       <div style={{ color: "#6b7280", fontSize: 11 }}>{data.type}</div>
       {data.violations.map((violation) => (
@@ -25,11 +25,11 @@ const StepNode = ({ data, selected }) => {
         </div>
       ))}
       {ports.map((port, index) => (
-        <Handle key={port || "out"} id={port || undefined} type="source" position={Position.Right}
-                style={{ top: `${((index + 1) * 100) / (ports.length + 1)}%` }} />
+        <Handle key={port || "out"} id={port || undefined} type="source" position={Position.Bottom}
+                style={{ left: `${((index + 1) * 100) / (ports.length + 1)}%` }} />
       ))}
       {data.ports.length > 0 && (
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 4, fontSize: 10, color: "#6b7280" }}>
+        <div style={{ display: "flex", justifyContent: "space-around", marginTop: 6, fontSize: 10, color: "#6b7280" }}>
           {data.ports.map((port) => <span key={port}>{port}</span>)}
         </div>
       )}
@@ -37,20 +37,34 @@ const StepNode = ({ data, selected }) => {
   )
 }
 
-const Control = ({ type, value, onChange }) => {
-  if (type === "boolean") return <input type="checkbox" checked={Boolean(value)} onChange={(e) => onChange(e.target.checked)} />
-  if (type === "number") return <input style={CONTROL} type="number" value={value ?? ""} onChange={(e) => onChange(e.target.value)} />
+const Control = ({ type, value, onChange, onSettle }) => {
+  if (type === "boolean") {
+    return <input type="checkbox" checked={Boolean(value)} onChange={(e) => onSettle(e.target.checked)} />
+  }
   if (type === "list") {
     const lines = Array.isArray(value) ? value.join("\n") : value ?? ""
-    return <textarea style={{ ...CONTROL, height: 70 }} value={lines} onChange={(e) => onChange(e.target.value.split("\n").filter(Boolean))} />
+    const split = (text) => text.split("\n").filter(Boolean)
+    return <textarea style={{ ...CONTROL, height: 70 }} value={lines}
+                     onChange={(e) => onChange(split(e.target.value))}
+                     onBlur={(e) => onSettle(split(e.target.value))} />
   }
-  if (type === "text") return <textarea style={{ ...CONTROL, height: 60 }} value={value ?? ""} onChange={(e) => onChange(e.target.value)} />
-  return <input style={CONTROL} type="text" value={value ?? ""} onChange={(e) => onChange(e.target.value)} />
+  if (type === "text") {
+    return <textarea style={{ ...CONTROL, height: 60 }} value={value ?? ""}
+                     onChange={(e) => onChange(e.target.value)} onBlur={(e) => onSettle(e.target.value)} />
+  }
+
+  return <input style={CONTROL} type={type === "number" ? "number" : "text"} value={value ?? ""}
+                onChange={(e) => onChange(e.target.value)} onBlur={(e) => onSettle(e.target.value)} />
 }
 
 const Inspector = ({ node, fields, onSave, onDelete }) => {
   const [ draft, setDraft ] = useState(node.config)
   useEffect(() => setDraft(node.config), [ node.id, node.config ])
+
+  const settle = (next) => {
+    setDraft(next)
+    if (JSON.stringify(next) !== JSON.stringify(node.config)) onSave(next)
+  }
 
   return (
     <aside style={PANEL}>
@@ -59,26 +73,35 @@ const Inspector = ({ node, fields, onSave, onDelete }) => {
       {Object.entries(fields).map(([ name, type ]) => (
         <label key={name} style={{ display: "block", marginBottom: 4 }}>
           <span style={{ display: "block", marginBottom: 2, color: "#374151" }}>{name}</span>
-          <Control type={type} value={draft[name]} onChange={(next) => setDraft({ ...draft, [name]: next })} />
+          <Control type={type} value={draft[name]}
+                   onChange={(next) => setDraft({ ...draft, [name]: next })}
+                   onSettle={(next) => settle({ ...draft, [name]: next })} />
         </label>
       ))}
-      <button style={{ ...BUTTON, textAlign: "center" }} onClick={() => onSave(draft)}>Save</button>
       <button style={{ ...BUTTON, textAlign: "center", color: "#dc2626" }} onClick={onDelete}>Delete step</button>
     </aside>
   )
 }
 
-const Palette = ({ entries, onAdd }) => (
-  <aside style={SIDEBAR}>
-    <h2 style={{ fontWeight: 600, marginBottom: 10 }}>Steps</h2>
-    {entries.map((entry) => (
-      <button key={entry.type} style={BUTTON} onClick={() => onAdd(entry)}>
-        {entry.label}
-        <span style={{ display: "block", color: "#6b7280", fontSize: 11 }}>{entry.type}</span>
-      </button>
-    ))}
-  </aside>
-)
+const AddStep = ({ entries, onAdd }) => {
+  const [ open, setOpen ] = useState(false)
+
+  return (
+    <div style={{ position: "absolute", zIndex: 5, top: 12, left: 12 }}>
+      <button style={ADD} title="Add a step" onClick={() => setOpen(!open)}>+</button>
+      {open && (
+        <div style={{ marginTop: 6, width: 190, padding: 8, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,.12)" }}>
+          {entries.map((entry) => (
+            <button key={entry.type} style={BUTTON} onClick={() => { setOpen(false); onAdd(entry) }}>
+              {entry.label}
+              <span style={{ display: "block", color: "#6b7280", fontSize: 11 }}>{entry.type}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const Canvas = ({ base, token, initial }) => {
   const [ flow, setFlow ] = useState(initial)
@@ -127,9 +150,9 @@ const Canvas = ({ base, token, initial }) => {
 
   return (
     <div style={{ display: "flex", height: "100%" }}>
-      <Palette entries={flow.palette} onAdd={(entry) => send("/steps", "POST", { id: nextId(entry.type), type: entry.type })} />
       <div style={{ flex: 1, position: "relative" }}>
-        {error && <div style={{ position: "absolute", zIndex: 5, top: 8, left: 8, padding: "6px 10px", background: "#fee2e2", color: "#991b1b", borderRadius: 6, fontSize: 12 }}>{error}</div>}
+        <AddStep entries={flow.palette} onAdd={(entry) => send("/steps", "POST", { id: nextId(entry.type), type: entry.type })} />
+        {error && <div style={{ position: "absolute", zIndex: 6, top: 14, left: 58, padding: "6px 10px", background: "#fee2e2", color: "#991b1b", borderRadius: 6, fontSize: 12 }}>{error}</div>}
         <ReactFlow
           nodes={nodes}
           edges={edges}

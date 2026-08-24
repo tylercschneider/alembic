@@ -16,24 +16,24 @@ module Alembic
         assert_equal positions_for(branching), positions_for(branching)
       end
 
-      test "places a step further along than the one it follows" do
+      test "places a step below the one it follows" do
         document = { "entry" => "a", "nodes" => [ { "id" => "a" }, { "id" => "b" } ],
                      "edges" => [ { "from" => "a", "to" => "b" } ] }
         placed = positions_for(document)
 
-        assert_operator placed["b"]["x"], :>, placed["a"]["x"]
+        assert_operator placed["b"]["y"], :>, placed["a"]["y"]
       end
 
       test "keeps a branching step's successors from overlapping" do
         placed = positions_for(branching)
 
-        assert_not_equal placed["b"]["y"], placed["c"]["y"]
+        assert_not_equal placed["b"]["x"], placed["c"]["x"]
       end
 
-      test "places a branching step's successors in the same column" do
+      test "places a branching step's successors at the same depth" do
         placed = positions_for(branching)
 
-        assert_equal placed["b"]["x"], placed["c"]["x"]
+        assert_equal placed["b"]["y"], placed["c"]["y"]
       end
 
       test "lays out a document whose edges form a cycle" do
