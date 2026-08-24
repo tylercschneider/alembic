@@ -3,6 +3,18 @@ require "test_helper"
 module Alembic
   module Flow
     class DocumentTest < ActiveSupport::TestCase
+      test "has no nodes when the document declares none" do
+        assert_empty Document.new({}).nodes
+      end
+
+      test "has no edges when the document declares none" do
+        assert_empty Document.new({}).edges
+      end
+
+      test "has no edges leaving a node when the document declares none" do
+        assert_empty Document.new({}).edges_from("a")
+      end
+
       test "finds the edges leaving a node" do
         document = Document.new({ "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "c" } ] })
 
