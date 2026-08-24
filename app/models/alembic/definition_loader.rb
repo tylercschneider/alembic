@@ -65,7 +65,7 @@ module Alembic
 
     def transitions_for(question)
       Array(question["transitions"]).map do |transition|
-        Guide::Transition.new(to: transition["to"].to_sym)
+        Guide::Transition.new(to: transition["to"].to_sym, condition: condition_from(transition["condition"]))
       end
     end
 
@@ -74,7 +74,10 @@ module Alembic
     end
 
     def condition_for(question)
-      condition = question["condition"]
+      condition_from(question["condition"])
+    end
+
+    def condition_from(condition)
       return nil unless condition
 
       answer_key = condition["answer"].to_sym
