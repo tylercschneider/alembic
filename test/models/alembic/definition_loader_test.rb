@@ -50,6 +50,12 @@ module Alembic
       assert_equal 3, loader.build.questions.first.options.first.weight
     end
 
+    test "builds a question's transition carrying its target" do
+      loader = DefinitionLoader.new({ "questions" => [ { "id" => "need", "text" => "?", "transitions" => [ { "to" => "loss" } ] } ] })
+
+      assert_equal :loss, loader.build.questions.first.transitions.first.to
+    end
+
     test "an equals condition leaves a question inapplicable when the answer differs" do
       loader = DefinitionLoader.new({ "questions" => [ { "id" => "loss", "text" => "?", "condition" => { "answer" => "need", "equals" => "rates" } } ] })
 
