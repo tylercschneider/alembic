@@ -56,8 +56,8 @@ module Alembic
     end
 
     def without_last_answer(answers)
-      last = @guide.applicable_questions(answers).select { |question| answers.key?(question.id) }.last
-      last ? answers.except(last.id) : answers
+      last = @guide.answers_on_path(answers).keys.last
+      last ? answers.except(last) : answers
     end
   end
 end
