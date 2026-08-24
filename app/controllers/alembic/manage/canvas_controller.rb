@@ -2,13 +2,16 @@ module Alembic
   module Manage
     class CanvasController < BaseController
       def show
-        render json: Flow::Canvas.new(document).to_h.merge("undoable" => diagnostic.previous_definition_version.present?)
+        render json: canvas_payload
       end
 
       def undo
-        undoing = diagnostic.previous_definition_version
-        diagnostic.record_definition(undoing.definition) if undoing
+        diagnostic.undo_definition
+        head :no_content
+      end
 
+      def redo
+        diagnostic.redo_definition
         head :no_content
       end
 
@@ -48,6 +51,11 @@ module Alembic
         head :no_content
       rescue Flow::InvalidEdit => invalid
         render json: { error: invalid.message }, status: :unprocessable_entity
+      end
+
+      def canvas_payload
+        Flow::Canvas.new(document).to_h
+          .merge("undoable" => diagnostic.undoable?, "redoable" => diagnostic.redoable?)
       end
 
       def diagnostic

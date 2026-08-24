@@ -58,12 +58,22 @@ module Alembic
       assert_equal [ "a", "b" ], nodes
     end
 
-    test "undoing records the restoration as a new version rather than discarding one" do
+    test "redoing puts back what was undone" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/undo"
 
-      assert_difference -> { diagnostic.definition_versions.count } do
-        post "#{canvas_path}/undo"
-      end
+      post "#{canvas_path}/redo"
+
+      assert_equal [ "a", "b", "c" ], nodes
+    end
+
+    test "the canvas says whether there is anything to redo" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/undo"
+
+      get "#{canvas_path}.json"
+
+      assert response.parsed_body["redoable"]
     end
 
     test "undoing with nothing behind it leaves the flow alone" do

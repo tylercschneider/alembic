@@ -22,15 +22,28 @@ module Alembic
     end
 
     def current_definition_version
-      definition_versions.order(:number).last
-    end
-
-    def previous_definition_version
-      definition_versions.order(:number).last(2).first if definition_versions.count > 1
+      definition_versions.find_by(number: cursor)
     end
 
     def record_definition(payload)
       definition_versions.create!(number: next_definition_number, definition: payload)
+        .tap { |version| update!(definition_cursor: version.number) }
+    end
+
+    def undoable?
+      recorded_numbers.any? { |number| number < cursor }
+    end
+
+    def redoable?
+      recorded_numbers.any? { |number| number > cursor }
+    end
+
+    def undo_definition
+      step_to(recorded_numbers.select { |number| number < cursor }.max)
+    end
+
+    def redo_definition
+      step_to(recorded_numbers.select { |number| number > cursor }.min)
     end
 
     def to_guide
@@ -38,6 +51,18 @@ module Alembic
     end
 
     private
+
+    def step_to(number)
+      update!(definition_cursor: number) if number
+    end
+
+    def cursor
+      definition_cursor || recorded_numbers.max
+    end
+
+    def recorded_numbers
+      definition_versions.pluck(:number)
+    end
 
     def next_definition_number
       (definition_versions.maximum(:number) || 0) + 1

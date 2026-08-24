@@ -254,6 +254,11 @@ const Canvas = ({ base, token, initial }) => {
                   onClick={() => { setSelected(null); send("/undo", "POST") }}
                   style={{ ...S.action, width: "auto", marginBottom: 0, padding: "5px 12px",
                            opacity: flow.undoable ? 1 : 0.4, cursor: flow.undoable ? "pointer" : "default" }}>↶ Undo</button>
+          <button title={flow.redoable ? "Redo the change you undid" : "Nothing to redo"}
+                  disabled={!flow.redoable}
+                  onClick={() => { setSelected(null); send("/redo", "POST") }}
+                  style={{ ...S.action, width: "auto", marginBottom: 0, padding: "5px 12px",
+                           opacity: flow.redoable ? 1 : 0.4, cursor: flow.redoable ? "pointer" : "default" }}>↷ Redo</button>
         </div>
 
         <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 1 }}>
