@@ -29,6 +29,7 @@ module Alembic
     def render_result
       @score = @guide.score(@answers)
       @band = @guide.result_for(@answers)
+      @summary = @guide.summary(@answers)
       assign_domain_figures if @guide.domains.any?
       render :result
     end

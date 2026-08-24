@@ -26,6 +26,8 @@ module Alembic
       end
     end
 
+    Answer = Data.define(:question, :option)
+
     Band = Data.define(:ceiling, :name, :description) do
       def initialize(ceiling:, name:, description: nil)
         super
@@ -118,6 +120,13 @@ module Alembic
 
     def answers_on_path(answers)
       answers.slice(*traverse(answers).first)
+    end
+
+    def summary(answers)
+      answers_on_path(answers).map do |id, value|
+        question = questions.find { |candidate| candidate.id == id }
+        Answer.new(question: question, option: question.options.find { |candidate| candidate.value == value })
+      end
     end
 
     def applicable_questions(answers)
