@@ -1,0 +1,19 @@
+<% content_for :head do %>
+  <%= stylesheet_link_tag "alembic/canvas" %>
+  <%= javascript_include_tag "alembic/canvas", defer: true %>
+<% end %>
+
+<%= ui_page(max_width: :full) do %>
+  <%= ui_page_header(title: "Flow", subtitle: @diagnostic.title.presence || @diagnostic.slug) do |header| %>
+    <% header.action do %>
+      <%= ui_button(label: "Edit definition", href: alembic.edit_manage_diagnostic_definition_path(@diagnostic), variant: :secondary) %>
+      <%= ui_button(label: "Back to diagnostic", href: alembic.manage_diagnostic_path(@diagnostic), variant: :secondary) %>
+    <% end %>
+  <% end %>
+
+  <div class="mt-6 h-[70vh] rounded-lg border border-gray-200 dark:border-zinc-700"
+       data-flow-canvas
+       data-base="<%= alembic.manage_diagnostic_canvas_path(@diagnostic) %>"
+       data-csrf-token="<%= form_authenticity_token %>"
+       data-flow="<%= @canvas.to_json %>"></div>
+<% end %>

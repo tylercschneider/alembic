@@ -76,6 +76,14 @@ module Alembic
       assert_not Diagnostic.exists?(diagnostic.id)
     end
 
+    test "the hub links to the flow canvas" do
+      diagnostic = alembic_diagnostics(:business_scorecard)
+
+      get alembic.manage_diagnostic_path(diagnostic)
+
+      assert_select "a[href=?]", alembic.manage_diagnostic_canvas_path(diagnostic)
+    end
+
     test "the hub links to the steps screen" do
       diagnostic = alembic_diagnostics(:business_scorecard)
 

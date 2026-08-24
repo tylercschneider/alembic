@@ -8,6 +8,7 @@
 
   <%= ui_section(title: "Flow", subtitle: "The definition is what visitors walk") do %>
     <%= ui_grid(cols: { default: 1, sm: 2 }, gap: :lg) do %>
+      <%= ui_card(title: "Flow", summary: "#{@steps.size} steps on the canvas", link: alembic.manage_diagnostic_canvas_path(@diagnostic), cta: "Open the canvas") %>
       <%= ui_card(title: "Steps", summary: "#{@steps.size} steps", link: alembic.manage_diagnostic_steps_path(@diagnostic), cta: "Order the flow") %>
       <%= ui_card(title: "Definition", summary: "Version #{@diagnostic.current_definition_version&.number || 0}", link: alembic.edit_manage_diagnostic_definition_path(@diagnostic), cta: "Edit the document") %>
     <% end %>

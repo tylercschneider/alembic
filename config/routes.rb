@@ -8,6 +8,14 @@ Alembic::Engine.routes.draw do
           patch :reorder
         end
       end
+
+      resource :canvas, only: :show, controller: "canvas" do
+        post   "steps",       action: :add_step
+        patch  "steps/:step", action: :configure_step
+        delete "steps/:step", action: :remove_step
+        post   "edges",       action: :connect
+        delete "edges",       action: :disconnect
+      end
     end
   end
 
