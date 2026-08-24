@@ -2,6 +2,15 @@ require "test_helper"
 
 module Alembic
   class SavedSessionsTest < ActionDispatch::IntegrationTest
+    test "a branching definition sends the visitor down the path their answer selects" do
+      response = Response.start(branching_diagnostic)
+
+      patch alembic.response_path(response), params: { answers: { path: "right" } }
+      get alembic.response_path(response)
+
+      assert_select "legend", text: /Right question/
+    end
+
     test "starting a saved session sends the visitor to its durable URL" do
       post alembic.diagnostic_responses_path("db-guide")
 
@@ -109,6 +118,20 @@ module Alembic
     end
 
     private
+
+    def branching_diagnostic
+      Diagnostic.create!(slug: "branching").tap do |diagnostic|
+        diagnostic.record_definition(
+          "slug" => "branching",
+          "questions" => [
+            { "id" => "path", "text" => "Which path?", "options" => [ { "value" => "left" }, { "value" => "right" } ],
+              "transitions" => [ { "to" => "right_q", "condition" => { "answer" => "path", "equals" => "right" } } ] },
+            { "id" => "left_q", "text" => "Left question", "options" => [ { "value" => "x" } ] },
+            { "id" => "right_q", "text" => "Right question", "options" => [ { "value" => "y" } ] }
+          ]
+        )
+      end
+    end
 
     def recompiled_definition
       {
