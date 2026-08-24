@@ -18,6 +18,7 @@ module Alembic
 
       def show
         @diagnostic = Diagnostic.find(params[:id])
+        @steps = Array(@diagnostic.definition&.fetch("questions", nil))
       end
 
       def edit
@@ -33,18 +34,6 @@ module Alembic
       def destroy
         Diagnostic.find(params[:id]).destroy!
         redirect_to manage_diagnostics_path, notice: "Diagnostic removed."
-      end
-
-      def compile
-        @diagnostic = Diagnostic.find(params[:id])
-        @diagnostic.compile!
-        redirect_to manage_diagnostic_path(@diagnostic), notice: "Published the current rows."
-      end
-
-      def revert
-        @diagnostic = Diagnostic.find(params[:id])
-        @diagnostic.revert!
-        redirect_to manage_diagnostic_path(@diagnostic), notice: "Reverted to the published definition."
       end
 
       private

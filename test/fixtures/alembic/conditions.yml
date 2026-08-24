@@ -1,3 +1,0 @@
-read_needs_current_state:
-  subject: ladder_read (Alembic::Question)
-  tested_question: ladder_need

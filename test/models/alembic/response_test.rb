@@ -61,7 +61,7 @@ module Alembic
     test "takes an owner of any type the host application supplies" do
       diagnostic = Diagnostic.create!(slug: "demo")
       version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
-      owner = diagnostic.domains.create!(key: "governance", name: "Governance")
+      owner = Diagnostic.create!(slug: "owning-record")
 
       response = diagnostic.responses.create!(definition_version: version, owner: owner)
 

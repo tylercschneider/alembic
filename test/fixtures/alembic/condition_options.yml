@@ -1,3 +1,0 @@
-read_matches_now:
-  condition: read_needs_current_state
-  option: need_now
