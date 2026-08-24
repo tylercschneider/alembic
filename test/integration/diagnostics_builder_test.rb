@@ -116,12 +116,19 @@ module Alembic
       assert_select "a[href=?]", alembic.edit_manage_diagnostic_definition_path(diagnostic)
     end
 
-    test "the hub has update and revert buttons" do
+    test "the hub no longer offers a compile that would overwrite the definition" do
       diagnostic = alembic_diagnostics(:business_scorecard)
 
       get alembic.manage_diagnostic_path(diagnostic)
 
-      assert_select "form[action=?]", alembic.compile_manage_diagnostic_path(diagnostic)
+      assert_select "form[action=?]", alembic.compile_manage_diagnostic_path(diagnostic), count: 0
+    end
+
+    test "the hub still offers revert to pull the definition into the editing screens" do
+      diagnostic = alembic_diagnostics(:business_scorecard)
+
+      get alembic.manage_diagnostic_path(diagnostic)
+
       assert_select "form[action=?]", alembic.revert_manage_diagnostic_path(diagnostic)
     end
   end
