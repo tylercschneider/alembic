@@ -79,7 +79,7 @@ module Alembic
     end
 
     def score(answers)
-      answers.sum do |question_id, value|
+      answers_on_path(answers).sum do |question_id, value|
         question = questions.find { |candidate| candidate.id == question_id }
         option = question&.options&.find { |candidate| candidate.value == value }
         option&.weight || 0

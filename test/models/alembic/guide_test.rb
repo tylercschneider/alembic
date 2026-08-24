@@ -34,6 +34,14 @@ module Alembic
       assert_equal({ path: "left" }, guide(branching).answers_on_path({ path: "left", right_q: "y" }))
     end
 
+    test "score ignores an answer the current path no longer reaches" do
+      branching = [ Q.new(id: :path, text: "?", transitions: [ Guide::Transition.new(to: :right_q, condition: ->(answers) { answers[:path] == "right" }) ]),
+                    Q.new(id: :left_q, text: "L"),
+                    Q.new(id: :right_q, text: "R", options: [ Guide::Option.new(value: "y", label: "Y", hint: nil, weight: 10) ]) ]
+
+      assert_equal 0, guide(branching).score({ path: "left", right_q: "y" })
+    end
+
     test "next question is the first one when nothing is answered" do
       first = Q.new(id: :a, text: "A")
 
