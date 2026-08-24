@@ -44,6 +44,21 @@ module Alembic
       assert_equal 2, diagnostic.definition_versions.last.number
     end
 
+    test "reports the version before the current one" do
+      diagnostic = Diagnostic.create!(slug: "undo")
+      first = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "one" })
+      diagnostic.definition_versions.create!(number: 2, definition: { "slug" => "two" })
+
+      assert_equal first, diagnostic.reload.previous_definition_version
+    end
+
+    test "reports no earlier version when only one has been recorded" do
+      diagnostic = Diagnostic.create!(slug: "undo")
+      diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "one" })
+
+      assert_nil diagnostic.reload.previous_definition_version
+    end
+
     test "reports its current definition as the highest-numbered version" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition({ "slug" => "first" })

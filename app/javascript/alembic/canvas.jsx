@@ -245,10 +245,16 @@ const Canvas = ({ base, token, initial }) => {
             Choose the step “{armed[1] || "next"}” should lead to — <button onClick={() => setArmed(null)} style={{ border: "none", background: "none", color: "#1e40af", textDecoration: "underline", cursor: "pointer", fontSize: 12, padding: 0 }}>cancel</button>
           </div>
         )}
-        {flow.nodes.length === 0 && (
-          <button style={{ ...S.plus, position: "absolute", top: 16, left: 16, zIndex: 5 }}
-                  title="Add a step" onClick={() => setAdding({ at: { x: 16, y: 52 } })}>+</button>
-        )}
+        <div style={{ position: "absolute", top: 16, left: 16, zIndex: 5, display: "flex", gap: 8 }}>
+          {flow.nodes.length === 0 && (
+            <button style={S.plus} title="Add a step" onClick={() => setAdding({ at: { x: 16, y: 52 } })}>+</button>
+          )}
+          <button title={flow.undoable ? "Undo the last change" : "Nothing to undo"}
+                  disabled={!flow.undoable}
+                  onClick={() => { setSelected(null); send("/undo", "POST") }}
+                  style={{ ...S.action, width: "auto", marginBottom: 0, padding: "5px 12px",
+                           opacity: flow.undoable ? 1 : 0.4, cursor: flow.undoable ? "pointer" : "default" }}>↶ Undo</button>
+        </div>
 
         <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 1 }}>
           <defs>

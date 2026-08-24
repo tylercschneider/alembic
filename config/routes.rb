@@ -14,6 +14,7 @@ Alembic::Engine.routes.draw do
         patch  "steps/:step", action: :configure_step
         delete "steps/:step",      action: :remove_step
         patch  "steps/:step/move", action: :move_step
+        post   "undo",        action: :undo
         post   "edges",       action: :connect
         delete "edges",       action: :disconnect
       end

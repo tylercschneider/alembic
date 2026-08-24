@@ -50,6 +50,42 @@ module Alembic
       assert_equal [ "a", "b", "c" ], nodes
     end
 
+    test "undoing an edit restores what the flow was before it" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+
+      post "#{canvas_path}/undo"
+
+      assert_equal [ "a", "b" ], nodes
+    end
+
+    test "undoing records the restoration as a new version rather than discarding one" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+
+      assert_difference -> { diagnostic.definition_versions.count } do
+        post "#{canvas_path}/undo"
+      end
+    end
+
+    test "undoing with nothing behind it leaves the flow alone" do
+      post "#{canvas_path}/undo"
+
+      assert_equal [ "a", "b" ], nodes
+    end
+
+    test "the canvas says whether there is anything to undo" do
+      get "#{canvas_path}.json"
+
+      assert_not response.parsed_body["undoable"]
+    end
+
+    test "the canvas says there is something to undo after an edit" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+
+      get "#{canvas_path}.json"
+
+      assert response.parsed_body["undoable"]
+    end
+
     test "adding a step from a port connects it to that branch" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b", on: "no" }
 

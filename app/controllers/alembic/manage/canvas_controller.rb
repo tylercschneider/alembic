@@ -2,7 +2,14 @@ module Alembic
   module Manage
     class CanvasController < BaseController
       def show
-        render json: Flow::Canvas.new(document).to_h
+        render json: Flow::Canvas.new(document).to_h.merge("undoable" => diagnostic.previous_definition_version.present?)
+      end
+
+      def undo
+        undoing = diagnostic.previous_definition_version
+        diagnostic.record_definition(undoing.definition) if undoing
+
+        head :no_content
       end
 
       def add_step

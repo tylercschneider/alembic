@@ -25,6 +25,10 @@ module Alembic
       definition_versions.order(:number).last
     end
 
+    def previous_definition_version
+      definition_versions.order(:number).last(2).first if definition_versions.count > 1
+    end
+
     def record_definition(payload)
       definition_versions.create!(number: next_definition_number, definition: payload)
     end
