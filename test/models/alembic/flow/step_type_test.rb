@@ -3,6 +3,18 @@ require "test_helper"
 module Alembic
   module Flow
     class StepTypeTest < ActiveSupport::TestCase
+      test "awaits external input when it declares so" do
+        step_type = StepType.define(:question) { awaits_input }
+
+        assert_predicate step_type, :awaits_input?
+      end
+
+      test "does not await external input by default" do
+        step_type = StepType.define(:agent) {}
+
+        assert_not_predicate step_type, :awaits_input?
+      end
+
       test "declares named output ports" do
         step_type = StepType.define(:branch) { outputs :yes, :no }
 
