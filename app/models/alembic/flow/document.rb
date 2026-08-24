@@ -20,6 +20,10 @@ module Alembic
       def node(id)
         nodes.find { |node| node.id == id }
       end
+
+      def edges_from(id)
+        edges.select { |edge| edge.from == id }
+      end
     end
   end
 end

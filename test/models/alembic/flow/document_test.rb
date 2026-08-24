@@ -3,6 +3,12 @@ require "test_helper"
 module Alembic
   module Flow
     class DocumentTest < ActiveSupport::TestCase
+      test "finds the edges leaving a node" do
+        document = Document.new({ "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "c" } ] })
+
+        assert_equal [ "b" ], document.edges_from("a").map(&:to)
+      end
+
       test "exposes the entry node id" do
         document = Document.new({ "entry" => "a" })
 
