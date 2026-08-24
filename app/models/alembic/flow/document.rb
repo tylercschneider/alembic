@@ -31,10 +31,11 @@ module Alembic
 
       def insert(node, on:)
         source, target = on
-        rewritten = raw_edges.reject { |edge| edge["from"] == source && edge["to"] == target }
-        bridged = [ { "from" => source, "to" => node["id"] }, { "from" => node["id"], "to" => target } ]
+        replaced = raw_edges.find { |edge| edge["from"] == source && edge["to"] == target }
+        bridged = [ { "from" => source, "to" => node["id"], "on" => replaced&.fetch("on", nil) }.compact,
+                    { "from" => node["id"], "to" => target } ]
 
-        with(nodes: raw_nodes + [ node ], edges: rewritten + bridged)
+        with(nodes: raw_nodes + [ node ], edges: (raw_edges - [ replaced ]) + bridged)
       end
 
       private

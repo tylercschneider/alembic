@@ -13,6 +13,40 @@ module Alembic
         document.edges.map { |edge| [ edge.from, edge.to ] }
       end
 
+      test "inserting a step adds it to the document's nodes" do
+        result = two_step_flow.insert({ "id" => "x", "type" => "plain" }, on: [ "a", "b" ])
+
+        assert_equal [ "a", "b", "x" ], result.nodes.map(&:id)
+      end
+
+      test "inserting a step leaves the document it was given untouched" do
+        document = two_step_flow
+
+        document.insert({ "id" => "x", "type" => "plain" }, on: [ "a", "b" ])
+
+        assert_equal [ [ "a", "b" ] ], endpoints(document)
+      end
+
+      test "inserting a step leaves edges it was not asked about alone" do
+        document = Document.new({ "entry" => "a",
+                                  "nodes" => [ { "id" => "a" }, { "id" => "b" }, { "id" => "c" } ],
+                                  "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "a", "to" => "c" } ] })
+
+        result = document.insert({ "id" => "x" }, on: [ "a", "b" ])
+
+        assert_includes endpoints(result), [ "a", "c" ]
+      end
+
+      test "inserting a step keeps the port the replaced edge left by" do
+        document = Document.new({ "entry" => "a",
+                                  "nodes" => [ { "id" => "a" }, { "id" => "b" } ],
+                                  "edges" => [ { "from" => "a", "to" => "b", "on" => "yes" } ] })
+
+        result = document.insert({ "id" => "x" }, on: [ "a", "b" ])
+
+        assert_equal "yes", result.edges_from("a").first.on
+      end
+
       test "inserting a step on an edge replaces it with an edge in and an edge out" do
         result = two_step_flow.insert({ "id" => "x", "type" => "plain" }, on: [ "a", "b" ])
 
