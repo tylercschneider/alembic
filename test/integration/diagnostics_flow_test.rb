@@ -113,6 +113,14 @@ module Alembic
       assert_select "h1", text: /Well instrumented/
     end
 
+    test "the scored result lists the answer given for each question" do
+      scored_diagnostic
+
+      get alembic.diagnostic_step_path("scored-flow"), params: { answers: { need: "yes", team: "no" } }
+
+      assert_select "[data-answer=?]", "need", text: /Yes/m
+    end
+
     test "the scored result links back to the intro" do
       scored_diagnostic
 

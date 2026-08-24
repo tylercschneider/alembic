@@ -24,6 +24,18 @@
       </ul>
     <% end %>
 
+    <% if @summary.present? %>
+      <h2 class="text-xs font-semibold uppercase tracking-widest text-accent-600 mb-3">Your answers</h2>
+      <ul class="mb-8 divide-y divide-gray-100 border-y border-gray-100">
+        <% @summary.each do |answer| %>
+          <li data-answer="<%= answer.question.id %>" class="flex items-baseline justify-between gap-6 py-3">
+            <span class="text-gray-600"><%= answer.question.text %></span>
+            <span class="shrink-0 font-medium text-gray-900"><%= answer.option&.label.presence || answer.option&.value %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+
     <% if @blind_spots %>
       <h2 class="text-xs font-semibold uppercase tracking-widest text-accent-600 mb-3">Your blind spots</h2>
       <% @blind_spots.each do |domain| %>
