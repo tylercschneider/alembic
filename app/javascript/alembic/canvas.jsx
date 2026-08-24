@@ -229,9 +229,14 @@ const Canvas = ({ base, token, initial }) => {
         )}
 
         <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 1 }}>
+          <defs>
+            <marker id="alembic-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af" />
+            </marker>
+          </defs>
           {links.map((link) => (
-            <path key={link.id} fill="none" stroke="#9ca3af" strokeWidth="1.5"
-                  d={`M ${link.x1} ${link.y1} V ${link.midY} H ${link.x2} V ${link.y2}`} />
+            <path key={link.id} fill="none" stroke="#9ca3af" strokeWidth="1.5" markerEnd="url(#alembic-arrow)"
+                  d={`M ${link.x1} ${link.y1} V ${link.midY} H ${link.x2} V ${link.y2 - 3}`} />
           ))}
         </svg>
 
