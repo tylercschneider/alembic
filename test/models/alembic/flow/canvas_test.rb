@@ -20,6 +20,32 @@ module Alembic
           "edges" => [ { "from" => "a", "to" => "b" } ] }
       end
 
+      def side_by_side
+        { "entry" => "a",
+          "nodes" => [ { "id" => "a", "type" => "ask" }, { "id" => "b", "type" => "ask" }, { "id" => "c", "type" => "ask" } ],
+          "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "a", "to" => "c" }, { "from" => "b", "to" => "c" } ] }
+      end
+
+      test "leaves a step from its bottom when the next one is below" do
+        assert_equal "bottom", canvas(flow)["nodes"].first["sourcePosition"]
+      end
+
+      test "enters a step at its top when the one before is above" do
+        assert_equal "top", canvas(flow)["nodes"].last["targetPosition"]
+      end
+
+      test "leaves a step from its side when the next one is beside it" do
+        placed = canvas(side_by_side)["nodes"].find { |node| node["id"] == "b" }
+
+        assert_equal "right", placed["sourcePosition"]
+      end
+
+      test "enters a step at its side when the one before is beside it" do
+        placed = canvas(side_by_side)["nodes"].find { |node| node["id"] == "c" }
+
+        assert_equal "left", placed["targetPosition"]
+      end
+
       test "gives every node a position" do
         assert_equal({ "x" => 0, "y" => 0 }, canvas(flow)["nodes"].first["position"])
       end

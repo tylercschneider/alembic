@@ -8,15 +8,24 @@ const BUTTON = { display: "block", width: "100%", marginBottom: 6, padding: "6px
 const ADD = { width: 34, height: 34, borderRadius: "50%", border: "1px solid #d1d5db", background: "#fff", cursor: "pointer", fontSize: 20, lineHeight: "20px", boxShadow: "0 1px 3px rgba(0,0,0,.15)" }
 const CONTROL = { width: "100%", marginBottom: 10, padding: "5px 7px", border: "1px solid #d1d5db", borderRadius: 4, fontSize: 13, boxSizing: "border-box" }
 
+const SIDES = { top: Position.Top, bottom: Position.Bottom, left: Position.Left, right: Position.Right }
+
+const spread = (side, index, count) => {
+  const along = `${((index + 1) * 100) / (count + 1)}%`
+
+  return side === "left" || side === "right" ? { top: along } : { left: along }
+}
+
 const StepNode = ({ data, selected }) => {
   const ports = data.ports.length ? data.ports : [ null ]
+  const leaves = data.sourcePosition || "bottom"
 
   return (
     <div style={{
       minWidth: 170, padding: "8px 12px", borderRadius: 6, background: "#fff", fontSize: 13,
       border: `2px solid ${data.violations.length ? "#dc2626" : selected ? "#2563eb" : "#9ca3af"}`
     }}>
-      <Handle type="target" position={Position.Top} />
+      <Handle type="target" position={SIDES[data.targetPosition] || Position.Top} />
       <div style={{ fontWeight: 600 }}>{data.label}</div>
       <div style={{ color: "#6b7280", fontSize: 11 }}>{data.type}</div>
       {data.violations.map((violation) => (
@@ -25,10 +34,10 @@ const StepNode = ({ data, selected }) => {
         </div>
       ))}
       {ports.map((port, index) => (
-        <Handle key={port || "out"} id={port || undefined} type="source" position={Position.Bottom}
-                style={{ left: `${((index + 1) * 100) / (ports.length + 1)}%` }} />
+        <Handle key={port || "out"} id={port || undefined} type="source" position={SIDES[leaves]}
+                style={spread(leaves, index, ports.length)} />
       ))}
-      {data.ports.length > 0 && (
+      {data.ports.length > 0 && leaves === "bottom" && (
         <div style={{ display: "flex", justifyContent: "space-around", marginTop: 6, fontSize: 10, color: "#6b7280" }}>
           {data.ports.map((port) => <span key={port}>{port}</span>)}
         </div>

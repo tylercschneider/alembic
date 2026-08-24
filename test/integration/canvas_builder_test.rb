@@ -20,10 +20,16 @@ module Alembic
       diagnostic.reload.definition["nodes"].map { |node| node["id"] }
     end
 
-    test "the canvas screen mounts the flow" do
-      get canvas_path
+    test "the diagnostic page mounts the flow canvas" do
+      get alembic.manage_diagnostic_path(diagnostic)
 
       assert_select "[data-flow-canvas]"
+    end
+
+    test "the diagnostic page points the canvas at its edit endpoints" do
+      get alembic.manage_diagnostic_path(diagnostic)
+
+      assert_select "[data-flow-canvas][data-base=?]", canvas_path
     end
 
     test "the canvas screen carries the flow as JSON" do

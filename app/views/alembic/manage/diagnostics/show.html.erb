@@ -1,16 +1,24 @@
-<%= ui_page(max_width: :xl) do %>
-  <%= ui_page_header(title: @diagnostic.title.presence || @diagnostic.slug, subtitle: @diagnostic.slug) do |header| %>
-    <% header.action do %>
-      <%= ui_button(label: "Edit details", href: alembic.edit_manage_diagnostic_path(@diagnostic)) %>
-      <%= ui_button(label: "All diagnostics", href: alembic.manage_diagnostics_path, variant: :secondary) %>
-    <% end %>
-  <% end %>
-
-  <%= ui_section(title: "Flow", subtitle: "The definition is what visitors walk") do %>
-    <%= ui_grid(cols: { default: 1, sm: 2 }, gap: :lg) do %>
-      <%= ui_card(title: "Flow", summary: "#{@steps.size} steps on the canvas", link: alembic.manage_diagnostic_canvas_path(@diagnostic), cta: "Open the canvas") %>
-      <%= ui_card(title: "Steps", summary: "#{@steps.size} steps", link: alembic.manage_diagnostic_steps_path(@diagnostic), cta: "Order the flow") %>
-      <%= ui_card(title: "Definition", summary: "Version #{@diagnostic.current_definition_version&.number || 0}", link: alembic.edit_manage_diagnostic_definition_path(@diagnostic), cta: "Edit the document") %>
-    <% end %>
-  <% end %>
+<% content_for :head do %>
+  <%= stylesheet_link_tag "alembic/canvas" %>
+  <%= javascript_include_tag "alembic/canvas", defer: true %>
 <% end %>
+
+<div class="flex h-screen flex-col overflow-hidden">
+  <header class="flex shrink-0 items-center justify-between gap-4 border-b border-gray-200 px-6 py-3 dark:border-zinc-700">
+    <div>
+      <h1 class="text-lg font-semibold text-gray-900 dark:text-white"><%= @diagnostic.title.presence || @diagnostic.slug %></h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400"><%= @diagnostic.slug %></p>
+    </div>
+    <div class="flex items-center gap-2">
+      <%= ui_button(label: "Details", href: alembic.edit_manage_diagnostic_path(@diagnostic), variant: :secondary) %>
+      <%= ui_button(label: "Definition", href: alembic.edit_manage_diagnostic_definition_path(@diagnostic), variant: :secondary) %>
+      <%= ui_button(label: "All diagnostics", href: alembic.manage_diagnostics_path, variant: :secondary) %>
+    </div>
+  </header>
+
+  <div class="min-h-0 flex-1"
+       data-flow-canvas
+       data-base="<%= alembic.manage_diagnostic_canvas_path(@diagnostic) %>"
+       data-csrf-token="<%= form_authenticity_token %>"
+       data-flow="<%= @canvas.to_json %>"></div>
+</div>

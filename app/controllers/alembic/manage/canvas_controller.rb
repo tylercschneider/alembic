@@ -2,13 +2,7 @@ module Alembic
   module Manage
     class CanvasController < BaseController
       def show
-        @diagnostic = diagnostic
-        @canvas = Flow::Canvas.new(document).to_h
-
-        respond_to do |format|
-          format.html
-          format.json { render json: @canvas }
-        end
+        render json: Flow::Canvas.new(document).to_h
       end
 
       def add_step
