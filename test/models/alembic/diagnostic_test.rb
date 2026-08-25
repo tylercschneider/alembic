@@ -174,5 +174,13 @@ module Alembic
 
       assert_nil diagnostic.summary_document
     end
+
+    test "summarises from the recorded summary version" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      diagnostic.record_summary("outputs" => [ { "id" => "score", "type" => "weighted_sum" } ])
+
+      assert diagnostic.summarises?
+    end
   end
 end
