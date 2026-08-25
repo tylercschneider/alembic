@@ -85,6 +85,8 @@ module Alembic
           @fields[name] = type
         end
 
+        private
+
         def holdings(of)
           raise UnknownFieldType, "a list of records must say what a record holds" if of.blank?
 
@@ -92,6 +94,8 @@ module Alembic
             raise UnknownFieldType, "#{type} is not one of #{FIELD_TYPES.join(', ')}" unless FIELD_TYPES.include?(type)
           end
         end
+
+        public
 
         def to_step_type
           StepType.new(id: @id, label: @label, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, record_fields: @record_fields)

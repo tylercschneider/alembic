@@ -1,24 +1,25 @@
 module Alembic
   module Steps
-    module Condition
-      def self.step_type
-        Flow::StepType.define(:condition) do
-          label "Condition"
-          field :answer, :string
-          field :equals, :string
-          field :in, :list
-          outputs :yes, :no
+    class Condition
+      include Flow::Step
 
-          requires { |node| [ node.config["answer"] ].compact }
-          route { |node, state| Condition.holds?(node.config, state) ? :yes : :no }
-        end
+      label "Condition"
+
+      field :answer, :string
+      field :equals, :string
+      field :in, :list
+
+      outputs :yes, :no
+
+      requires { |node| [ node.config["answer"] ].compact }
+
+      def route(node, state)
+        holds?(node.config, state) ? :yes : :no
       end
 
-      def self.register(registry = Flow.registry)
-        registry.register(step_type)
-      end
+      private
 
-      def self.holds?(config, state)
+      def holds?(config, state)
         tested = state[config["answer"]]
         return Array(config["in"]).include?(tested) if config["in"].present?
 

@@ -63,27 +63,83 @@ column, or an API response.
 
 ## 2. Defining step types
 
-A step type is registered once and referenced by `type` in the document.
+A step type is a class that includes `Alembic::Flow::Step`. It is registered once
+and referenced by `type` in the document.
 
 ```ruby
-Alembic::Flow.step(:agent) do
-  label "Agent"
+module MyApp
+  module Steps
+    class Agent
+      include Alembic::Flow::Step
 
-  field :prompt, :text
-  field :model, :string
+      label "Agent"
 
-  names_by :prompt
-  awaits_input
+      field :prompt, :text
+      field :model, :string
+
+      names_by :prompt
+      awaits_input
+    end
+  end
 end
 ```
+
+The step type's id comes from the class name — `MyApp::Steps::Agent` registers as
+`:agent` — and `register` is provided for you.
 
 Register at boot, inside `to_prepare` so the types survive a code reload:
 
 ```ruby
 # config/initializers/flow.rb
 Rails.application.config.to_prepare do
-  MyApp::Steps::Agent.register   # => Alembic::Flow.registry.register(step_type)
+  MyApp::Steps::Agent.register
 end
+```
+
+Registration is deliberately explicit: there is no hook that registers a class as
+a side effect of defining it, because that interacts badly with reloading and
+eager loading.
+
+### Behaviour is a method
+
+A step type that decides where the walk goes next defines `route`, which gives
+its helpers somewhere private to live:
+
+```ruby
+module MyApp
+  module Steps
+    class Gate
+      include Alembic::Flow::Step
+
+      field :of, :string
+      outputs :approved, :rejected
+
+      def route(node, state)
+        approved?(state[node.config["of"]]) ? :approved : :rejected
+      end
+
+      private
+
+      def approved?(result)
+        result.to_h["ok"]
+      end
+    end
+  end
+end
+```
+
+### Without the module
+
+`Alembic::Flow::StepType.define` is the primitive underneath, and remains
+available for a host that would rather not include a module into its class:
+
+```ruby
+MyApp::AGENT = Alembic::Flow::StepType.define(:agent) do
+  label "Agent"
+  field :prompt, :text
+end
+
+Alembic::Flow.registry.register(MyApp::AGENT)
 ```
 
 ### The declaration DSL
@@ -120,11 +176,16 @@ on the node, invisible to whoever walks the flow, and read later by the summary.
 A step with `outputs` must decide which port it leaves by:
 
 ```ruby
-Alembic::Flow.step(:gate) do
+class Gate
+  include Alembic::Flow::Step
+
   outputs :pass, :fail
 
   requires { |node| [ node.config["answer"] ].compact }
-  route     { |node, state| state[node.config["answer"]] == node.config["expects"] ? :pass : :fail }
+
+  def route(node, state)
+    state[node.config["answer"]] == node.config["expects"] ? :pass : :fail
+  end
 end
 ```
 
@@ -330,7 +391,9 @@ Documented so nobody builds against something that isn't there:
 Nothing above is question-shaped. The same engine orchestrating agent work:
 
 ```ruby
-Alembic::Flow.step(:agent) do
+class Agent
+  include Alembic::Flow::Step
+
   label "Agent"
   field :prompt, :text
   field :model, :string
@@ -338,13 +401,18 @@ Alembic::Flow.step(:agent) do
   awaits_input
 end
 
-Alembic::Flow.step(:review) do
+class Review
+  include Alembic::Flow::Step
+
   label "Review gate"
   field :of, :string
   outputs :approved, :rejected
 
   requires { |node| [ node.config["of"] ].compact }
-  route    { |node, state| state[node.config["of"]][:ok] ? :approved : :rejected }
+
+  def route(node, state)
+    state[node.config["of"]][:ok] ? :approved : :rejected
+  end
 end
 ```
 
