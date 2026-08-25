@@ -22,9 +22,22 @@ module Alembic
       @guide ||= Runner.new(definition_version.definition)
     end
 
+    def summary_of(state)
+      return [] unless summary_version
+
+      Summary::Report.new(summary_version.summary)
+        .results(Summary::Run.new(state: state, steps: pinned_steps))
+    end
+
     def discard_last_answer
       last = guide.answers_on_path(answers).keys.last
       update!(answers: answers.except(last)) if last
+    end
+
+    private
+
+    def pinned_steps
+      Array(definition_version.definition.to_h["nodes"]).index_by { |node| node["id"] }
     end
   end
 end

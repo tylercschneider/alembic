@@ -141,5 +141,22 @@ module Alembic
         diagnostic.record_summary("outputs" => [ { "id" => "score" } ])
       end
     end
+
+    test "summarises from its pinned summary version rather than the diagnostic's newest" do
+      diagnostic = scored_diagnostic
+      response = Response.start(diagnostic)
+      diagnostic.record_summary("outputs" => [ { "id" => "score", "type" => "tally" } ])
+
+      assert_equal 5, response.reload.summary_of("budget" => "high").first.value
+    end
+
+    def scored_diagnostic
+      Diagnostic.create!(slug: "scored").tap do |diagnostic|
+        diagnostic.record_definition("slug" => "scored", "entry" => "budget", "edges" => [],
+          "nodes" => [ { "id" => "budget", "type" => "question", "text" => "Budget?",
+                         "options" => [ { "value" => "high", "weight" => 5 } ] } ])
+        diagnostic.record_summary("outputs" => [ { "id" => "score", "type" => "weighted_sum" } ])
+      end
+    end
   end
 end
