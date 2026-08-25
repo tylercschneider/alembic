@@ -104,13 +104,13 @@ module Alembic
       assert_includes edges, [ "start", "question" ]
     end
 
-    test "opening a step shows a field for each one its type declares" do
+    test "opening a step labels each setting its type declares" do
       canvas_for(flow)
 
       step_card("gate").click
 
-      assert_selector "aside", text: "answer"
-      assert_selector "aside", text: "equals"
+      assert_selector "aside", text: "Answer"
+      assert_selector "aside", text: "Equals"
     end
 
     test "closing the panel leaves the flow drawn" do

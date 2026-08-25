@@ -186,6 +186,37 @@ module Alembic
 
         assert_equal "Question", step_type.step_name
       end
+
+      test "labels a setting after its key" do
+        step_type = StepType.define(:ask) { setting :question, type: :string }
+
+        assert_equal "Question", step_type.labels[:question]
+      end
+
+      test "prefers a label a setting states for itself" do
+        step_type = StepType.define(:ask) { setting :tag, type: :string, label: "Grouping tag" }
+
+        assert_equal "Grouping tag", step_type.labels[:tag]
+      end
+
+      test "stores an integer setting as a number" do
+        step_type = StepType.define(:ask) { setting :weight, type: :integer }
+
+        assert_equal({ "weight" => 5 }, step_type.coerce("weight" => "5"))
+      end
+
+      test "stores a list entry's integer as a number" do
+        step_type = StepType.define(:ask) do
+          setting :options, type: :list do
+            setting :value, type: :string
+            setting :weight, type: :integer
+          end
+        end
+
+        coerced = step_type.coerce("options" => [ { "value" => "low", "weight" => "3" } ])
+
+        assert_equal 3, coerced["options"].first["weight"]
+      end
     end
   end
 end
