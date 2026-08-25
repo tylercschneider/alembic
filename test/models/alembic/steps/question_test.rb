@@ -3,20 +3,20 @@ require "test_helper"
 module Alembic
   module Steps
     class QuestionTest < ActiveSupport::TestCase
-      test "declares a field for the text it asks" do
-        assert_equal :string, Question.step_type.fields[:text]
+      test "declares a setting for the question it asks" do
+        assert_equal :string, Question.step_type.fields[:question]
       end
 
-      test "declares a field for the options it offers" do
-        assert_equal :list, Question.step_type.fields[:options]
+      test "declares a setting for the answers it offers" do
+        assert_equal :list, Question.step_type.fields[:answers]
       end
 
-      test "an option carries the weight the summary scores it by" do
-        assert_equal :integer, Question.step_type.record_fields[:options][:weight]
+      test "an answer carries the weight the summary scores it by" do
+        assert_equal :integer, Question.step_type.record_fields[:answers][:weight]
       end
 
-      test "declares a tag the summary can group it by" do
-        assert_equal :string, Question.step_type.fields[:tag]
+      test "declares a category the summary can group it by" do
+        assert_equal :string, Question.step_type.fields[:category]
       end
 
       test "has a single unnamed output" do
