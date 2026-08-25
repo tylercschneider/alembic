@@ -4,7 +4,7 @@ module Alembic
       def self.output_type
         Summary::OutputType.define(:weighted_sum) do
           label "Score"
-          compute { |config, state, _so_far| WeightedSum.total(config, state) }
+          compute { |_config, run, _so_far| WeightedSum.total(run) }
         end
       end
 
@@ -12,8 +12,14 @@ module Alembic
         registry.register(output_type)
       end
 
-      def self.total(config, state)
-        state.sum { |step, value| config.dig("weights", step.to_s, value.to_s).to_i }
+      def self.total(run)
+        run.state.sum { |id, value| weight_of(run.step(id), value) }
+      end
+
+      def self.weight_of(step, value)
+        chosen = Array(step["options"]).find { |option| option.is_a?(Hash) && option["value"] == value }
+
+        chosen&.fetch("weight", nil).to_i
       end
     end
   end

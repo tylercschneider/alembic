@@ -6,12 +6,12 @@ module Alembic
         @registry = registry
       end
 
-      def results(state)
+      def results(run)
         produced = {}
 
         outputs.map do |output|
           output_type = @registry.fetch(output["type"])
-          produced[output["id"]] = output_type.compute(output, state, produced)
+          produced[output["id"]] = output_type.compute(output, run, produced)
 
           Result.new(id: output["id"], label: label_for(output, output_type), value: produced[output["id"]])
         end

@@ -71,7 +71,35 @@ const Control = ({ type, value, onChange, onSettle }) => {
                 onChange={(e) => onChange(e.target.value)} onBlur={(e) => onSettle(e.target.value)} />
 }
 
-const Inspector = ({ node, fields, onSave, onDelete, onClose }) => {
+const Records = ({ holds, rows, onChange, onSettle }) => {
+  const kept = Array.isArray(rows) ? rows : []
+  const amend = (index, name, next, settle) => {
+    const updated = kept.map((row, at) => (at === index ? { ...row, [name]: next } : row))
+    settle ? onSettle(updated) : onChange(updated)
+  }
+
+  return (
+    <div style={{ marginBottom: 12 }}>
+      {kept.map((row, index) => (
+        <div key={index} style={{ border: "1px solid #e5e7eb", borderRadius: 6, padding: "8px 8px 2px", marginBottom: 6 }}>
+          {Object.entries(holds).map(([ name, type ]) => (
+            <label key={name} style={{ display: "block" }}>
+              <span style={{ display: "block", marginBottom: 2, color: "#6b7280", fontSize: 11 }}>{name}</span>
+              <Control type={type} value={row[name]}
+                       onChange={(next) => amend(index, name, next, false)}
+                       onSettle={(next) => amend(index, name, next, true)} />
+            </label>
+          ))}
+          <button style={{ ...S.action, textAlign: "center", fontSize: 11, padding: "3px 8px" }}
+                  onClick={() => onSettle(kept.filter((_, at) => at !== index))}>Remove</button>
+        </div>
+      ))}
+      <button style={{ ...S.action, textAlign: "center" }} onClick={() => onSettle([ ...kept, {} ])}>Add</button>
+    </div>
+  )
+}
+
+const Inspector = ({ node, fields, holds, onSave, onDelete, onClose }) => {
   const [ draft, setDraft ] = useState(node.config)
   useEffect(() => setDraft(node.config), [ node.id, node.config ])
 
@@ -91,9 +119,13 @@ const Inspector = ({ node, fields, onSave, onDelete, onClose }) => {
       {Object.entries(fields).map(([ name, type ]) => (
         <label key={name} style={{ display: "block" }}>
           <span style={{ display: "block", marginBottom: 3, color: "#374151" }}>{name}</span>
-          <Control type={type} value={draft[name]}
-                   onChange={(next) => setDraft({ ...draft, [name]: next })}
-                   onSettle={(next) => settle({ ...draft, [name]: next })} />
+          {type === "records"
+            ? <Records holds={holds[name] || {}} rows={draft[name]}
+                       onChange={(next) => setDraft({ ...draft, [name]: next })}
+                       onSettle={(next) => settle({ ...draft, [name]: next })} />
+            : <Control type={type} value={draft[name]}
+                       onChange={(next) => setDraft({ ...draft, [name]: next })}
+                       onSettle={(next) => settle({ ...draft, [name]: next })} />}
         </label>
       ))}
       <button style={{ ...S.action, textAlign: "center", color: "#dc2626" }} onClick={onDelete}>Delete step</button>
@@ -251,7 +283,9 @@ const Canvas = ({ base, token, initial }) => {
   }
 
   const selectedNode = flow.nodes.find((node) => node.id === selected)
-  const fieldsFor = flow.palette.find((entry) => entry.type === selectedNode?.type)?.fields || {}
+  const entryFor = flow.palette.find((entry) => entry.type === selectedNode?.type)
+  const fieldsFor = entryFor?.fields || {}
+  const holdsFor = entryFor?.records || {}
 
   return (
     <div style={S.page} onMouseUp={() => setDragging(null)}
@@ -345,7 +379,7 @@ const Canvas = ({ base, token, initial }) => {
       </div>
 
       {selectedNode && (
-        <Inspector node={selectedNode} fields={fieldsFor} onClose={() => setSelected(null)}
+        <Inspector node={selectedNode} fields={fieldsFor} holds={holdsFor} onClose={() => setSelected(null)}
                    onSave={(config) => send(`/steps/${selectedNode.id}`, "PATCH", { config })}
                    onDelete={() => { setSelected(null); send(`/steps/${selectedNode.id}`, "DELETE") }} />
       )}

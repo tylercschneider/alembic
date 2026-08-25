@@ -5,9 +5,9 @@ module Alembic
         Declaration.new(id).tap { |decl| decl.instance_eval(&declaration) }.to_step_type
       end
 
-      attr_reader :id, :label, :fields, :ports, :naming_field
+      attr_reader :id, :label, :fields, :record_fields, :ports, :naming_field
 
-      def initialize(id:, label:, fields:, ports:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil)
+      def initialize(id:, label:, fields:, ports:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil, record_fields: {})
         @id = id
         @label = label
         @fields = fields
@@ -17,6 +17,7 @@ module Alembic
         @behaviour = behaviour
         @routing = routing
         @naming_field = naming_field
+        @record_fields = record_fields
       end
 
       def process(node, state)
@@ -44,6 +45,7 @@ module Alembic
           @id = id
           @label = id.to_s
           @fields = {}
+          @record_fields = {}
           @ports = []
           @awaits_input = false
         end
@@ -76,14 +78,23 @@ module Alembic
           @ports = names
         end
 
-        def field(name, type)
+        def field(name, type, of: nil)
           raise UnknownFieldType, "#{type} is not one of #{FIELD_TYPES.join(', ')}" unless FIELD_TYPES.include?(type)
 
+          @record_fields[name] = holdings(of) if type == :records
           @fields[name] = type
         end
 
+        def holdings(of)
+          raise UnknownFieldType, "a list of records must say what a record holds" if of.blank?
+
+          of.each_value do |type|
+            raise UnknownFieldType, "#{type} is not one of #{FIELD_TYPES.join(', ')}" unless FIELD_TYPES.include?(type)
+          end
+        end
+
         def to_step_type
-          StepType.new(id: @id, label: @label, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field)
+          StepType.new(id: @id, label: @label, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, record_fields: @record_fields)
         end
       end
     end

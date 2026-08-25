@@ -61,7 +61,14 @@ module Alembic
         @registry.step_types.map do |step_type|
           { "type" => step_type.id.to_s, "label" => step_type.label,
             "fields" => step_type.fields.transform_keys(&:to_s).transform_values(&:to_s),
+            "records" => holdings_of(step_type),
             "ports" => step_type.ports.map(&:to_s), "awaits_input" => step_type.awaits_input? }
+        end
+      end
+
+      def holdings_of(step_type)
+        step_type.record_fields.to_h do |name, holds|
+          [ name.to_s, holds.transform_keys(&:to_s).transform_values(&:to_s) ]
         end
       end
 
