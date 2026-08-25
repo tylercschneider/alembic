@@ -115,5 +115,13 @@ module Alembic
         diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
       end
     end
+
+    test "pins the summary version the diagnostic is on when it starts" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_definition("slug" => "demo")
+      diagnostic.record_summary("outputs" => [])
+
+      assert_equal diagnostic.current_summary_version, Response.start(diagnostic).summary_version
+    end
   end
 end
