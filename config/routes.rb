@@ -3,12 +3,6 @@ Alembic::Engine.routes.draw do
     resources :diagnostics, only: [ :index, :create, :show, :edit, :update, :destroy ] do
       resource :definition, only: [ :edit, :update ]
 
-      resources :steps, only: :index do
-        collection do
-          patch :reorder
-        end
-      end
-
       resource :canvas, only: :show, controller: "canvas" do
         post   "steps",       action: :add_step
         patch  "steps/:step", action: :configure_step
