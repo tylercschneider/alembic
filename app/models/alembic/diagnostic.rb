@@ -9,6 +9,7 @@ module Alembic
     # destroying a diagnostic trips the responses -> definition_versions FK.
     has_many :responses, dependent: :destroy
     has_many :definition_versions, dependent: :destroy
+    has_many :summary_versions, dependent: :destroy
 
     def self.upsert_definition(definition)
       find_or_initialize_by(slug: definition["slug"]).tap do |diagnostic|
