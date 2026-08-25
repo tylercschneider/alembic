@@ -3,7 +3,7 @@
   <head>
     <title><%= content_for(:title) || "Dummy" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="color-scheme" content="light dark">
+    <meta name="color-scheme" content="light">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="Dummy">
     <meta name="mobile-web-app-capable" content="yes">
@@ -23,7 +23,7 @@
     <%= stylesheet_link_tag :app %>
   </head>
 
-  <body class="bg-white text-gray-900 dark:bg-zinc-900 dark:text-zinc-100">
+  <body class="bg-white text-gray-900">
     <%= yield %>
   </body>
 </html>
