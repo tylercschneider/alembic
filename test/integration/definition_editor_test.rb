@@ -31,6 +31,8 @@ module Alembic
         ]
       }.to_json }
 
+      diagnostic.reload.publish
+
       get alembic.diagnostic_step_path("flow"), params: { answers: { path: "right" } }
 
       assert_select "legend", text: /Right question/

@@ -14,9 +14,10 @@ module Alembic
       assert_not Diagnostic.new(slug: nil).valid?
     end
 
-    test "builds a runner from its current definition" do
+    test "builds a runner from the version it published" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition({ "slug" => "demo" })
+      diagnostic.publish
 
       assert_equal "demo", diagnostic.runner.slug
     end

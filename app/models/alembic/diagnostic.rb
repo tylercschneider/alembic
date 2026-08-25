@@ -77,8 +77,12 @@ module Alembic
       step_to(recorded_numbers.select { |number| number > cursor }.min)
     end
 
+    def published_definition
+      published_version&.definition
+    end
+
     def runner
-      Runner.new(definition)
+      Runner.new(published_definition)
     end
 
     def summarises?

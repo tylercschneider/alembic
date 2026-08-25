@@ -18,6 +18,7 @@ module Alembic
                        { "from" => "gate", "to" => "posh", "on" => "yes" },
                        { "from" => "gate", "to" => "plain", "on" => "no" } ]
         )
+        diagnostic.publish
       end
     end
 
@@ -128,6 +129,28 @@ module Alembic
       patch alembic.response_path(response_record), params: { answers: { budget: "high" } }
 
       assert_equal({ budget: "high" }, response_record.reload.answers)
+    end
+
+    test "a visitor runs the published version, not what the author is editing" do
+      diagnostic = flowed
+      diagnostic.publish
+      diagnostic.update!(document: { "slug" => diagnostic.slug, "entry" => "gone", "nodes" => [], "edges" => [] })
+
+      get alembic.diagnostic_step_path(diagnostic.slug)
+
+      assert_select "legend", text: /What is your budget\?/
+    end
+
+    test "a visitor keeps running the published version after a newer one is cut" do
+      diagnostic = flowed
+      diagnostic.publish
+      diagnostic.update!(document: { "slug" => diagnostic.slug, "entry" => "later",
+        "nodes" => [ { "id" => "later", "type" => "question", "question" => "Something else?" } ], "edges" => [] })
+      diagnostic.cut_version
+
+      get alembic.diagnostic_step_path(diagnostic.slug)
+
+      assert_select "legend", text: /What is your budget\?/
     end
   end
 end
