@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_25_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_25_160000) do
   create_table "alembic_definition_versions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.json "definition"
@@ -43,10 +43,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_150000) do
     t.integer "owner_id"
     t.string "owner_type"
     t.string "status"
+    t.integer "summary_version_id"
     t.datetime "updated_at", null: false
     t.index ["definition_version_id"], name: "index_alembic_responses_on_definition_version_id"
     t.index ["diagnostic_id"], name: "index_alembic_responses_on_diagnostic_id"
     t.index ["owner_type", "owner_id"], name: "index_alembic_responses_on_owner"
+    t.index ["summary_version_id"], name: "index_alembic_responses_on_summary_version_id"
   end
 
   create_table "alembic_summary_versions", force: :cascade do |t|
@@ -61,5 +63,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_150000) do
   add_foreign_key "alembic_definition_versions", "alembic_diagnostics", column: "diagnostic_id"
   add_foreign_key "alembic_responses", "alembic_definition_versions", column: "definition_version_id"
   add_foreign_key "alembic_responses", "alembic_diagnostics", column: "diagnostic_id"
+  add_foreign_key "alembic_responses", "alembic_summary_versions", column: "summary_version_id"
   add_foreign_key "alembic_summary_versions", "alembic_diagnostics", column: "diagnostic_id"
 end
