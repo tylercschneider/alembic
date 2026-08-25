@@ -168,5 +168,11 @@ module Alembic
         diagnostic.record_summary("outputs" => [])
       end
     end
+
+    test "reports no summary document when none has been recorded" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      assert_nil diagnostic.summary_document
+    end
   end
 end
