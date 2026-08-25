@@ -246,5 +246,30 @@ module Alembic
 
       assert_equal diagnostic.reload.definition_versions.last, diagnostic.published_version
     end
+
+    test "the canvas carries what has changed since the last version" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal [ "added" ], response.parsed_body["changes"].map { |change| change["action"] }
+    end
+
+    test "the canvas does not ship the documents undo keeps" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_not response.parsed_body["changes"].first.key?("before")
+    end
+
+    test "the change list empties when a version is cut" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/versions"
+
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_empty response.parsed_body["changes"]
+    end
   end
 end
