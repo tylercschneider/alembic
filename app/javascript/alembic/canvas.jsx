@@ -67,7 +67,12 @@ const Control = ({ type, value, onChange, onSettle }) => {
                      onChange={(e) => onChange(e.target.value)} onBlur={(e) => onSettle(e.target.value)} />
   }
 
-  return <input style={S.control} type={type === "number" ? "number" : "text"} value={value ?? ""}
+  if (type === "integer" || type === "float") {
+    return <input style={S.control} type="number" step={type === "integer" ? "1" : "any"} value={value ?? ""}
+                  onChange={(e) => onChange(e.target.value)} onBlur={(e) => onSettle(e.target.value)} />
+  }
+
+  return <input style={S.control} type="text" value={value ?? ""}
                 onChange={(e) => onChange(e.target.value)} onBlur={(e) => onSettle(e.target.value)} />
 }
 
