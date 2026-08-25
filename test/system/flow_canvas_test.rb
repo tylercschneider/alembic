@@ -168,7 +168,7 @@ module Alembic
     private
 
     def fill_in_first_field_with(text)
-      field = find("aside textarea", match: :first)
+      field = find("aside input[type='text']", match: :first)
       field.set(text)
       find("body").click
     end
