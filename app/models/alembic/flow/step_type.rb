@@ -45,11 +45,38 @@ module Alembic
         config.to_h.to_h { |name, value| [ name, cast(fields[name.to_sym], value, record_fields[name.to_sym]) ] }
       end
 
+      def objections(config)
+        config.to_h.flat_map { |name, value| objections_to(name.to_sym, value) }.compact
+      end
+
       def single_output?
         ports.empty?
       end
 
       private
+
+      def objections_to(name, value)
+        [ unoffered(name, value), over_limit(name, value), refused(name, value) ]
+      end
+
+      def unoffered(name, value)
+        offered = choices[name]
+        return unless offered
+
+        stray = Array(value).find { |chosen| offered.exclude?(chosen) }
+        "#{labels[name]} does not offer #{stray}" if stray
+      end
+
+      def over_limit(name, value)
+        allowed = limits[name]
+        return unless allowed && Array(value).size > allowed
+
+        "#{labels[name]} takes at most #{allowed}"
+      end
+
+      def refused(name, value)
+        checks[name]&.call(value)
+      end
 
       def cast(type, value, holds = nil)
         case type

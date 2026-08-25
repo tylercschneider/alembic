@@ -221,6 +221,46 @@ module Alembic
       test "refuses a multi select that offers no options" do
         assert_raises(UnknownFieldType) { StepType.define(:probe) { setting :channels, type: :multi_select } }
       end
+
+      test "objects to a value outside the options it offers" do
+        step_type = StepType.define(:probe) { setting :channels, type: :multi_select, options: %w[email sms] }
+
+        assert_equal [ "Channels does not offer post" ], step_type.objections("channels" => %w[email post])
+      end
+
+      test "objects to more choices than its limit allows" do
+        step_type = StepType.define(:probe) { setting :channels, type: :multi_select, options: %w[a b c], limit: 2 }
+
+        assert_equal [ "Channels takes at most 2" ], step_type.objections("channels" => %w[a b c])
+      end
+
+      test "objects to more list entries than its limit allows" do
+        step_type = StepType.define(:probe) do
+          setting :answers, type: :list, limit: 1 do
+            setting :value, type: :string
+          end
+        end
+
+        assert_equal [ "Answers takes at most 1" ], step_type.objections("answers" => [ { "value" => "a" }, { "value" => "b" } ])
+      end
+
+      test "objects with the message a check returns" do
+        step_type = StepType.define(:probe) do
+          setting :channels, type: :multi_select, options: %w[a b],
+            check: ->(chosen) { "Channels needs at least one" if chosen.empty? }
+        end
+
+        assert_equal [ "Channels needs at least one" ], step_type.objections("channels" => [])
+      end
+
+      test "accepts a value its check returns nothing for" do
+        step_type = StepType.define(:probe) do
+          setting :channels, type: :multi_select, options: %w[a b],
+            check: ->(chosen) { "Channels needs at least one" if chosen.empty? }
+        end
+
+        assert_empty step_type.objections("channels" => %w[a])
+      end
     end
   end
 end
