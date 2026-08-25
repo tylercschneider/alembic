@@ -3,10 +3,10 @@
 <% end %>
 
 <div class="flex h-screen flex-col overflow-hidden">
-  <header class="flex shrink-0 items-center justify-between gap-4 border-b border-gray-200 px-6 py-3 dark:border-zinc-700">
+  <header class="flex shrink-0 items-center justify-between gap-4 border-b border-gray-200 px-6 py-3">
     <div>
-      <h1 class="text-lg font-semibold text-gray-900 dark:text-white"><%= @diagnostic.title.presence || @diagnostic.slug %></h1>
-      <p class="text-sm text-gray-500 dark:text-gray-400"><%= @diagnostic.slug %></p>
+      <h1 class="text-lg font-semibold text-gray-900"><%= @diagnostic.title.presence || @diagnostic.slug %></h1>
+      <p class="text-sm text-gray-500"><%= @diagnostic.slug %></p>
     </div>
     <div class="flex items-center gap-2">
       <%= ui_button(label: "Details", href: alembic.edit_manage_diagnostic_path(@diagnostic), variant: :secondary) %>
