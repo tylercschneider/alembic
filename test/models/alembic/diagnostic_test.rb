@@ -204,5 +204,15 @@ module Alembic
 
       assert_equal "a", diagnostic.reload.document["entry"]
     end
+
+    test "cutting a version records the live document" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
+      diagnostic.update!(document: { "entry" => "b", "nodes" => [], "edges" => [] })
+
+      diagnostic.cut_version
+
+      assert_equal "b", diagnostic.definition_versions.order(:number).last.definition["entry"]
+    end
   end
 end
