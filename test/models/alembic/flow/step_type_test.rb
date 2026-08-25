@@ -192,6 +192,12 @@ module Alembic
 
         assert_equal "Question", step_type.labels[:question]
       end
+
+      test "prefers a label a setting states for itself" do
+        step_type = StepType.define(:ask) { setting :tag, type: :string, label: "Grouping tag" }
+
+        assert_equal "Grouping tag", step_type.labels[:tag]
+      end
     end
   end
 end
