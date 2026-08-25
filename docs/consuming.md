@@ -75,7 +75,7 @@ module MyApp
       label "Agent"
 
       setting :prompt, type: :text
-      setting :model, type: :string
+      setting :model, type: :text
 
       names_by :prompt
       awaits_input
@@ -111,7 +111,7 @@ module MyApp
     class Gate
       include Alembic::Flow::Step
 
-      setting :of, type: :string
+      setting :of, type: :text
       outputs :approved, :rejected
 
       def route(node, state)
@@ -157,15 +157,21 @@ Alembic::Flow.registry.register(MyApp::AGENT)
 
 ### Setting types
 
-`:text` `:string` `:number` `:boolean` `:select` `:list` `:records`
+`:text` `:integer` `:float` `:boolean` `:select` `:list` `:records`
 
 Anything else raises `Flow::UnknownFieldType`. These describe the *editing
 affordance* the builder offers; the engine never interprets a setting's value.
 
+`:integer` and `:float` differ only in the editor they produce — a whole-number
+step versus any decimal. **Declaring either does not yet coerce what is stored**:
+a submitted value is written through as the form supplied it, so an `:integer`
+setting can still hold `"1"` rather than `1`. Transforms that read a number
+should coerce defensively until that is fixed.
+
 `:records` is a repeating sub-form and must say what one record holds:
 
 ```ruby
-setting :options, type: :records, of: { value: :string, label: :string, weight: :number }
+setting :options, type: :records, of: { value: :text, label: :text, weight: :integer }
 ```
 
 This is how scoring data rides along on a step: authored in the builder, stored
@@ -396,7 +402,7 @@ class Agent
 
   label "Agent"
   setting :prompt, type: :text
-  setting :model, type: :string
+  setting :model, type: :text
   names_by :prompt
   awaits_input
 end
@@ -405,7 +411,7 @@ class Review
   include Alembic::Flow::Step
 
   label "Review gate"
-  setting :of, type: :string
+  setting :of, type: :text
   outputs :approved, :rejected
 
   requires { |node| [ node.config["of"] ].compact }
