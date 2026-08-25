@@ -25,7 +25,7 @@ module Alembic
       end
 
       def configure_step
-        apply { |flow| flow.configure(params[:step], configuration) }
+        apply { |flow| flow.configure(params[:step], coerced(flow, params[:step])) }
       end
 
       def move_step
@@ -96,6 +96,13 @@ module Alembic
 
       def configuration
         params.fetch(:config, {}).permit!.to_h
+      end
+
+      def coerced(flow, id)
+        step_type = Flow::Digest.new(flow).step(id)&.type
+        return configuration unless step_type && Flow.registry.registered?(step_type)
+
+        Flow.registry.fetch(step_type).coerce(configuration)
       end
     end
   end

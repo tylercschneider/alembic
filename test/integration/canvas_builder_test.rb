@@ -156,5 +156,13 @@ module Alembic
 
       assert_response :unprocessable_entity
     end
+
+    test "configuring a step stores a number for a setting declared as one" do
+      patch "#{canvas_path}/steps/a", params: { config: { options: [ { value: "low", weight: "4" } ] } }
+
+      stored = diagnostic.reload.definition["nodes"].first
+
+      assert_equal 4, stored["options"].first["weight"]
+    end
   end
 end
