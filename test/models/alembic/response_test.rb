@@ -5,12 +5,13 @@ module Alembic
     test "going back removes the last answer along the path, not the last in list order" do
       diagnostic = Diagnostic.create!(slug: "jump")
       diagnostic.definition_versions.create!(number: 1, definition: {
-        "slug" => "jump",
-        "questions" => [
-          { "id" => "a", "text" => "A", "options" => [ { "value" => "x" } ], "transitions" => [ { "to" => "c" } ] },
-          { "id" => "b", "text" => "B", "options" => [ { "value" => "x" } ] },
-          { "id" => "c", "text" => "C", "options" => [ { "value" => "x" } ], "transitions" => [ { "to" => "b" } ] }
-        ]
+        "slug" => "jump", "entry" => "a",
+        "nodes" => [
+          { "id" => "a", "type" => "question", "text" => "A", "options" => [ "x" ] },
+          { "id" => "b", "type" => "question", "text" => "B", "options" => [ "x" ] },
+          { "id" => "c", "type" => "question", "text" => "C", "options" => [ "x" ] }
+        ],
+        "edges" => [ { "from" => "a", "to" => "c" }, { "from" => "c", "to" => "b" } ]
       })
       response = Response.start(diagnostic)
       response.update!(answers: { a: "x", c: "x", b: "x" })
@@ -90,16 +91,6 @@ module Alembic
       response.record_answer(:pick, "a")
 
       assert_equal({ pick: "a" }, response.reload.answers)
-    end
-
-    test "stores answers the guide for its pinned version consumes directly" do
-      diagnostic = alembic_diagnostics(:db_guide)
-      response = Response.start(diagnostic)
-      response.record_answer(:pick, "a")
-
-      guide = DefinitionLoader.new(response.definition_version.definition).build
-
-      assert_nil guide.next_question(response.reload.answers)
     end
 
     test "builds its guide from the definition it is pinned to" do

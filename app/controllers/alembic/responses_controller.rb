@@ -10,9 +10,8 @@ module Alembic
       @answers = @response.answers
       @question = @guide.next_question(@answers)
       return render :step if @question
-      return render_completion unless @guide.scored?
 
-      render_result
+      render_completion
     end
 
     def update
@@ -31,13 +30,6 @@ module Alembic
 
     def summarising_diagnostic
       @response.diagnostic if @response.diagnostic.summarises?
-    end
-
-    def render_result
-      @score = @guide.score(@answers)
-      @band = @guide.result_for(@answers)
-      @summary = @guide.summary(@answers)
-      render template: "alembic/diagnostics/result"
     end
 
     def record_submitted_answer(response)

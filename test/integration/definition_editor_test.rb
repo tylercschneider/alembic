@@ -17,12 +17,17 @@ module Alembic
       diagnostic.record_definition("slug" => "flow")
 
       patch alembic.manage_diagnostic_definition_path(diagnostic), params: { definition: {
-        "slug" => "flow",
-        "questions" => [
-          { "id" => "path", "text" => "Which path?", "options" => [ { "value" => "left" }, { "value" => "right" } ],
-            "transitions" => [ { "to" => "right_q", "condition" => { "answer" => "path", "equals" => "right" } } ] },
-          { "id" => "left_q", "text" => "Left question", "options" => [ { "value" => "x" } ] },
-          { "id" => "right_q", "text" => "Right question", "options" => [ { "value" => "y" } ] }
+        "slug" => "flow", "entry" => "path",
+        "nodes" => [
+          { "id" => "path", "type" => "question", "text" => "Which path?", "options" => [ "left", "right" ] },
+          { "id" => "gate", "type" => "condition", "answer" => "path", "equals" => "right" },
+          { "id" => "left_q", "type" => "question", "text" => "Left question", "options" => [ "x" ] },
+          { "id" => "right_q", "type" => "question", "text" => "Right question", "options" => [ "y" ] }
+        ],
+        "edges" => [
+          { "from" => "path", "to" => "gate" },
+          { "from" => "gate", "to" => "right_q", "on" => "yes" },
+          { "from" => "gate", "to" => "left_q", "on" => "no" }
         ]
       }.to_json }
 
