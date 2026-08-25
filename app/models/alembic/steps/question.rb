@@ -3,7 +3,7 @@ module Alembic
     class Question
       include Flow::Step
 
-      label "Question"
+      step_name "Question"
 
       setting :text, type: :string
       setting :options, type: :list do

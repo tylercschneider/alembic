@@ -3,7 +3,7 @@ module Alembic
     class Condition
       include Flow::Step
 
-      label "Condition"
+      step_name "Condition"
 
       setting :answer, type: :string
       setting :equals, type: :string

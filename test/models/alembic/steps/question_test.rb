@@ -36,7 +36,7 @@ module Alembic
         Question.register(registry)
         node = Flow::Document.new({ "nodes" => [ { "id" => "q", "type" => "question" } ] }).node("q")
 
-        assert_equal "Question", registry.fetch(node.type).label
+        assert_equal "Question", registry.fetch(node.type).step_name
       end
 
       test "awaits external input" do

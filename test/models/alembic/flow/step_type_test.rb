@@ -125,19 +125,19 @@ module Alembic
       end
 
       test "carries the label it was given" do
-        step_type = StepType.define(:agent) { label "Agent call" }
+        step_type = StepType.define(:agent) { step_name "Agent call" }
 
-        assert_equal "Agent call", step_type.label
+        assert_equal "Agent call", step_type.step_name
       end
 
       test "falls back to its identifier when no label is given" do
         step_type = StepType.define(:agent) { }
 
-        assert_equal "agent", step_type.label
+        assert_equal "agent", step_type.step_name
       end
 
       test "carries the identifier it was defined with" do
-        step_type = StepType.define(:agent) { label "Agent call" }
+        step_type = StepType.define(:agent) { step_name "Agent call" }
 
         assert_equal :agent, step_type.id
       end
@@ -179,6 +179,12 @@ module Alembic
         end
 
         assert_equal({ value: :string, weight: :integer }, step_type.record_fields[:answers])
+      end
+
+      test "declares the name a step type is known by" do
+        step_type = StepType.define(:ask) { step_name "Question" }
+
+        assert_equal "Question", step_type.step_name
       end
     end
   end
