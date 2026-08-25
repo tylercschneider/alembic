@@ -80,6 +80,19 @@ module Alembic
       test "declares two named output ports" do
         assert_equal [ :yes, :no ], Condition.step_type.ports
       end
+
+      test "matches a value listed in its entries" do
+        node = Flow::Node.new(id: "g", type: "condition",
+          config: { "answer" => "a", "in" => [ { "value" => "high" } ] })
+
+        assert_equal :yes, Condition.step_type.route(node, { "a" => "high" })
+      end
+
+      test "still reads entries stored as plain values" do
+        node = Flow::Node.new(id: "g", type: "condition", config: { "answer" => "a", "in" => [ "high" ] })
+
+        assert_equal :yes, Condition.step_type.route(node, { "a" => "high" })
+      end
     end
   end
 end

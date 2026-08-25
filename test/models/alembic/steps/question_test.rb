@@ -8,7 +8,7 @@ module Alembic
       end
 
       test "declares a field for the options it offers" do
-        assert_equal :records, Question.step_type.fields[:options]
+        assert_equal :list, Question.step_type.fields[:options]
       end
 
       test "an option carries the weight the summary scores it by" do

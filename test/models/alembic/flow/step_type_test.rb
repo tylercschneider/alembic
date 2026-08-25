@@ -88,27 +88,27 @@ module Alembic
         assert_nil step_type.naming_field
       end
 
-      test "declares a field holding a list of records" do
-        step_type = StepType.define(:ask) { setting :options, type: :records, of: { value: :string, weight: :integer } }
+      test "declares a setting holding a repeating group" do
+        step_type = StepType.define(:ask) { setting(:options, type: :list) { setting :value, type: :string; setting :weight, type: :integer } }
 
-        assert_equal :records, step_type.fields[:options]
+        assert_equal :list, step_type.fields[:options]
       end
 
       test "carries what each record in the list holds" do
-        step_type = StepType.define(:ask) { setting :options, type: :records, of: { value: :string, weight: :integer } }
+        step_type = StepType.define(:ask) { setting(:options, type: :list) { setting :value, type: :string; setting :weight, type: :integer } }
 
         assert_equal({ value: :string, weight: :integer }, step_type.record_fields[:options])
       end
 
       test "refuses a list of records that does not say what a record holds" do
         assert_raises UnknownFieldType do
-          StepType.define(:ask) { setting :options, type: :records }
+          StepType.define(:ask) { setting :options, type: :list }
         end
       end
 
       test "refuses a record holding a type outside the vocabulary" do
         assert_raises UnknownFieldType do
-          StepType.define(:ask) { setting :options, type: :records, of: { value: :wormhole } }
+          StepType.define(:ask) { setting(:options, type: :list) { setting :value, type: :wormhole } }
         end
       end
 
@@ -166,8 +166,19 @@ module Alembic
 
       test "refuses an unknown type inside a repeating group" do
         assert_raises(UnknownFieldType) do
-          StepType.define(:probe) { setting :answers, type: :records, of: { weight: :number } }
+          StepType.define(:probe) { setting(:answers, type: :list) { setting :weight, type: :number } }
         end
+      end
+
+      test "declares what each entry of a list holds" do
+        step_type = StepType.define(:ask) do
+          setting :answers, type: :list do
+            setting :value, type: :string
+            setting :weight, type: :integer
+          end
+        end
+
+        assert_equal({ value: :string, weight: :integer }, step_type.record_fields[:answers])
       end
     end
   end

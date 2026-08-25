@@ -8,7 +8,7 @@ module Alembic
           built.register(StepType.define(:ask) do
             label "Ask"
             setting :text, type: :string
-            setting :options, type: :records, of: { value: :string, weight: :integer }
+            setting(:options, type: :list) { setting :value, type: :string; setting :weight, type: :integer }
             names_by :text
           end)
           built.register(StepType.define(:branch) { label "Branch"; outputs :yes, :no })

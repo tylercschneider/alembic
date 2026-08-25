@@ -157,7 +157,7 @@ Alembic::Flow.registry.register(MyApp::AGENT)
 
 ### Setting types
 
-`:string` `:integer` `:float` `:boolean` `:select` `:list` `:records`
+`:string` `:integer` `:float` `:boolean` `:select` `:list`
 
 Anything else raises `Flow::UnknownFieldType`. These describe the *editing
 affordance* the builder offers; the engine never interprets a setting's value.
@@ -168,11 +168,18 @@ a submitted value is written through as the form supplied it, so an `:integer`
 setting can still hold `"1"` rather than `1`. Transforms that read a number
 should coerce defensively until that is fixed.
 
-`:records` is a repeating sub-form and must say what one record holds:
+`:list` is a repeating group and must say what one entry holds, using a block:
 
 ```ruby
-setting :options, type: :records, of: { value: :string, label: :string, weight: :integer }
+setting :options, type: :list do
+  setting :value,  type: :string
+  setting :label,  type: :string
+  setting :weight, type: :integer
+end
 ```
+
+A block always means the settings each entry has, and nothing else. A `:list`
+declared without one raises `Flow::UnknownFieldType`.
 
 This is how scoring data rides along on a step: authored in the builder, stored
 on the node, invisible to whoever walks the flow, and read later by the summary.
@@ -357,10 +364,10 @@ unknown type raises `Summary::UnknownOutputType`.
 
 Two step types, both registered by the engine:
 
-- **`question`** — `text`, `options` (records of `value`/`label`/`weight`),
+- **`question`** — `text`, `options` (a list of `value`/`label`/`weight` entries),
   `tag`. Awaits input.
-- **`condition`** — `answer`, and either `equals` or `in`. Ports `yes`/`no`.
-  `in` wins when present and non-empty.
+- **`condition`** — `answer`, and either `equals` or `in` (a list of `value`
+  entries). Ports `yes`/`no`. `in` wins when it has entries.
 
 Six output types:
 
