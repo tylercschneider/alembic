@@ -78,21 +78,23 @@ module Alembic
           @ports = names
         end
 
-        def setting(name, type:, of: nil)
+        def setting(name, type:, &entries)
           raise UnknownFieldType, "#{type} is not one of #{FIELD_TYPES.join(', ')}" unless FIELD_TYPES.include?(type)
 
-          @record_fields[name] = holdings(of) if type == :records
+          @record_fields[name] = holdings(entries) if type == :list
           @fields[name] = type
         end
 
+        protected
+
+        attr_reader :fields
+
         private
 
-        def holdings(of)
-          raise UnknownFieldType, "a list of records must say what a record holds" if of.blank?
+        def holdings(entries)
+          raise UnknownFieldType, "a list must say what an entry holds" if entries.nil?
 
-          of.each_value do |type|
-            raise UnknownFieldType, "#{type} is not one of #{FIELD_TYPES.join(', ')}" unless FIELD_TYPES.include?(type)
-          end
+          Declaration.new(:entry).tap { |entry| entry.instance_eval(&entries) }.fields
         end
 
         public
