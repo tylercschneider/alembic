@@ -9,6 +9,16 @@ module Alembic
         label "Probe step"
       end
 
+      class Gate
+        include Flow::Step
+
+        outputs :yes, :no
+
+        def route(node, state)
+          state[node.config["answer"]].present? ? :yes : :no
+        end
+      end
+
       test "derives its id from the class name" do
         assert_equal :probe, Probe.step_type.id
       end
@@ -23,6 +33,12 @@ module Alembic
         Probe.register(registry)
 
         assert registry.registered?(:probe)
+      end
+
+      test "routes with a method on the class" do
+        node = Node.new(id: "g", type: "gate", config: { "answer" => "a" })
+
+        assert_equal :yes, Gate.step_type.route(node, { "a" => "picked" })
       end
     end
   end

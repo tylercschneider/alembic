@@ -4,6 +4,7 @@ module Alembic
       extend ActiveSupport::Concern
 
       WORDS = (StepType::Declaration.public_instance_methods(false) - [ :to_step_type ]).freeze
+      BEHAVIOURS = %i[route process].freeze
 
       included do
         class_attribute :declarations, default: []
@@ -17,10 +18,15 @@ module Alembic
         end
 
         def step_type
-          spoken = declarations
+          spoken = declarations + behaviours
           StepType.define(step_type_id) do
             spoken.each { |word, arguments, options, block| public_send(word, *arguments, **options, &block) }
           end
+        end
+
+        def behaviours
+          BEHAVIOURS.select { |word| method_defined?(word) }
+            .map { |word| [ word, [], {}, ->(node, state) { new.public_send(word, node, state) } ] }
         end
 
         def register(registry = Flow.registry)
