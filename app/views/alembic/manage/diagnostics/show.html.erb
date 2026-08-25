@@ -9,8 +9,10 @@
       <p class="text-sm text-gray-500"><%= @diagnostic.slug %></p>
     </div>
     <div class="flex items-center gap-2">
-      <%= ui_button(label: "Details", href: alembic.edit_manage_diagnostic_path(@diagnostic), variant: :secondary) %>
-      <%= ui_button(label: "Definition", href: alembic.edit_manage_diagnostic_definition_path(@diagnostic), variant: :secondary) %>
+      <button type="button" data-open-panel
+              onclick="document.dispatchEvent(new CustomEvent('alembic:open-flow'))"
+              class="inline-flex items-center justify-center font-semibold rounded-lg border-0 cursor-pointer bg-accent-600 text-white hover:bg-accent-700 text-base px-4 py-2">This flow</button>
+
       <%= ui_button(label: "All diagnostics", href: alembic.manage_diagnostics_path, variant: :secondary) %>
     </div>
   </header>

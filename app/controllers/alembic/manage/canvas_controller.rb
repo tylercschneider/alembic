@@ -1,22 +1,26 @@
 module Alembic
   module Manage
     class CanvasController < BaseController
+      include DrawsCanvas
       def show
-        render json: canvas_payload
+        render json: canvas_payload(diagnostic)
       end
 
       def cut
+        stood_at = diagnostic.current_definition_version&.number
         diagnostic.cut_version
-        head :no_content
+
+        render json: { notice: created(stood_at) }
       end
 
       def publish
         objections = Flow::Validator.new(document).violations
-        return render json: { error: objections.map { |v| "#{v.node}: #{v.problem}" }.join(", ") },
-          status: :unprocessable_entity if objections.any?
+        return render json: { error: refusal(objections) }, status: :unprocessable_entity if objections.any?
 
+        ran = diagnostic.published_version&.number
         diagnostic.publish
-        head :no_content
+
+        render json: { notice: published(ran) }
       end
 
       def undo
@@ -70,11 +74,6 @@ module Alembic
         render json: { error: invalid.message }, status: :unprocessable_entity
       end
 
-      def canvas_payload
-        Flow::Canvas.new(document).to_h
-          .merge("undoable" => diagnostic.undoable?, "redoable" => diagnostic.redoable?)
-      end
-
       def diagnostic
         @diagnostic ||= Diagnostic.find(params[:diagnostic_id])
       end
@@ -125,6 +124,30 @@ module Alembic
 
       def configuration
         params.fetch(:config, {}).permit!.to_h
+      end
+
+      def created(stood_at)
+        now_at = diagnostic.reload.current_definition_version&.number
+        return "Nothing has changed since version #{stood_at}." if now_at == stood_at
+
+        "Created version #{now_at}."
+      end
+
+      def published(ran)
+        now_at = diagnostic.reload.published_version&.number
+        return "Visitors already run version #{now_at}." if now_at == ran
+
+        "Published version #{now_at}. Visitors run it now."
+      end
+
+      def refusal(objections)
+        "Cannot publish: #{objections.map { |problem| worded(problem) }.join(', ')}."
+      end
+
+      def worded(problem)
+        trouble = problem.problem.to_s.humanize(capitalize: false)
+
+        problem.node ? "“#{problem.node}” is #{trouble}" : trouble
       end
 
       def coerced(flow, id)

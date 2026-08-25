@@ -1,8 +1,9 @@
-import React, { useMemo, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import StepCard from "./StepCard"
 import Inspector from "./Inspector"
 import TypePicker from "./TypePicker"
 import Toolbar from "./Toolbar"
+import Panel from "./Panel"
 import ConnectorLayer from "./ConnectorLayer"
 import useFlow from "./useFlow"
 import useConnectors from "./useConnectors"
@@ -15,13 +16,30 @@ const grid = { display: "grid", rowGap: GAP_Y, columnGap: 0, padding: 40, justif
 const notice = { position: "sticky", zIndex: 8, top: 8, margin: "8px auto 0", width: "fit-content", padding: "6px 12px", borderRadius: 6, fontSize: 12 }
 
 const Canvas = ({ base, token, initial }) => {
-  const { flow, error, send } = useFlow(base, token, initial)
+  const { flow, error, notice, send } = useFlow(base, token, initial)
   const [ selected, setSelected ] = useState(null)
   const [ adding, setAdding ] = useState(null)
   const [ armed, setArmed ] = useState(null)
   const [ dragging, setDragging ] = useState(null)
+  const [ showing, setShowing ] = useState(false)
   const cards = useRef({})
   const surface = useRef(null)
+
+  useEffect(() => {
+    const open = () => { setSelected(null); setShowing(true) }
+    document.addEventListener("alembic:open-flow", open)
+    return () => document.removeEventListener("alembic:open-flow", open)
+  }, [])
+
+  useEffect(() => {
+    if (!showing) return
+
+    const away = (event) => {
+      if (!event.target.closest("[data-builder-panel], [data-open-panel]")) setShowing(false)
+    }
+    document.addEventListener("click", away)
+    return () => document.removeEventListener("click", away)
+  }, [ showing ])
 
   const byId = useMemo(() => Object.fromEntries(flow.nodes.map((node) => [ node.id, node ])), [ flow.nodes ])
   const { links, extent } = useConnectors(flow, surface, cards, [ flow, selected, byId ])
@@ -51,9 +69,8 @@ const Canvas = ({ base, token, initial }) => {
          onKeyDown={(event) => { if (event.key === "Escape") { setSelected(null); setArmed(null); setAdding(null) } }}
          tabIndex={-1}>
       <div ref={surface} style={scroll}
-           onClick={(event) => { if (event.target === surface.current) { setSelected(null); setArmed(null) } }}>
-        {error && <div style={{ ...notice, background: "#fee2e2", color: "#991b1b" }}>{error}</div>}
-        {armed && !error && (
+           onClick={(event) => { if (event.target === surface.current) { setSelected(null); setArmed(null); setShowing(false) } }}>
+        {armed && (
           <div style={{ ...notice, background: "#dbeafe", color: "#1e40af" }}>
             Choose the step “{armed[1] || "next"}” should lead to — <button onClick={() => setArmed(null)} style={{ border: "none", background: "none", color: "#1e40af", textDecoration: "underline", cursor: "pointer", fontSize: 12, padding: 0 }}>cancel</button>
           </div>
@@ -107,6 +124,13 @@ const Canvas = ({ base, token, initial }) => {
                       }} />
         )}
       </div>
+
+      {showing && !selectedNode && (
+        <Panel flow={flow.flow || {}} changes={flow.changes || []} problems={flow.violations} refusal={error} notice={notice}
+               onClose={() => setShowing(false)}
+               onCreate={() => send("/versions", "POST")}
+               onPublish={() => send("/publish", "POST")} />
+      )}
 
       {selectedNode && (
         <Inspector node={selectedNode}

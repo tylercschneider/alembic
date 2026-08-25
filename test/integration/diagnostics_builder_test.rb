@@ -36,12 +36,14 @@ module Alembic
       assert_equal "New summary", diagnostic.reload.summary
     end
 
-    test "the hub links to the edit form" do
+    test "the hub offers the flow the way to its details" do
       diagnostic = alembic_diagnostics(:business_scorecard)
 
       get alembic.manage_diagnostic_path(diagnostic)
 
-      assert_select "a[href=?]", alembic.edit_manage_diagnostic_path(diagnostic)
+      drawn = JSON.parse(css_select("[data-flow-canvas]").first["data-flow"])
+
+      assert_equal alembic.edit_manage_diagnostic_path(diagnostic), drawn["flow"]["details_url"]
     end
 
     test "the builder index offers a form to create a diagnostic" do
@@ -76,12 +78,30 @@ module Alembic
       assert_not Diagnostic.exists?(diagnostic.id)
     end
 
-    test "the hub links to the definition editor" do
+    test "the hub offers the flow the way to its definition" do
       diagnostic = alembic_diagnostics(:business_scorecard)
 
       get alembic.manage_diagnostic_path(diagnostic)
 
-      assert_select "a[href=?]", alembic.edit_manage_diagnostic_definition_path(diagnostic)
+      drawn = JSON.parse(css_select("[data-flow-canvas]").first["data-flow"])
+
+      assert_equal alembic.edit_manage_diagnostic_definition_path(diagnostic), drawn["flow"]["definition_url"]
+    end
+
+    test "the definition editor offers the way back to the flow" do
+      diagnostic = alembic_diagnostics(:business_scorecard)
+
+      get alembic.edit_manage_diagnostic_definition_path(diagnostic)
+
+      assert_select "a[href=?]", alembic.manage_diagnostic_path(diagnostic)
+    end
+
+    test "the details editor offers the way back to the flow" do
+      diagnostic = alembic_diagnostics(:business_scorecard)
+
+      get alembic.edit_manage_diagnostic_path(diagnostic)
+
+      assert_select "a[href=?]", alembic.manage_diagnostic_path(diagnostic)
     end
   end
 end

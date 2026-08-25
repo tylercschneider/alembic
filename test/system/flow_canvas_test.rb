@@ -15,6 +15,13 @@ module Alembic
       end
     end
 
+    def adrift
+      flow.tap do |diagnostic|
+        diagnostic.record_definition(diagnostic.definition.merge(
+          "nodes" => diagnostic.definition["nodes"] + [ { "id" => "adrift", "type" => "question", "question" => "Adrift" } ]))
+      end
+    end
+
     def edges
       flow.reload.document["edges"].map { |edge| [ edge["from"], edge["to"] ] }
     end
@@ -109,17 +116,17 @@ module Alembic
 
       step_card("gate").click
 
-      assert_selector "aside", text: "Answer"
-      assert_selector "aside", text: "Equals"
+      assert_selector "[data-inspector]", text: "Answer"
+      assert_selector "[data-inspector]", text: "Equals"
     end
 
     test "closing the panel leaves the flow drawn" do
       canvas_for(flow)
       step_card("gate").click
 
-      find("aside").click_button("×")
+      find("[data-inspector]").click_button("×")
 
-      assert_no_selector "aside"
+      assert_no_selector "[data-inspector]"
       assert_selector "svg path[marker-end]", count: 2
     end
 
@@ -165,10 +172,131 @@ module Alembic
       assert_selector "svg path[marker-end]", count: 1
     end
 
+    test "the flow's panel stays out of the way until it is opened" do
+      canvas_for(flow)
+
+      assert_no_selector "[data-builder-panel]"
+    end
+
+    test "opening the flow's panel shows what has changed" do
+      canvas_for(flow)
+
+      find("[data-open-panel]").click
+
+      assert_selector "[data-builder-panel]", text: "Nothing has changed."
+    end
+
+    test "the flow's panel closes again" do
+      canvas_for(flow)
+      find("[data-open-panel]").click
+
+      find("[data-builder-panel]").click_button("×")
+
+      assert_no_selector "[data-builder-panel]"
+    end
+
+    test "the flow's panel says which version it stands at" do
+      canvas_for(flow)
+
+      find("[data-open-panel]").click
+
+      assert_selector "[data-versions]", text: "Version 1 · never published"
+    end
+
+    test "a version is created from the flow's panel" do
+      canvas_for(flow)
+      step_card("start").click
+      fill_in_first_field_with("Changed by hand")
+      find("[data-open-panel]").click
+
+      assert_selector "[data-create-version]", text: "Create version"
+    end
+
+    test "the flow's panel links to the definition" do
+      canvas_for(flow)
+
+      find("[data-open-panel]").click
+
+      assert_selector "[data-definition]", text: "Definition"
+    end
+
+    test "the flow's panel links to the details" do
+      canvas_for(flow)
+
+      find("[data-open-panel]").click
+
+      assert_selector "[data-details]", text: "Edit details"
+    end
+
+    test "the panel lists a change once a step is edited" do
+      canvas_for(flow)
+      step_card("start").click
+      fill_in_first_field_with("Changed by hand")
+      find("[data-open-panel]").click
+
+      assert_selector "[data-change]", text: "Updated"
+    end
+
+    test "the panel names a step that cannot be reached" do
+      canvas_for(adrift)
+
+      find("[data-open-panel]").click
+
+      assert_selector "[data-problem]", text: "unreachable"
+    end
+
+    test "cutting a version empties the change list" do
+      canvas_for(flow)
+      step_card("start").click
+      fill_in_first_field_with("Changed by hand")
+      find("[data-open-panel]").click
+      find("[data-create-version]").click
+
+      assert_selector "[data-builder-panel]", text: "Nothing has changed."
+    end
+
+    test "publishing a flow with a problem is refused" do
+      canvas_for(adrift)
+      find("[data-open-panel]").click
+
+      find("[data-publish]").click
+
+      assert_selector "[data-refusal]"
+    end
+
+    test "the flow's panel says when there was nothing to capture" do
+      canvas_for(flow)
+      find("[data-open-panel]").click
+
+      find("[data-create-version]").click
+
+      assert_selector "[data-notice]", text: "Nothing has changed"
+    end
+
+    test "the flow's panel says which version it created" do
+      canvas_for(flow)
+      step_card("start").click
+      fill_in_first_field_with("Changed by hand")
+      find("[data-open-panel]").click
+
+      find("[data-create-version]").click
+
+      assert_selector "[data-notice]", text: "Created version 2."
+    end
+
+    test "the flow's panel closes when the canvas is clicked" do
+      canvas_for(flow)
+      find("[data-open-panel]").click
+
+      find("body").click
+
+      assert_no_selector "[data-builder-panel]"
+    end
+
     private
 
     def fill_in_first_field_with(text)
-      field = find("aside input[type='text']", match: :first)
+      field = find("[data-inspector] input[type='text']", match: :first)
       field.set(text)
       find("body").click
     end

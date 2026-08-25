@@ -15,7 +15,7 @@ const Inspector = ({ node, fields, holds, labels, recordLabels, choices, onSave,
   }
 
   return (
-    <aside style={panel}>
+    <aside style={panel} data-inspector>
       <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", gap: 8 }}>
         <h2 style={{ fontWeight: 600, marginBottom: 2 }}>{node.label}</h2>
         <button title="Close" onClick={onClose}

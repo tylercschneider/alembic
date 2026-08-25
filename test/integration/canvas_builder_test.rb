@@ -246,5 +246,97 @@ module Alembic
 
       assert_equal diagnostic.reload.definition_versions.last, diagnostic.published_version
     end
+
+    test "the canvas carries what has changed since the last version" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal [ "added" ], response.parsed_body["changes"].map { |change| change["action"] }
+    end
+
+    test "the canvas does not ship the documents undo keeps" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_not response.parsed_body["changes"].first.key?("before")
+    end
+
+    test "the change list empties when a version is cut" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/versions"
+
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_empty response.parsed_body["changes"]
+    end
+
+    test "the canvas carries which version this flow stands at" do
+      post "#{canvas_path}/versions"
+
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal diagnostic.reload.current_definition_version.number, response.parsed_body["flow"]["version"]
+    end
+
+    test "the canvas carries which version visitors run" do
+      post "#{canvas_path}/publish"
+
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal diagnostic.reload.published_version.number, response.parsed_body["flow"]["published"]
+    end
+
+    test "the canvas carries where the definition is edited" do
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal alembic.edit_manage_diagnostic_definition_path(diagnostic), response.parsed_body["flow"]["definition_url"]
+    end
+
+    test "the canvas carries where the details are edited" do
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal alembic.edit_manage_diagnostic_path(diagnostic), response.parsed_body["flow"]["details_url"]
+    end
+
+    test "a refused publish says it could not publish and why" do
+      post "#{canvas_path}/steps", params: { id: "adrift", type: "question" }
+
+      post "#{canvas_path}/publish"
+
+      assert_equal "Cannot publish: “adrift” is unreachable.", response.parsed_body["error"]
+    end
+
+    test "creating a version says which one it created" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+
+      post "#{canvas_path}/versions"
+
+      assert_equal "Created version 2.", response.parsed_body["notice"]
+    end
+
+    test "creating a version says when there was nothing to capture" do
+      post "#{canvas_path}/versions"
+
+      assert_equal "Nothing has changed since version 1.", response.parsed_body["notice"]
+    end
+
+    test "publishing says which version visitors now run" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/edges", params: { from: "b", to: "c" }
+
+      post "#{canvas_path}/publish"
+
+      assert_equal "Published version 2. Visitors run it now.", response.parsed_body["notice"]
+    end
+
+    test "publishing says when visitors already run this version" do
+      post "#{canvas_path}/publish"
+
+      post "#{canvas_path}/publish"
+
+      assert_equal "Visitors already run version 1.", response.parsed_body["notice"]
+    end
   end
 end
