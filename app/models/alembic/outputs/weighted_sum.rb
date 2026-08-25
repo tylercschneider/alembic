@@ -17,7 +17,7 @@ module Alembic
       end
 
       def self.weight_of(step, value)
-        chosen = Array(step["options"]).find { |option| option.is_a?(Hash) && option["value"] == value }
+        chosen = Steps::Question.answers_of(step).find { |option| option.is_a?(Hash) && option["value"] == value }
 
         chosen&.fetch("weight", nil).to_i
       end

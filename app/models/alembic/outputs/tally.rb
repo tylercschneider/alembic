@@ -4,7 +4,7 @@ module Alembic
       def self.output_type
         Summary::OutputType.define(:tally) do
           label "How many"
-          compute { |config, run, _so_far| Tally.counted(run, config["tag"], config["by"].presence || "tag") }
+          compute { |config, run, _so_far| Tally.counted(run, config["tag"], config["by"].presence) }
         end
       end
 
@@ -16,7 +16,7 @@ module Alembic
         answered = run.state.keys
         return answered.size if tag.blank?
 
-        answered.count { |id| run.step(id)[marker] == tag }
+        answered.count { |id| Grouped.bucket(run.step(id), marker) == tag }
       end
     end
   end
