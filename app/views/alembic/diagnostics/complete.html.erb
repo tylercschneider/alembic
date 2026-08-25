@@ -12,7 +12,7 @@
       <%= ui_grid(cols: { default: 1, sm: 2 }, gap: :lg) do %>
         <% @outputs.each do |output| %>
           <div data-output="<%= output.id %>" class="rounded-lg border border-gray-200 px-5 py-4 dark:border-zinc-700">
-            <p class="text-xs font-semibold uppercase tracking-widest text-accent-600"><%= output.label %></p>
+            <p class="text-xs font-semibold uppercase tracking-widest text-accent-600 dark:text-accent-400"><%= output.label %></p>
             <% lines = alembic_output_lines(output.value) %>
             <% if lines.one? %>
               <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white"><%= lines.first %></p>
@@ -30,11 +30,11 @@
   <% end %>
 
   <%= ui_section(title: @outputs.any? ? "What you told us" : nil) do %>
-    <ul class="divide-y divide-gray-100 border-y border-gray-100">
+    <ul class="divide-y divide-gray-100 border-y border-gray-100 dark:divide-zinc-700 dark:border-zinc-700">
       <% @answered.each do |step, value| %>
         <li data-answer="<%= step %>" class="flex items-baseline justify-between gap-6 py-3">
-          <span class="text-gray-600"><%= @guide.question_text(step) %></span>
-          <span class="shrink-0 font-medium text-gray-900"><%= @guide.choice_label(step, value) %></span>
+          <span class="text-gray-600 dark:text-zinc-400"><%= @guide.question_text(step) %></span>
+          <span class="shrink-0 font-medium text-gray-900 dark:text-white"><%= @guide.choice_label(step, value) %></span>
         </li>
       <% end %>
     </ul>
