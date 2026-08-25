@@ -1,8 +1,17 @@
 # Alembic
-Short description and motivation.
+
+A diagnostics engine built on a general-purpose flow layer: typed steps joined
+into a graph, walked by the host application, and summarised separately.
 
 ## Usage
-How to use my plugin.
+
+Alembic ships a builder for authoring flows and a small runtime for walking
+them. The flow layer knows nothing about diagnostics — it is step-typed, and a
+host application registers whatever step types it needs.
+
+**[docs/consuming.md](docs/consuming.md)** documents that interface: the flow
+document format, the step-type DSL, driving a run, validation, and the summary
+layer. Read it if you are embedding Alembic, or writing your own step types.
 
 ## Installation
 Add this line to your application's Gemfile:
@@ -66,7 +75,8 @@ Alembic.admin_layout = "admin"
 
 ## The flow canvas
 
-The builder's flow canvas is a React Flow application, built here and shipped
+The builder's flow canvas is a React application — DOM nodes laid out on a
+grid with an SVG connector layer, not a graph library — built here and shipped
 as a committed bundle — a gem cannot run a JavaScript build on the host's
 machine. Host applications need no Node toolchain and no configuration; the
 bundle is served by the asset pipeline like any other engine asset.

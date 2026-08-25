@@ -1,0 +1,373 @@
+# Consuming the flow interface
+
+Alembic's flow layer is a general-purpose, step-typed graph engine. Nothing in
+it knows what a "question" is — diagnostics are just the first consumer. A host
+application teaches it new step types and drives the walk itself.
+
+This document describes the interface a consuming application talks to. It is
+written against the code as it stands, so that the layer can be extracted into
+its own gem without the contract changing.
+
+## The three artifacts
+
+A flow separates what to ask, what was said, and what it means. Each is a
+distinct artifact, and a host may implement any one without the others.
+
+| Artifact | What it is | Who owns it |
+|---|---|---|
+| **Template** | the flow document — typed nodes joined by edges | the builder writes it |
+| **Run** | `state` — a hash of node id to recorded value | the host's runner |
+| **Summary** | outputs computed from a finished run | the summary layer |
+
+The template is data. The runner is a loop the host writes. The summary is a
+separate registry that reads a finished run.
+
+## 1. The flow document
+
+A flow is plain JSON. Three keys:
+
+```json
+{
+  "entry": "budget",
+  "nodes": [
+    { "id": "budget", "type": "question", "text": "What is your budget?",
+      "tag": "money",
+      "options": [ { "value": "low",  "label": "Modest",   "weight": 1 },
+                   { "value": "high", "label": "Generous", "weight": 5 } ] },
+    { "id": "rich", "type": "condition", "answer": "budget", "equals": "high" },
+    { "id": "posh", "type": "question", "text": "Which premium tier?" }
+  ],
+  "edges": [
+    { "from": "budget", "to": "rich" },
+    { "from": "rich", "to": "posh", "on": "yes" }
+  ]
+}
+```
+
+- `entry` — the id of the node the walk starts from.
+- `nodes` — each needs `id` and `type`. **Every other key is that step type's
+  config**, and is handed to the type's hooks untouched.
+- `edges` — `from` and `to` are node ids. `on` names an output port, and is
+  omitted for step types that have a single unnamed output.
+
+Wrap it in `Flow::Document`:
+
+```ruby
+document = Alembic::Flow::Document.new(JSON.parse(raw))
+```
+
+`Document` is immutable — every edit returns a new `Document` (see §5). It does
+not care where the JSON came from; Alembic stores it in an append-only
+`alembic_definition_versions` table, but a host can keep it in a file, a
+column, or an API response.
+
+## 2. Defining step types
+
+A step type is registered once and referenced by `type` in the document.
+
+```ruby
+Alembic::Flow.step(:agent) do
+  label "Agent"
+
+  field :prompt, :text
+  field :model, :string
+
+  names_by :prompt
+  awaits_input
+end
+```
+
+Register at boot, inside `to_prepare` so the types survive a code reload:
+
+```ruby
+# config/initializers/flow.rb
+Rails.application.config.to_prepare do
+  MyApp::Steps::Agent.register   # => Alembic::Flow.registry.register(step_type)
+end
+```
+
+### The declaration DSL
+
+| Method | Effect |
+|---|---|
+| `label "Agent"` | human name, shown in the builder palette. Defaults to the id |
+| `field :name, :type` | declares a config key and how the builder should edit it |
+| `outputs :pass, :fail` | named output ports. Omit for a single unnamed output |
+| `awaits_input` | this step stops the walk until the host records a value for it |
+| `names_by :prompt` | which config field titles the node on the canvas |
+| `requires { \|node\| }` | returns ids this node's config depends on |
+| `route { \|node, state\| }` | returns which port to leave by |
+| `process { \|node, state\| }` | **declared but not yet called — see §8** |
+
+### Field types
+
+`:text` `:string` `:number` `:boolean` `:select` `:list` `:records`
+
+Anything else raises `Flow::UnknownFieldType`. These describe the *editing
+affordance* the builder offers; the engine never interprets a field's value.
+
+`:records` is a repeating sub-form and must say what one record holds:
+
+```ruby
+field :options, :records, of: { value: :string, label: :string, weight: :number }
+```
+
+This is how scoring data rides along on a step: authored in the builder, stored
+on the node, invisible to whoever walks the flow, and read later by the summary.
+
+### Routing
+
+A step with `outputs` must decide which port it leaves by:
+
+```ruby
+Alembic::Flow.step(:gate) do
+  outputs :pass, :fail
+
+  requires { |node| [ node.config["answer"] ].compact }
+  route     { |node, state| state[node.config["answer"]] == node.config["expects"] ? :pass : :fail }
+end
+```
+
+`route` returns a port name; the walk follows the edge whose `on` matches. A
+step with no `outputs` follows its first outgoing edge. If `route` returns a
+port with no matching edge, the walk ends there.
+
+### Requirements
+
+`requires` returns the node ids this node's config leans on. It is not a
+hint — the validator enforces it as **graph dominance**: a requirement is met
+only if removing the required node makes this node unreachable. A dependency
+that merely happens to sit upstream on *one* branch is a violation.
+
+## 3. Driving a run
+
+`Flow::Digest` is the whole runtime interface. It is a set of pure functions
+over `(document, state)` — it holds no run state of its own.
+
+```ruby
+digest = Alembic::Flow::Digest.new(document)
+```
+
+**`state` is a hash keyed by node id as a String.** Values are whatever the host
+records; the engine never inspects them except through a step type's hooks.
+
+| Method | Returns |
+|---|---|
+| `entry` | the entry `Node` |
+| `step(id)` | one `Node`, or nil |
+| `steps` | every `Node` in the document |
+| `requirements(id)` | the ids that node depends on |
+| `next_step(state)` | the next node awaiting input, or `nil` when finished |
+| `state_on_path(state)` | `state` reduced to what is still on the walked path |
+
+A host's runner is this loop:
+
+```ruby
+state = {}
+
+while (step = digest.next_step(state))
+  state[step.id] = perform(step.type, step.config)
+end
+
+finished = digest.state_on_path(state)
+```
+
+`next_step` walks from `entry`, evaluating conditions against `state` as it
+goes, and stops at the first node whose type `awaits_input` and which has no
+recorded value. Nodes that don't await input — conditions, and anything else
+purely structural — are traversed silently.
+
+### Why `state_on_path` matters
+
+If someone answers a question, then changes an earlier answer so a different
+branch is taken, the first answer is still sitting in `state` but is no longer
+on the path. `state_on_path` drops it. **Always summarise the path-correct
+state**, not the raw hash, or abandoned answers will score.
+
+The walk is also cycle-safe: it tracks visited ids and stops rather than
+looping forever on a document that points backwards.
+
+## 4. Validating
+
+```ruby
+violations = Alembic::Flow::Validator.new(document).violations
+```
+
+Each `Violation` carries `node`, `problem`, and sometimes `detail`.
+
+| `problem` | Meaning |
+|---|---|
+| `:missing_entry` | `entry` names a node that isn't there |
+| `:missing_edge_target` / `:missing_edge_source` | an edge points at an unknown node |
+| `:duplicate_id` | two nodes share an id |
+| `:unreachable` | a node no walk from `entry` can arrive at |
+| `:unmet_requirement` | a `requires` id does not dominate this node |
+
+Three levels, narrowest first: `malformations` (broken references — the
+document is not usable), `structural_violations` (adds unreachable nodes), and
+`violations` (adds unmet requirements).
+
+Every mutating `Document` method runs `malformations` and raises
+`Flow::InvalidEdit` rather than returning a corrupt document. Reachability and
+requirements are *not* enforced on edit — a half-built flow is allowed to be
+temporarily broken while someone is still building it.
+
+## 5. Editing the document
+
+For hosts building their own editor. All return a new `Document`:
+
+| Method | Effect |
+|---|---|
+| `add(node)` | append a node, no edges |
+| `insert(node, on: [from, to], leaving: port)` | splice into an existing edge |
+| `connect(from:, to:, on: nil)` | add an edge |
+| `disconnect(from:, to:)` | drop an edge |
+| `rewire(from:, to:, target:)` | repoint an edge's destination |
+| `move(id, on:, leaving:)` | remove then re-insert elsewhere |
+| `configure(id, config)` | replace a node's config, keeping `id` and `type` |
+| `remove(id)` | drop a node, bridging its incoming edges to its outgoing ones |
+
+`remove` deliberately heals the graph: every incoming edge is reconnected to
+every outgoing one, so deleting a step from the middle does not sever the flow.
+
+When inserting a node that has named ports, pass `leaving:` — otherwise its new
+outgoing edge has no port and the walk cannot leave it.
+
+## 6. Summarising
+
+The summary layer mirrors the step registry, and is deliberately separate: a
+host can walk a flow without ever summarising, or summarise a run recorded
+elsewhere.
+
+An output type is a pure transform:
+
+```ruby
+Alembic::Summary.output(:weighted_sum) do
+  label "Score"
+  compute { |config, run, so_far| ... }
+end
+```
+
+- `config` — the output's own entry from the summary document
+- `run` — a `Summary::Run`, holding `state` and the step definitions
+- `so_far` — outputs already computed this pass, keyed by id, so an output can
+  build on an earlier one
+
+Outputs are computed **in document order**, which is what lets `band` read the
+score that `weighted_sum` just produced.
+
+`Summary::Run` gives a transform both halves of the picture:
+
+```ruby
+run.state          # => { "budget" => "high" }   what was answered
+run.step("budget") # => the node's config hash   what was asked
+```
+
+The summary document is a list of outputs:
+
+```json
+{ "outputs": [
+    { "id": "score", "type": "weighted_sum", "label": "Your score" },
+    { "id": "band",  "type": "band", "of": "score",
+      "bands": [ { "ceiling": 10, "name": "Getting started" }, { "name": "Strong" } ] } ] }
+```
+
+Run it:
+
+```ruby
+run     = Alembic::Summary::Run.new(state: finished, steps: nodes_by_id)
+results = Alembic::Summary::Report.new(summary_document).results(run)
+
+results.first.label  # => "Your score"
+results.first.value  # => 5
+```
+
+Each result is a `Summary::Result` — `id`, `label`, `value`. `label` falls back
+to the output type's own label when the document doesn't override it. An
+unknown type raises `Summary::UnknownOutputType`.
+
+## 7. What ships built in
+
+Two step types, both registered by the engine:
+
+- **`question`** — `text`, `options` (records of `value`/`label`/`weight`),
+  `tag`. Awaits input.
+- **`condition`** — `answer`, and either `equals` or `in`. Ports `yes`/`no`.
+  `in` wins when present and non-empty.
+
+Six output types:
+
+| Type | Config | Value |
+|---|---|---|
+| `weighted_sum` | — | sum of the chosen options' weights |
+| `percentage` | — | that sum as a share of the maximum reachable on the path taken |
+| `grouped` | `by` (default `"tag"`) | `{ tag => percentage }` for each tag answered |
+| `lowest` | `of`, `count` (default 1) | the weakest tags from a `grouped` output |
+| `tally` | `tag`, `by` (default `"tag"`) | how many steps were answered, optionally for one tag |
+| `band` | `of`, `bands` | the first band whose `ceiling` the value falls under |
+
+`bands` are sorted by `ceiling`; a band with no `ceiling` is the catch-all.
+
+None of these are privileged — they register through the same public call a
+host would use, and a host can add its own or ignore them entirely.
+
+## 8. Known gaps
+
+Documented so nobody builds against something that isn't there:
+
+- **`process` is not called.** The DSL accepts a `process` block and
+  `StepType#process` will invoke it, but nothing in `Digest` calls it. A step
+  type that needs to *do* something must have the host do it in its runner loop.
+- **`single_output?` is unused** — `Digest` infers the same thing from whether
+  `route` returns a port.
+- The engine's own `Runner` is a thin diagnostics-flavoured wrapper over
+  `Digest` (`questions`, `next_question`, `choice_label`). It is a consumer of
+  this interface, not part of it — a host orchestrating agents should use
+  `Digest` directly.
+
+## 9. A non-diagnostic example
+
+Nothing above is question-shaped. The same engine orchestrating agent work:
+
+```ruby
+Alembic::Flow.step(:agent) do
+  label "Agent"
+  field :prompt, :text
+  field :model, :string
+  names_by :prompt
+  awaits_input
+end
+
+Alembic::Flow.step(:review) do
+  label "Review gate"
+  field :of, :string
+  outputs :approved, :rejected
+
+  requires { |node| [ node.config["of"] ].compact }
+  route    { |node, state| state[node.config["of"]][:ok] ? :approved : :rejected }
+end
+```
+
+```json
+{ "entry": "draft",
+  "nodes": [
+    { "id": "draft",  "type": "agent",  "prompt": "Draft the release notes" },
+    { "id": "check",  "type": "review", "of": "draft" },
+    { "id": "polish", "type": "agent",  "prompt": "Tighten the wording" },
+    { "id": "redo",   "type": "agent",  "prompt": "Start over, more concise" } ],
+  "edges": [
+    { "from": "draft", "to": "check" },
+    { "from": "check", "to": "polish", "on": "approved" },
+    { "from": "check", "to": "redo",   "on": "rejected" } ] }
+```
+
+```ruby
+state = {}
+while (step = digest.next_step(state))
+  state[step.id] = Agents.run(step.config["prompt"], model: step.config["model"])
+end
+```
+
+The builder, the document format, the walk, the validator, and the summary are
+all unchanged. Only the step types differ — which is the whole point of the
+split.

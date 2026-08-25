@@ -7,6 +7,10 @@ module Alembic
         Alembic::Steps::Question.register
         Alembic::Steps::Condition.register
         Alembic::Outputs::WeightedSum.register
+        Alembic::Outputs::Percentage.register
+        Alembic::Outputs::Grouped.register
+        Alembic::Outputs::Lowest.register
+        Alembic::Outputs::Tally.register
         Alembic::Outputs::Band.register
       end
     end
