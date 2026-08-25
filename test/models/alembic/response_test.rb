@@ -160,6 +160,13 @@ module Alembic
       assert_equal 5, response.reload.summary_of("budget" => "high").first.value
     end
 
+    test "produces no outputs when its diagnostic has no summary" do
+      diagnostic = Diagnostic.create!(slug: "unscored")
+      diagnostic.record_definition("slug" => "unscored")
+
+      assert_empty Response.start(diagnostic).summary_of({})
+    end
+
     def scored_diagnostic
       Diagnostic.create!(slug: "scored").tap do |diagnostic|
         diagnostic.record_definition("slug" => "scored", "entry" => "budget", "edges" => [],
