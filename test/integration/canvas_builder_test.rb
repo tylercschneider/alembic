@@ -51,7 +51,6 @@ module Alembic
     end
 
     test "undoing an edit restores what the flow was before it" do
-      skip "undo and redo are rebuilt over the change history in #200"
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
 
       post "#{canvas_path}/undo"
@@ -60,7 +59,6 @@ module Alembic
     end
 
     test "redoing puts back what was undone" do
-      skip "undo and redo are rebuilt over the change history in #200"
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
       post "#{canvas_path}/undo"
 
@@ -70,7 +68,6 @@ module Alembic
     end
 
     test "the canvas says whether there is anything to redo" do
-      skip "undo and redo are rebuilt over the change history in #200"
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
       post "#{canvas_path}/undo"
 
@@ -80,21 +77,18 @@ module Alembic
     end
 
     test "undoing with nothing behind it leaves the flow alone" do
-      skip "undo and redo are rebuilt over the change history in #200"
       post "#{canvas_path}/undo"
 
       assert_equal [ "a", "b" ], nodes
     end
 
     test "the canvas says whether there is anything to undo" do
-      skip "undo and redo are rebuilt over the change history in #200"
       get "#{canvas_path}.json"
 
       assert_not response.parsed_body["undoable"]
     end
 
     test "the canvas says there is something to undo after an edit" do
-      skip "undo and redo are rebuilt over the change history in #200"
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
 
       get "#{canvas_path}.json"

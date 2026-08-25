@@ -20,12 +20,12 @@ module Alembic
       end
 
       def undo
-        diagnostic.undo_definition
+        diagnostic.undo_change
         head :no_content
       end
 
       def redo
-        diagnostic.redo_definition
+        diagnostic.redo_change
         head :no_content
       end
 
@@ -61,8 +61,10 @@ module Alembic
       private
 
       def apply(action = nil, *steps)
+        before = document.to_h
         edited = yield(document)
-        diagnostic.update!(document: edited.to_h, changes_since_version: recorded(action, edited, steps))
+        diagnostic.update!(document: edited.to_h, undone_changes: [],
+          changes_since_version: recorded(action, edited, steps, before))
         head :no_content
       rescue Flow::InvalidEdit => invalid
         render json: { error: invalid.message }, status: :unprocessable_entity
@@ -81,11 +83,12 @@ module Alembic
         Flow::Document.new(diagnostic.document || diagnostic.definition || {})
       end
 
-      def recorded(action, edited, steps)
+      def recorded(action, edited, steps, before)
         return diagnostic.changes_since_version.to_a unless action
 
         diagnostic.changes_since_version.to_a +
-          [ { "action" => action.to_s, "steps" => steps.map(&:to_s), "named" => steps.map { |id| named(edited, id) } } ]
+          [ { "action" => action.to_s, "steps" => steps.map(&:to_s),
+              "named" => steps.map { |id| named(edited, id) }, "before" => before } ]
       end
 
       def named(edited, id)

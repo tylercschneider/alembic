@@ -143,7 +143,6 @@ module Alembic
     end
 
     test "undoing puts back what was there before" do
-      skip "undo and redo are rebuilt over the change history in #200"
       canvas_for(flow)
       find("[data-connector='start-gate']").hover
       find("[data-connector='start-gate']").click_button("×")
@@ -155,7 +154,6 @@ module Alembic
     end
 
     test "redoing puts back what was undone" do
-      skip "undo and redo are rebuilt over the change history in #200"
       canvas_for(flow)
       find("[data-connector='start-gate']").hover
       find("[data-connector='start-gate']").click_button("×")
