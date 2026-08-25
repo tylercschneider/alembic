@@ -271,5 +271,33 @@ module Alembic
 
       assert_empty response.parsed_body["changes"]
     end
+
+    test "the canvas carries which version this flow stands at" do
+      post "#{canvas_path}/versions"
+
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal diagnostic.reload.current_definition_version.number, response.parsed_body["flow"]["version"]
+    end
+
+    test "the canvas carries which version visitors run" do
+      post "#{canvas_path}/publish"
+
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal diagnostic.reload.published_version.number, response.parsed_body["flow"]["published"]
+    end
+
+    test "the canvas carries where the definition is edited" do
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal alembic.edit_manage_diagnostic_definition_path(diagnostic), response.parsed_body["flow"]["definition_url"]
+    end
+
+    test "the canvas carries where the details are edited" do
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal alembic.edit_manage_diagnostic_path(diagnostic), response.parsed_body["flow"]["details_url"]
+    end
   end
 end

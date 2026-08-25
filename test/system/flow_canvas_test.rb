@@ -172,22 +172,75 @@ module Alembic
       assert_selector "svg path[marker-end]", count: 1
     end
 
-    test "the panel says nothing has changed before anything is edited" do
+    test "the flow's panel stays out of the way until it is opened" do
       canvas_for(flow)
 
+      assert_no_selector "[data-builder-panel]"
+    end
+
+    test "opening the flow's panel shows what has changed" do
+      canvas_for(flow)
+
+      find("[data-open-panel]").click
+
       assert_selector "[data-builder-panel]", text: "Nothing has changed."
+    end
+
+    test "the flow's panel closes again" do
+      canvas_for(flow)
+      find("[data-open-panel]").click
+
+      find("[data-builder-panel]").click_button("×")
+
+      assert_no_selector "[data-builder-panel]"
+    end
+
+    test "the flow's panel says which version it stands at" do
+      canvas_for(flow)
+
+      find("[data-open-panel]").click
+
+      assert_selector "[data-versions]", text: "Version 1"
+    end
+
+    test "a version is created from the flow's panel" do
+      canvas_for(flow)
+      step_card("start").click
+      fill_in_first_field_with("Changed by hand")
+      find("[data-open-panel]").click
+
+      assert_selector "[data-create-version]", text: "Create version"
+    end
+
+    test "the flow's panel links to the definition" do
+      canvas_for(flow)
+
+      find("[data-open-panel]").click
+
+      assert_selector "[data-definition]", text: "Definition"
+    end
+
+    test "the flow's panel links to the details" do
+      canvas_for(flow)
+
+      find("[data-open-panel]").click
+
+      assert_selector "[data-details]", text: "Edit details"
     end
 
     test "the panel lists a change once a step is edited" do
       canvas_for(flow)
       step_card("start").click
       fill_in_first_field_with("Changed by hand")
+      find("[data-open-panel]").click
 
       assert_selector "[data-change]", text: "Updated"
     end
 
     test "the panel names a step that cannot be reached" do
       canvas_for(adrift)
+
+      find("[data-open-panel]").click
 
       assert_selector "[data-problem]", text: "unreachable"
     end
@@ -196,13 +249,15 @@ module Alembic
       canvas_for(flow)
       step_card("start").click
       fill_in_first_field_with("Changed by hand")
-      find("[data-cut-version]").click
+      find("[data-open-panel]").click
+      find("[data-create-version]").click
 
       assert_selector "[data-builder-panel]", text: "Nothing has changed."
     end
 
     test "publishing a flow with a problem is refused" do
       canvas_for(adrift)
+      find("[data-open-panel]").click
 
       find("[data-publish]").click
 

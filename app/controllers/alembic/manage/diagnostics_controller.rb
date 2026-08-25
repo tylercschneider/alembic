@@ -1,6 +1,7 @@
 module Alembic
   module Manage
     class DiagnosticsController < BaseController
+      include DrawsCanvas
       def index
         @diagnostics = ordered_diagnostics
       end
@@ -18,10 +19,7 @@ module Alembic
 
       def show
         @diagnostic = Diagnostic.find(params[:id])
-        @canvas = Flow::Canvas.new(Flow::Document.new(@diagnostic.document || @diagnostic.definition || {})).to_h
-          .merge("undoable" => @diagnostic.undoable?, "redoable" => @diagnostic.redoable?,
-                 "changes" => @diagnostic.changes_since_version.to_a.map { |change| change.except("before") })
-          .merge("undoable" => @diagnostic.undoable?, "redoable" => @diagnostic.redoable?)
+        @canvas = canvas_payload(@diagnostic)
       end
 
       def edit

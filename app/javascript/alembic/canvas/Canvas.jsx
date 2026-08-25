@@ -21,6 +21,7 @@ const Canvas = ({ base, token, initial }) => {
   const [ adding, setAdding ] = useState(null)
   const [ armed, setArmed ] = useState(null)
   const [ dragging, setDragging ] = useState(null)
+  const [ showing, setShowing ] = useState(false)
   const cards = useRef({})
   const surface = useRef(null)
 
@@ -58,7 +59,15 @@ const Canvas = ({ base, token, initial }) => {
             Choose the step “{armed[1] || "next"}” should lead to — <button onClick={() => setArmed(null)} style={{ border: "none", background: "none", color: "#1e40af", textDecoration: "underline", cursor: "pointer", fontSize: 12, padding: 0 }}>cancel</button>
           </div>
         )}
+        {showing && (
+          <Panel flow={flow.flow || {}} changes={flow.changes || []} problems={flow.violations} refusal={error}
+                 onClose={() => setShowing(false)}
+                 onCreate={() => { setSelected(null); send("/versions", "POST") }}
+                 onPublish={() => { setSelected(null); send("/publish", "POST") }} />
+        )}
+
         <Toolbar empty={flow.nodes.length === 0} undoable={flow.undoable} redoable={flow.redoable}
+                 onOpen={() => setShowing(true)}
                  onAdd={() => setAdding({ at: { x: 16, y: 52 } })}
                  onUndo={() => { setSelected(null); send("/undo", "POST") }}
                  onRedo={() => { setSelected(null); send("/redo", "POST") }} />
@@ -107,10 +116,6 @@ const Canvas = ({ base, token, initial }) => {
                       }} />
         )}
       </div>
-
-      <Panel changes={flow.changes || []} problems={flow.violations} refusal={error}
-             onCut={() => { setSelected(null); send("/versions", "POST") }}
-             onPublish={() => { setSelected(null); send("/publish", "POST") }} />
 
       {selectedNode && (
         <Inspector node={selectedNode}

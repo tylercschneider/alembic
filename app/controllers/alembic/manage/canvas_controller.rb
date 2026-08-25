@@ -1,8 +1,9 @@
 module Alembic
   module Manage
     class CanvasController < BaseController
+      include DrawsCanvas
       def show
-        render json: canvas_payload
+        render json: canvas_payload(diagnostic)
       end
 
       def cut
@@ -70,12 +71,6 @@ module Alembic
         render json: { error: invalid.message }, status: :unprocessable_entity
       end
 
-      def canvas_payload
-        Flow::Canvas.new(document).to_h
-          .merge("undoable" => diagnostic.undoable?, "redoable" => diagnostic.redoable?,
-                 "changes" => listed_changes)
-      end
-
       def diagnostic
         @diagnostic ||= Diagnostic.find(params[:diagnostic_id])
       end
@@ -126,10 +121,6 @@ module Alembic
 
       def configuration
         params.fetch(:config, {}).permit!.to_h
-      end
-
-      def listed_changes
-        diagnostic.changes_since_version.to_a.map { |change| change.except("before") }
       end
 
       def coerced(flow, id)
