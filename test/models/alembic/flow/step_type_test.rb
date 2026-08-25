@@ -159,6 +159,16 @@ module Alembic
       test "refuses the string type in favour of text" do
         assert_raises(UnknownFieldType) { StepType.define(:probe) { setting :prompt, type: :string } }
       end
+
+      test "refuses the number type in favour of integer and float" do
+        assert_raises(UnknownFieldType) { StepType.define(:probe) { setting :weight, type: :number } }
+      end
+
+      test "refuses an unknown type inside a repeating group" do
+        assert_raises(UnknownFieldType) do
+          StepType.define(:probe) { setting :answers, type: :records, of: { weight: :number } }
+        end
+      end
     end
   end
 end
