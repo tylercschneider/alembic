@@ -16,7 +16,7 @@ module Alembic
     end
 
     def edges
-      flow.reload.definition["edges"].map { |edge| [ edge["from"], edge["to"] ] }
+      flow.reload.document["edges"].map { |edge| [ edge["from"], edge["to"] ] }
     end
 
     def add_step_named(label)
