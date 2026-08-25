@@ -198,5 +198,13 @@ module Alembic
 
       assert_includes drawn["nodes"].map { |node| node["id"] }, "c"
     end
+
+    test "cutting a version records the document being edited" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+
+      assert_difference -> { diagnostic.definition_versions.count } do
+        post "#{canvas_path}/versions"
+      end
+    end
   end
 end
