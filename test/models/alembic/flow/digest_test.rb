@@ -5,9 +5,9 @@ module Alembic
     class DigestTest < ActiveSupport::TestCase
       def registry
         @registry ||= Registry.new.tap do |built|
-          built.register(StepType.define(:ask) { field :text, :text; awaits_input })
+          built.register(StepType.define(:ask) { setting :text, type: :text; awaits_input })
           built.register(StepType.define(:branch) do
-            field :answer, :string
+            setting :answer, type: :string
             outputs :yes, :no
             requires { |node| [ node.config["answer"] ].compact }
             route { |node, state| state[node.config["answer"]] == "yes" ? :yes : :no }

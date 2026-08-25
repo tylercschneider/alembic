@@ -7,8 +7,8 @@ module Alembic
         Registry.new.tap do |built|
           built.register(StepType.define(:ask) do
             label "Ask"
-            field :text, :text
-            field :options, :records, of: { value: :string, weight: :number }
+            setting :text, type: :text
+            setting :options, type: :records, of: { value: :string, weight: :number }
             names_by :text
           end)
           built.register(StepType.define(:branch) { label "Branch"; outputs :yes, :no })
