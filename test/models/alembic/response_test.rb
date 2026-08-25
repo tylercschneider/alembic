@@ -130,5 +130,16 @@ module Alembic
 
       assert_nil Response.start(diagnostic).summary_version
     end
+
+    test "keeps its pinned summary version when the diagnostic records a newer one" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_definition("slug" => "demo")
+      diagnostic.record_summary("outputs" => [])
+      response = Response.start(diagnostic)
+
+      assert_no_changes -> { response.reload.summary_version_id } do
+        diagnostic.record_summary("outputs" => [ { "id" => "score" } ])
+      end
+    end
   end
 end
