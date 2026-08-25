@@ -17,7 +17,7 @@ module Alembic
     end
 
     def guide
-      @guide ||= Runner.for(definition_version.definition)
+      @guide ||= Runner.new(definition_version.definition)
     end
 
     def discard_last_answer

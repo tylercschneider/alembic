@@ -18,6 +18,43 @@ module Alembic
       end
     end
 
+    def summarised
+      flowed.tap do |diagnostic|
+        diagnostic.update!(summary_definition: {
+          "outputs" => [
+            { "id" => "score", "type" => "weighted_sum", "label" => "Your score",
+              "weights" => { "budget" => { "high" => 5, "low" => 1 }, "posh" => { "a" => 3 }, "plain" => { "b" => 1 } } },
+            { "id" => "band", "type" => "band", "label" => "Where that puts you", "of" => "score",
+              "bands" => [ { "ceiling" => 4, "name" => "Modest" }, { "name" => "Generous" } ] }
+          ]
+        })
+      end
+    end
+
+    test "a finished run shows what its summary makes of it" do
+      get alembic.diagnostic_step_path(summarised.slug), params: { answers: { budget: "high", posh: "a" } }
+
+      assert_select "[data-output=?]", "score", text: /8/
+    end
+
+    test "a finished run names the band its score falls in" do
+      get alembic.diagnostic_step_path(summarised.slug), params: { answers: { budget: "high", posh: "a" } }
+
+      assert_select "[data-output=?]", "band", text: /Generous/
+    end
+
+    test "an answer stranded on an abandoned branch does not count toward the score" do
+      get alembic.diagnostic_step_path(summarised.slug), params: { answers: { budget: "low", posh: "a", plain: "b" } }
+
+      assert_select "[data-output=?]", "score", text: /2/
+    end
+
+    test "a diagnostic with no summary still shows what was said" do
+      get alembic.diagnostic_step_path(flowed.slug), params: { answers: { budget: "low", plain: "b" } }
+
+      assert_select "[data-answer=?]", "budget"
+    end
+
     test "a visitor can see the intro of a nodes and edges diagnostic" do
       get alembic.diagnostic_path(flowed.slug)
 

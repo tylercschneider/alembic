@@ -48,7 +48,7 @@ module Alembic
       end
 
       def diagnostic_params
-        params.require(:diagnostic).permit(:kicker, :headline, :blurb, :start_label, :resolver_key)
+        params.require(:diagnostic).permit(:title, :summary, :start_label)
       end
     end
   end

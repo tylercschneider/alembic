@@ -20,14 +20,14 @@
       <fieldset>
         <legend class="text-xl font-semibold text-gray-900 mb-5 leading-snug"><%= @question.text %></legend>
         <div class="space-y-3">
-          <% @question.options.each do |option| %>
+          <% @question.choices.each do |choice| %>
             <label class="block cursor-pointer">
-              <%= radio_button_tag "answers[#{@question.id}]", option.value, false, required: true, class: "peer sr-only" %>
+              <%= radio_button_tag "answers[#{@question.id}]", choice.value, false, required: true, class: "peer sr-only" %>
               <span class="flex items-start gap-3 rounded-lg border-2 border-gray-200 bg-white px-4 py-3 transition hover:border-gray-400 peer-checked:border-accent-500 peer-checked:bg-accent-50">
-                <span class="text-xs font-semibold uppercase tracking-wider text-accent-600 border border-accent-200 rounded px-2 py-0.5 shrink-0 mt-0.5"><%= option.value %></span>
+                <span class="text-xs font-semibold uppercase tracking-wider text-accent-600 border border-accent-200 rounded px-2 py-0.5 shrink-0 mt-0.5"><%= choice.value %></span>
                 <span class="text-gray-900">
-                  <%= option.label %>
-                  <small class="block text-gray-500"><%= option.hint %></small>
+                  <%= choice.label %>
+                  <small class="block text-gray-500"><%= choice.hint %></small>
                 </span>
               </span>
             </label>

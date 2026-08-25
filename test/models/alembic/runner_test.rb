@@ -26,11 +26,11 @@ module Alembic
     end
 
     test "offers a choice for each option a step lists" do
-      assert_equal [ "low", "high" ], runner.next_question({}).options.map(&:value)
+      assert_equal [ "low", "high" ], runner.next_question({}).choices.map(&:value)
     end
 
     test "labels a choice given as a plain value by that value" do
-      assert_equal "low", runner.next_question({}).options.first.label
+      assert_equal "low", runner.next_question({}).choices.first.label
     end
 
     test "labels a choice given as a record by its own label" do
@@ -38,7 +38,7 @@ module Alembic
         node["id"] == "first" ? node.merge("options" => [ { "value" => "low", "label" => "Not much" } ]) : node
       end)
 
-      assert_equal "Not much", runner(described).next_question({}).options.first.label
+      assert_equal "Not much", runner(described).next_question({}).choices.first.label
     end
 
     test "passes through a condition to the branch the answers select" do

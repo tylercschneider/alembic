@@ -1,11 +1,5 @@
 module Alembic
   class Runner
-    def self.for(definition)
-      return new(definition) if definition.to_h.key?("nodes")
-
-      DefinitionLoader.new(definition).build
-    end
-
     def initialize(definition)
       @definition = definition.to_h
       @digest = Flow::Digest.new(Flow::Document.new(@definition))
@@ -17,24 +11,6 @@ module Alembic
 
     def headline
       @definition["headline"]
-    end
-
-    def applicable_questions(answers)
-      answers_on_path(answers).keys.map { |id| question_from(@digest.step(id.to_s)) }
-    end
-
-    def question_text(id)
-      @digest.step(id.to_s)&.config&.fetch("text", nil)
-    end
-
-    def choice_label(id, value)
-      chosen = choices_in(@digest.step(id.to_s)).find { |choice| choice.value == value }
-
-      chosen&.label.presence || value
-    end
-
-    def scored?
-      false
     end
 
     def questions
@@ -51,10 +27,24 @@ module Alembic
       @digest.state_on_path(named(answers)).symbolize_keys
     end
 
+    def applicable_questions(answers)
+      answers_on_path(answers).keys.map { |id| question_from(@digest.step(id.to_s)) }
+    end
+
+    def question_text(id)
+      @digest.step(id.to_s)&.config&.fetch("text", nil)
+    end
+
+    def choice_label(id, value)
+      chosen = choices_in(@digest.step(id.to_s)).find { |choice| choice.value == value }
+
+      chosen&.label.presence || value
+    end
+
     private
 
     def question_from(node)
-      Guide::Question.new(id: node.id.to_sym, text: node.config["text"], options: choices_in(node))
+      Asked.new(id: node.id.to_sym, text: node.config["text"], choices: choices_in(node))
     end
 
     def choices_in(node)
@@ -62,10 +52,9 @@ module Alembic
     end
 
     def choice_from(option)
-      return Guide::Option.new(value: option, label: option, hint: nil) unless option.is_a?(Hash)
+      return Choice.new(value: option) unless option.is_a?(Hash)
 
-      Guide::Option.new(value: option["value"], label: option["label"].presence || option["value"],
-                        hint: option["hint"], weight: option["weight"])
+      Choice.new(value: option["value"], label: option["label"], hint: option["hint"])
     end
 
     def named(answers)

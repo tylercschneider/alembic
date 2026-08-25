@@ -20,20 +20,20 @@ module Alembic
       assert_select "a[href=?]", alembic.manage_diagnostic_path(alembic_diagnostics(:business_scorecard))
     end
 
-    test "the edit form prefills the diagnostic copy" do
-      diagnostic = Diagnostic.create!(slug: "editme", headline: "Current headline")
+    test "the edit form prefills how the diagnostic is introduced" do
+      diagnostic = Diagnostic.create!(slug: "editme", title: "Current title")
 
       get alembic.edit_manage_diagnostic_path(diagnostic)
 
-      assert_select "input[name=?][value=?]", "diagnostic[headline]", "Current headline"
+      assert_select "input[name=?][value=?]", "diagnostic[title]", "Current title"
     end
 
-    test "updating saves the diagnostic copy" do
-      diagnostic = Diagnostic.create!(slug: "editme", headline: "Old")
+    test "updating saves how the diagnostic is introduced" do
+      diagnostic = Diagnostic.create!(slug: "editme", summary: "Old")
 
-      patch alembic.manage_diagnostic_path(diagnostic), params: { diagnostic: { headline: "New headline" } }
+      patch alembic.manage_diagnostic_path(diagnostic), params: { diagnostic: { summary: "New summary" } }
 
-      assert_equal "New headline", diagnostic.reload.headline
+      assert_equal "New summary", diagnostic.reload.summary
     end
 
     test "the hub links to the edit form" do

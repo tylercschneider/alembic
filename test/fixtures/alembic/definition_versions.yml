@@ -3,13 +3,10 @@ db_guide_v1:
   number: 1
   definition:
     slug: db-guide
-    kicker: Demo
-    headline: A guide defined in the database
-    blurb: Loaded straight from the current definition version.
-    start_label: "Begin →"
-    questions:
-      - id: pick
-        text: Pick one option
-        options:
-          - { value: a, label: Option A }
-          - { value: b, label: Option B }
+    headline: A flow defined in the database
+    entry: pick
+    nodes:
+      - { id: pick, type: question, text: Pick one option, options: [ { value: a, label: Option A }, { value: b, label: Option B } ] }
+      - { id: why, type: question, text: Why that one?, options: [ { value: cost, label: Cost } ] }
+    edges:
+      - { from: pick, to: why }

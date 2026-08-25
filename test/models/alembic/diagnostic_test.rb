@@ -14,17 +14,11 @@ module Alembic
       assert_not Diagnostic.new(slug: nil).valid?
     end
 
-    test "builds a guide from its current definition" do
+    test "builds a runner from its current definition" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition({ "slug" => "demo" })
 
-      assert_equal "demo", diagnostic.to_guide.slug
-    end
-
-    test "stores guide copy and placement attributes" do
-      diagnostic = Diagnostic.new(kicker: "k", headline: "h", blurb: "b", start_label: "s", resolver_key: "r")
-
-      assert_equal [ "k", "h", "b", "s", "r" ], [ diagnostic.kicker, diagnostic.headline, diagnostic.blurb, diagnostic.start_label, diagnostic.resolver_key ]
+      assert_equal "demo", diagnostic.runner.slug
     end
 
     test "recording a definition stores it as a version" do

@@ -1,6 +1,17 @@
-<section class="alembic-intro">
-  <h1><%= @diagnostic.title %></h1>
-  <p><%= @diagnostic.summary %></p>
+<% content_for(:title, @diagnostic.title.presence || @diagnostic.slug) %>
 
-  <%= link_to "Start", alembic.diagnostic_step_path(@diagnostic.slug), class: "alembic-start" %>
-</section>
+<%= ui_page(max_width: :md) do %>
+  <%= ui_page_header(title: @diagnostic.title.presence || @diagnostic.slug, subtitle: @diagnostic.summary) %>
+
+  <%= ui_section do %>
+    <div class="flex flex-wrap items-center gap-3">
+      <%= ui_button(label: @diagnostic.start_label.presence || "Start", href: alembic.diagnostic_step_path(@diagnostic.slug)) %>
+
+      <% if @diagnostic.definition.present? %>
+        <%= ui_form(action: alembic.diagnostic_responses_path(@diagnostic.slug), method: :post) do %>
+          <%= ui_button(label: "Start and save my progress", type: :submit, variant: :secondary) %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

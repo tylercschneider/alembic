@@ -46,8 +46,24 @@ module Alembic
       step_to(recorded_numbers.select { |number| number > cursor }.min)
     end
 
-    def to_guide
-      Runner.for(definition)
+    def runner
+      Runner.new(definition)
+    end
+
+    def summarises?
+      summary_definition.present?
+    end
+
+    def summary_of(state)
+      Summary::Report.new(summary_definition).results(state)
+    end
+
+    def summarises?
+      summary_definition.present?
+    end
+
+    def summary_of(state)
+      Summary::Report.new(summary_definition).results(state)
     end
 
     private

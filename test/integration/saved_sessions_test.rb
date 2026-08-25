@@ -2,170 +2,103 @@ require "test_helper"
 
 module Alembic
   class SavedSessionsTest < ActionDispatch::IntegrationTest
-    test "a branching definition sends the visitor down the path their answer selects" do
-      response = Response.start(branching_diagnostic)
-
-      patch alembic.response_path(response), params: { answers: { path: "right" } }
-      get alembic.response_path(response)
-
-      assert_select "legend", text: /Right question/
+    def branching
+      { "slug" => "saved", "entry" => "budget",
+        "nodes" => [ { "id" => "budget", "type" => "question", "text" => "Budget?",
+                       "options" => [ { "value" => "low", "label" => "Modest" }, { "value" => "high", "label" => "Generous" } ] },
+                     { "id" => "gate", "type" => "condition", "answer" => "budget", "equals" => "high" },
+                     { "id" => "posh", "type" => "question", "text" => "Premium tier?", "options" => [ "gold" ] },
+                     { "id" => "plain", "type" => "question", "text" => "Basic tier?", "options" => [ "bronze" ] } ],
+        "edges" => [ { "from" => "budget", "to" => "gate" },
+                     { "from" => "gate", "to" => "posh", "on" => "yes" },
+                     { "from" => "gate", "to" => "plain", "on" => "no" } ] }
     end
 
-    test "a completed saved session lists the answers behind its result" do
-      response = Response.start(scored_diagnostic)
-      response.record_answer(:need, "yes")
-      response.record_answer(:team, "no")
-
-      get alembic.response_path(response)
-
-      assert_select "[data-answer=?]", "need", text: /Yes/m
+    def saved
+      @saved ||= Diagnostic.create!(slug: "saved").tap { |diagnostic| diagnostic.record_definition(branching) }
     end
 
     test "starting a saved session sends the visitor to its durable URL" do
-      post alembic.diagnostic_responses_path("db-guide")
+      post alembic.diagnostic_responses_path(saved.slug)
 
       assert_redirected_to alembic.response_path(Response.last)
     end
 
-    test "a saved session renders the question it is waiting on" do
-      response = Response.start(alembic_diagnostics(:db_guide))
+    test "a saved session renders the step it is waiting on" do
+      run = Response.start(saved)
 
-      get alembic.response_path(response)
+      get alembic.response_path(run)
 
-      assert_select "legend", text: /Pick one option/
+      assert_select "legend", text: /Budget\?/
     end
 
-    test "answering a question in a saved session stores the answer on the response" do
-      response = Response.start(alembic_diagnostics(:db_guide))
+    test "answering a step stores the answer against it" do
+      run = Response.start(saved)
 
-      patch alembic.response_path(response), params: { answers: { pick: "a" } }
+      patch alembic.response_path(run), params: { answers: { budget: "high" } }
 
-      assert_equal({ pick: "a" }, response.reload.answers)
+      assert_equal({ budget: "high" }, run.reload.answers)
     end
 
     test "a saved session submits its answers back to itself" do
-      response = Response.start(alembic_diagnostics(:db_guide))
+      run = Response.start(saved)
 
-      get alembic.response_path(response)
+      get alembic.response_path(run)
 
-      assert_select "form[action=?]", alembic.response_path(response)
+      assert_select "form[action=?]", alembic.response_path(run)
     end
 
-    test "a completed saved session names the band its stored answers land in" do
-      response = Response.start(scored_diagnostic)
-      response.record_answer(:need, "yes")
-      response.record_answer(:team, "no")
+    test "an answer sends the visitor down the branch it selects" do
+      run = Response.start(saved)
 
-      get alembic.response_path(response)
+      patch alembic.response_path(run), params: { answers: { budget: "high" } }
+      get alembic.response_path(run)
 
-      assert_select "h1", text: /Well instrumented/
+      assert_select "legend", text: /Premium tier\?/
     end
 
-    test "going back a step in a saved session removes its last stored answer" do
-      response = Response.start(scored_diagnostic)
-      response.record_answer(:need, "yes")
+    test "going back removes the last answer along the walked path" do
+      run = Response.start(saved)
+      run.record_answer(:budget, "high")
 
-      patch alembic.response_path(response), params: { back: "1" }
+      patch alembic.response_path(run), params: { back: "1" }
 
-      assert_empty response.reload.answers
+      assert_empty run.reload.answers
+    end
+
+    test "returning resumes at the step still waiting" do
+      run = Response.start(saved)
+      run.record_answer(:budget, "low")
+
+      get alembic.response_path(run)
+
+      assert_select "legend", text: /Basic tier\?/
+    end
+
+    test "a completed saved session lists what was said" do
+      run = Response.start(saved)
+      run.record_answer(:budget, "low")
+      run.record_answer(:plain, "bronze")
+
+      get alembic.response_path(run)
+
+      assert_select "[data-answer=?]", "budget"
+    end
+
+    test "a session started before an edit still serves the version it began on" do
+      run = Response.start(saved)
+      saved.record_definition(branching.merge(
+        "nodes" => branching["nodes"].map { |node| node["id"] == "budget" ? node.merge("text" => "Changed") : node }))
+
+      get alembic.response_path(run)
+
+      assert_select "legend", text: /Budget\?/
     end
 
     test "the intro offers to start a saved session" do
-      get alembic.diagnostic_path("db-guide")
+      get alembic.diagnostic_path(saved.slug)
 
-      assert_select "form[action=?]", alembic.diagnostic_responses_path("db-guide")
-    end
-
-    test "a guide with no stored definition does not offer a saved session" do
-      get alembic.diagnostic_path("stats-system-ladder")
-
-      assert_select "form[action=?]", alembic.diagnostic_responses_path("stats-system-ladder"), count: 0
-    end
-
-    test "a saved session carries a visitor from starting it through returning to its result" do
-      diagnostic = scored_diagnostic
-
-      post alembic.diagnostic_responses_path(diagnostic.slug)
-      saved = Response.last
-      patch alembic.response_path(saved), params: { answers: { need: "yes" } }
-      patch alembic.response_path(saved), params: { answers: { team: "no" } }
-      get alembic.response_path(saved)
-
-      assert_select "h1", text: /Well instrumented/
-    end
-
-    test "returning to a saved session resumes at the first unanswered question" do
-      response = Response.start(scored_diagnostic)
-      response.record_answer(:need, "yes")
-
-      get alembic.response_path(response)
-
-      assert_select "legend", text: /Team\?/
-    end
-
-    test "a saved session started before a recompile still serves its pinned version's questions" do
-      diagnostic = scored_diagnostic
-      response = Response.start(diagnostic)
-
-      diagnostic.record_definition(recompiled_definition)
-
-      get alembic.response_path(response)
-
-      assert_select "legend", text: /Need\?/
-    end
-
-    test "a saved session started before a recompile still bands by its pinned version" do
-      diagnostic = scored_diagnostic
-      response = Response.start(diagnostic)
-      response.record_answer(:need, "yes")
-      response.record_answer(:team, "no")
-
-      diagnostic.record_definition(recompiled_definition)
-
-      get alembic.response_path(response)
-
-      assert_select "h1", text: /Well instrumented/
-    end
-
-    private
-
-    def branching_diagnostic
-      Diagnostic.create!(slug: "branching").tap do |diagnostic|
-        diagnostic.record_definition(
-          "slug" => "branching",
-          "questions" => [
-            { "id" => "path", "text" => "Which path?", "options" => [ { "value" => "left" }, { "value" => "right" } ],
-              "transitions" => [ { "to" => "right_q", "condition" => { "answer" => "path", "equals" => "right" } } ] },
-            { "id" => "left_q", "text" => "Left question", "options" => [ { "value" => "x" } ] },
-            { "id" => "right_q", "text" => "Right question", "options" => [ { "value" => "y" } ] }
-          ]
-        )
-      end
-    end
-
-    def recompiled_definition
-      {
-        "slug" => "saved-scored",
-        "questions" => [ { "id" => "rewritten", "text" => "Rewritten?", "options" => [ { "value" => "yes", "label" => "Yes", "weight" => 5 } ] } ],
-        "bands" => [ { "ceiling" => nil, "name" => "Rebanded" } ]
-      }
-    end
-
-    def scored_diagnostic
-      Diagnostic.create!(slug: "saved-scored", kind: "scored").tap do |diagnostic|
-        diagnostic.record_definition(scored_definition)
-      end
-    end
-
-    def scored_definition
-      {
-        "slug" => "saved-scored",
-        "questions" => [
-          { "id" => "need", "text" => "Need?", "options" => [ { "value" => "yes", "label" => "Yes", "weight" => 5 }, { "value" => "no", "label" => "No", "weight" => 0 } ] },
-          { "id" => "team", "text" => "Team?", "options" => [ { "value" => "yes", "label" => "Yes", "weight" => 3 }, { "value" => "no", "label" => "No", "weight" => 0 } ] }
-        ],
-        "bands" => [ { "ceiling" => 4, "name" => "Flying blind" }, { "ceiling" => nil, "name" => "Well instrumented" } ]
-      }
+      assert_select "form[action=?]", alembic.diagnostic_responses_path(saved.slug)
     end
   end
 end
