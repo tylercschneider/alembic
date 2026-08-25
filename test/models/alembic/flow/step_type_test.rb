@@ -186,6 +186,12 @@ module Alembic
 
         assert_equal "Question", step_type.step_name
       end
+
+      test "labels a setting after its key" do
+        step_type = StepType.define(:ask) { setting :question, type: :string }
+
+        assert_equal "Question", step_type.labels[:question]
+      end
     end
   end
 end
