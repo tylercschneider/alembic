@@ -123,5 +123,12 @@ module Alembic
 
       assert_equal diagnostic.current_summary_version, Response.start(diagnostic).summary_version
     end
+
+    test "starts without a summary version when the diagnostic has no summary" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_definition("slug" => "demo")
+
+      assert_nil Response.start(diagnostic).summary_version
+    end
   end
 end
