@@ -147,6 +147,10 @@ module Alembic
 
         assert_equal({ prompt: :text }, step_type.fields)
       end
+
+      test "refuses a setting whose type it does not know" do
+        assert_raises(UnknownFieldType) { StepType.define(:probe) { setting :prompt, type: :nonsense } }
+      end
     end
   end
 end
