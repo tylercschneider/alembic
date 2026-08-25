@@ -102,7 +102,14 @@ module Alembic
         step_type = Flow::Digest.new(flow).step(id)&.type
         return configuration unless step_type && Flow.registry.registered?(step_type)
 
-        Flow.registry.fetch(step_type).coerce(configuration)
+        settled(Flow.registry.fetch(step_type))
+      end
+
+      def settled(step_type)
+        step_type.coerce(configuration).tap do |values|
+          objections = step_type.objections(values)
+          raise Flow::InvalidEdit, objections.join(", ") if objections.any?
+        end
       end
     end
   end
