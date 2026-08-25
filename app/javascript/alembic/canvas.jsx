@@ -57,11 +57,6 @@ const StepCard = ({ node, selected, armed, connecting, onSelect, onArm, onDragEn
 
 const Control = ({ type, value, onChange, onSettle }) => {
   if (type === "boolean") return <input type="checkbox" checked={Boolean(value)} onChange={(e) => onSettle(e.target.checked)} />
-  if (type === "list") {
-    const split = (text) => text.split("\n").filter(Boolean)
-    return <textarea style={{ ...S.control, height: 74 }} value={Array.isArray(value) ? value.join("\n") : value ?? ""}
-                     onChange={(e) => onChange(split(e.target.value))} onBlur={(e) => onSettle(split(e.target.value))} />
-  }
   if (type === "integer" || type === "float") {
     return <input style={S.control} type="number" step={type === "integer" ? "1" : "any"} value={value ?? ""}
                   onChange={(e) => onChange(e.target.value)} onBlur={(e) => onSettle(e.target.value)} />
@@ -119,7 +114,7 @@ const Inspector = ({ node, fields, holds, onSave, onDelete, onClose }) => {
       {Object.entries(fields).map(([ name, type ]) => (
         <label key={name} style={{ display: "block" }}>
           <span style={{ display: "block", marginBottom: 3, color: "#374151" }}>{name}</span>
-          {type === "records"
+          {type === "list"
             ? <Records holds={holds[name] || {}} rows={draft[name]}
                        onChange={(next) => setDraft({ ...draft, [name]: next })}
                        onSettle={(next) => settle({ ...draft, [name]: next })} />
