@@ -100,5 +100,17 @@ module Alembic
 
       assert_select "form[action=?]", alembic.diagnostic_responses_path(saved.slug)
     end
+
+    test "a completed saved session shows its pinned summary's outputs" do
+      saved.record_summary("outputs" => [ { "id" => "answered", "type" => "tally", "label" => "Steps answered" } ])
+      run = Response.start(saved)
+      run.record_answer(:budget, "low")
+      run.record_answer(:plain, "bronze")
+      saved.record_summary("outputs" => [ { "id" => "other", "type" => "tally", "label" => "Something else" } ])
+
+      get alembic.response_path(run)
+
+      assert_select "[data-output=?]", "answered"
+    end
   end
 end
