@@ -6,9 +6,9 @@ module Alembic
       @flow ||= Diagnostic.create!(slug: "canvas-system").tap do |diagnostic|
         diagnostic.record_definition(
           "slug" => "canvas-system", "entry" => "start",
-          "nodes" => [ { "id" => "start", "type" => "question", "text" => "First" },
+          "nodes" => [ { "id" => "start", "type" => "question", "question" => "First" },
                        { "id" => "gate", "type" => "condition", "answer" => "start", "equals" => "yes" },
-                       { "id" => "yes_step", "type" => "question", "text" => "Yes path" } ],
+                       { "id" => "yes_step", "type" => "question", "question" => "Yes path" } ],
           "edges" => [ { "from" => "start", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => "yes" } ]
         )
@@ -24,7 +24,7 @@ module Alembic
     end
 
     def long_flow
-      steps = (1..12).map { |n| { "id" => "s#{n}", "type" => "question", "text" => "Step #{n}" } }
+      steps = (1..12).map { |n| { "id" => "s#{n}", "type" => "question", "question" => "Step #{n}" } }
       links = (1...12).map { |n| { "from" => "s#{n}", "to" => "s#{n + 1}" } }
 
       Diagnostic.create!(slug: "long-flow").tap do |diagnostic|
@@ -67,7 +67,7 @@ module Alembic
 
     test "marks a step that cannot be reached" do
       flow.record_definition(flow.definition.merge(
-        "nodes" => flow.definition["nodes"] + [ { "id" => "adrift", "type" => "question", "text" => "Adrift" } ]))
+        "nodes" => flow.definition["nodes"] + [ { "id" => "adrift", "type" => "question", "question" => "Adrift" } ]))
 
       canvas_for(flow)
 
@@ -134,7 +134,7 @@ module Alembic
 
     test "dragging a step onto a connector splices it in there" do
       flow.record_definition(flow.definition.merge(
-        "nodes" => flow.definition["nodes"] + [ { "id" => "adrift", "type" => "question", "text" => "Adrift" } ]))
+        "nodes" => flow.definition["nodes"] + [ { "id" => "adrift", "type" => "question", "question" => "Adrift" } ]))
       canvas_for(flow)
 
       step_card("adrift").drag_to(find("[data-connector='start-gate']"))
