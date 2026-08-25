@@ -55,8 +55,26 @@ const StepCard = ({ node, selected, armed, connecting, onSelect, onArm, onDragEn
   </div>
 )
 
-const Control = ({ type, value, onChange, onSettle }) => {
+const Control = ({ type, value, choices, onChange, onSettle }) => {
   if (type === "boolean") return <input type="checkbox" checked={Boolean(value)} onChange={(e) => onSettle(e.target.checked)} />
+  if (type === "select") {
+    return <select style={S.control} value={value ?? ""} onChange={(e) => onSettle(e.target.value)}>
+      <option value=""></option>
+      {(choices || []).map((choice) => <option key={choice} value={choice}>{choice}</option>)}
+    </select>
+  }
+  if (type === "multi_select") {
+    const chosen = Array.isArray(value) ? value : []
+    const toggle = (choice) => onSettle(chosen.includes(choice) ? chosen.filter((c) => c !== choice) : [ ...chosen, choice ])
+    return <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+      {(choices || []).map((choice) => (
+        <label key={choice} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+          <input type="checkbox" checked={chosen.includes(choice)} onChange={() => toggle(choice)} />
+          <span>{choice}</span>
+        </label>
+      ))}
+    </div>
+  }
   if (type === "integer" || type === "float") {
     return <input style={S.control} type="number" step={type === "integer" ? "1" : "any"} value={value ?? ""}
                   onChange={(e) => onChange(e.target.value)} onBlur={(e) => onSettle(e.target.value)} />
@@ -94,7 +112,7 @@ const Records = ({ holds, labels, rows, onChange, onSettle }) => {
   )
 }
 
-const Inspector = ({ node, fields, holds, labels, recordLabels, onSave, onDelete, onClose }) => {
+const Inspector = ({ node, fields, holds, labels, recordLabels, choices, onSave, onDelete, onClose }) => {
   const [ draft, setDraft ] = useState(node.config)
   useEffect(() => setDraft(node.config), [ node.id, node.config ])
 
@@ -118,7 +136,7 @@ const Inspector = ({ node, fields, holds, labels, recordLabels, onSave, onDelete
             ? <Records holds={holds[name] || {}} labels={recordLabels[name] || {}} rows={draft[name]}
                        onChange={(next) => setDraft({ ...draft, [name]: next })}
                        onSettle={(next) => settle({ ...draft, [name]: next })} />
-            : <Control type={type} value={draft[name]}
+            : <Control type={type} value={draft[name]} choices={choices[name]}
                        onChange={(next) => setDraft({ ...draft, [name]: next })}
                        onSettle={(next) => settle({ ...draft, [name]: next })} />}
         </label>
@@ -283,6 +301,7 @@ const Canvas = ({ base, token, initial }) => {
   const holdsFor = entryFor?.records || {}
   const labelsFor = entryFor?.labels || {}
   const recordLabelsFor = entryFor?.record_labels || {}
+  const choicesFor = entryFor?.choices || {}
 
   return (
     <div style={S.page} onMouseUp={() => setDragging(null)}
@@ -376,7 +395,7 @@ const Canvas = ({ base, token, initial }) => {
       </div>
 
       {selectedNode && (
-        <Inspector node={selectedNode} fields={fieldsFor} holds={holdsFor} labels={labelsFor} recordLabels={recordLabelsFor} onClose={() => setSelected(null)}
+        <Inspector node={selectedNode} fields={fieldsFor} holds={holdsFor} labels={labelsFor} recordLabels={recordLabelsFor} choices={choicesFor} onClose={() => setSelected(null)}
                    onSave={(config) => send(`/steps/${selectedNode.id}`, "PATCH", { config })}
                    onDelete={() => { setSelected(null); send(`/steps/${selectedNode.id}`, "DELETE") }} />
       )}

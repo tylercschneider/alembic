@@ -157,7 +157,7 @@ Alembic::Flow.registry.register(MyApp::AGENT)
 
 ### Setting types
 
-`:string` `:integer` `:float` `:boolean` `:select` `:list`
+`:string` `:integer` `:float` `:boolean` `:select` `:multi_select` `:list`
 
 Anything else raises `Flow::UnknownFieldType`. These describe the *editing
 affordance* the builder offers; the engine never interprets a setting's value.
@@ -180,6 +180,34 @@ end
 
 A block always means the settings each entry has, and nothing else. A `:list`
 declared without one raises `Flow::UnknownFieldType`.
+
+`:select` and `:multi_select` must say what they offer. A `:select` stores one of
+them, a `:multi_select` an array:
+
+```ruby
+setting :model,    type: :select,       options: %w[opus sonnet haiku]
+setting :channels, type: :multi_select, options: %w[email sms push], limit: 2
+```
+
+These are the **author** choosing at build time from a set the step type fixes. A
+`:list` is the author creating entries. A question step's answers are a `:list`
+even though a visitor later picks one of them — that is the step type's run-time
+behaviour, not its configuration.
+
+### Bounding a value
+
+`limit:` caps how many entries a `:list` or `:multi_select` accepts. `check:`
+takes anything callable, returning a message when the value is unacceptable and
+`nil` when it is fine:
+
+```ruby
+setting :channels, type: :multi_select, options: %w[email sms push], limit: 2,
+  check: ->(chosen) { "Channels needs at least one" if chosen.blank? }
+```
+
+`StepType#objections(config)` returns the messages for a configuration. Alembic's
+builder calls it when a step is configured and refuses the edit if any come back,
+so a rejected value never reaches the document.
 
 This is how scoring data rides along on a step: authored in the builder, stored
 on the node, invisible to whoever walks the flow, and read later by the summary.

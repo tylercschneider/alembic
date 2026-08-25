@@ -164,5 +164,14 @@ module Alembic
 
       assert_equal 4, stored["answers"].first["weight"]
     end
+
+    test "configuring a step refuses more choices than the setting allows" do
+      post "#{canvas_path}/steps", params: { id: "n", type: "notify" }
+      before = diagnostic.reload.definition_cursor
+
+      patch "#{canvas_path}/steps/n", params: { config: { channels: %w[email sms push] } }
+
+      assert_equal before, diagnostic.reload.definition_cursor
+    end
   end
 end

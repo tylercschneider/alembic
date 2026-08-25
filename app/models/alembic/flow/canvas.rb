@@ -62,6 +62,7 @@ module Alembic
           { "type" => step_type.id.to_s, "label" => step_type.step_name,
             "fields" => step_type.fields.transform_keys(&:to_s).transform_values(&:to_s),
             "labels" => step_type.labels.transform_keys(&:to_s),
+            "choices" => step_type.choices.transform_keys(&:to_s),
             "records" => holdings_of(step_type),
             "record_labels" => step_type.record_labels.to_h { |name, held| [ name.to_s, held.transform_keys(&:to_s) ] },
             "ports" => step_type.ports.map(&:to_s), "awaits_input" => step_type.awaits_input? }
