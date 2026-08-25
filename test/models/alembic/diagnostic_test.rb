@@ -182,5 +182,19 @@ module Alembic
 
       assert diagnostic.summarises?
     end
+
+    test "holds a live document that can be edited" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      diagnostic.update!(document: { "entry" => "a", "nodes" => [], "edges" => [] })
+
+      assert_equal "a", diagnostic.reload.document["entry"]
+    end
+
+    test "starts with nothing changed since its last version" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      assert_empty diagnostic.changes_since_version.to_a
+    end
   end
 end
