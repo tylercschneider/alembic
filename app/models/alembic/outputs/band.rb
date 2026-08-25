@@ -4,7 +4,7 @@ module Alembic
       def self.output_type
         Summary::OutputType.define(:band) do
           label "Band"
-          compute { |config, _state, so_far| Band.covering(config, so_far[config["of"]]) }
+          compute { |config, _run, so_far| Band.covering(config, so_far[config["of"]]) }
         end
       end
 

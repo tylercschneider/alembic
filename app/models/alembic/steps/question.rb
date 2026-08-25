@@ -5,7 +5,8 @@ module Alembic
         Flow::StepType.define(:question) do
           label "Question"
           field :text, :text
-          field :options, :list
+          field :options, :records, of: { value: :string, label: :string, weight: :number }
+          field :tag, :string
           names_by :text
           awaits_input
         end

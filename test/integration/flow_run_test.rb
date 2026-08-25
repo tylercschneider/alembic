@@ -6,11 +6,14 @@ module Alembic
       @flowed ||= Diagnostic.create!(slug: "flowed").tap do |diagnostic|
         diagnostic.record_definition(
           "slug" => "flowed", "entry" => "budget",
-          "nodes" => [ { "id" => "budget", "type" => "question", "text" => "What is your budget?",
-                         "options" => [ { "value" => "low", "label" => "Modest" }, { "value" => "high", "label" => "Generous" } ] },
+          "nodes" => [ { "id" => "budget", "type" => "question", "text" => "What is your budget?", "tag" => "money",
+                         "options" => [ { "value" => "low", "label" => "Modest", "weight" => 1 },
+                                        { "value" => "high", "label" => "Generous", "weight" => 5 } ] },
                        { "id" => "gate", "type" => "condition", "answer" => "budget", "equals" => "high" },
-                       { "id" => "posh", "type" => "question", "text" => "Which premium tier?", "options" => [ "a" ] },
-                       { "id" => "plain", "type" => "question", "text" => "Which basic tier?", "options" => [ "b" ] } ],
+                       { "id" => "posh", "type" => "question", "text" => "Which premium tier?",
+                         "options" => [ { "value" => "a", "weight" => 3 } ] },
+                       { "id" => "plain", "type" => "question", "text" => "Which basic tier?",
+                         "options" => [ { "value" => "b", "weight" => 1 } ] } ],
           "edges" => [ { "from" => "budget", "to" => "gate" },
                        { "from" => "gate", "to" => "posh", "on" => "yes" },
                        { "from" => "gate", "to" => "plain", "on" => "no" } ]
@@ -22,8 +25,7 @@ module Alembic
       flowed.tap do |diagnostic|
         diagnostic.update!(summary_definition: {
           "outputs" => [
-            { "id" => "score", "type" => "weighted_sum", "label" => "Your score",
-              "weights" => { "budget" => { "high" => 5, "low" => 1 }, "posh" => { "a" => 3 }, "plain" => { "b" => 1 } } },
+            { "id" => "score", "type" => "weighted_sum", "label" => "Your score" },
             { "id" => "band", "type" => "band", "label" => "Where that puts you", "of" => "score",
               "bands" => [ { "ceiling" => 4, "name" => "Modest" }, { "name" => "Generous" } ] }
           ]

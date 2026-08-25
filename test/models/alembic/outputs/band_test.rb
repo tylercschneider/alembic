@@ -10,7 +10,7 @@ module Alembic
       end
 
       def banded(score)
-        Band.output_type.compute(bands, {}, { "score" => score })
+        Band.output_type.compute(bands, Summary::Run.new(state: {}), { "score" => score })
       end
 
       test "names the first band a number falls under" do
@@ -30,7 +30,7 @@ module Alembic
       end
 
       test "names nothing when no band is configured" do
-        assert_nil Band.output_type.compute({ "of" => "score", "bands" => [] }, {}, { "score" => 3 })
+        assert_nil Band.output_type.compute({ "of" => "score", "bands" => [] }, Summary::Run.new(state: {}), { "score" => 3 })
       end
 
       test "registers through the public output API" do

@@ -5,7 +5,12 @@ module Alembic
     class CanvasTest < ActiveSupport::TestCase
       def registry
         Registry.new.tap do |built|
-          built.register(StepType.define(:ask) { label "Ask"; field :text, :text; names_by :text })
+          built.register(StepType.define(:ask) do
+            label "Ask"
+            field :text, :text
+            field :options, :records, of: { value: :string, weight: :number }
+            names_by :text
+          end)
           built.register(StepType.define(:branch) { label "Branch"; outputs :yes, :no })
         end
       end
@@ -42,8 +47,14 @@ module Alembic
         assert_equal [ "Ask", "Branch" ], canvas(flow)["palette"].map { |entry| entry["label"] }
       end
 
+      test "carries what a palette entry's record field holds" do
+        entry = canvas(flow)["palette"].first
+
+        assert_equal({ "options" => { "value" => "string", "weight" => "number" } }, entry["records"])
+      end
+
       test "carries a palette entry's declared fields" do
-        assert_equal({ "text" => "text" }, canvas(flow)["palette"].first["fields"])
+        assert_equal("text", canvas(flow)["palette"].first["fields"]["text"])
       end
 
       test "carries a palette entry's output ports" do

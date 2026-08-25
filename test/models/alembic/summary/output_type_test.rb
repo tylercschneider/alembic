@@ -16,15 +16,15 @@ module Alembic
       end
 
       test "computes a value from a run's state" do
-        output_type = OutputType.define(:tally) { compute { |_config, state, _so_far| state.size } }
+        output_type = OutputType.define(:tally) { compute { |_config, run, _so_far| run.state.size } }
 
-        assert_equal 2, output_type.compute({}, { "a" => 1, "b" => 2 }, {})
+        assert_equal 2, output_type.compute({}, Run.new(state: { "a" => 1, "b" => 2 }), {})
       end
 
       test "computes a value from what earlier outputs produced" do
-        output_type = OutputType.define(:double) { compute { |config, _state, so_far| so_far[config["of"]] * 2 } }
+        output_type = OutputType.define(:double) { compute { |config, _run, so_far| so_far[config["of"]] * 2 } }
 
-        assert_equal 10, output_type.compute({ "of" => "score" }, {}, { "score" => 5 })
+        assert_equal 10, output_type.compute({ "of" => "score" }, Run.new(state: {}), { "score" => 5 })
       end
 
       test "produces nothing when it declares no computation" do

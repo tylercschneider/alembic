@@ -55,7 +55,7 @@ module Alembic
     end
 
     def summary_of(state)
-      Summary::Report.new(summary_definition).results(state)
+      Summary::Report.new(summary_definition).results(Summary::Run.new(state: state, steps: steps_by_id))
     end
 
     def summarises?
@@ -63,10 +63,14 @@ module Alembic
     end
 
     def summary_of(state)
-      Summary::Report.new(summary_definition).results(state)
+      Summary::Report.new(summary_definition).results(Summary::Run.new(state: state, steps: steps_by_id))
     end
 
     private
+
+    def steps_by_id
+      Array(definition.to_h["nodes"]).index_by { |node| node["id"] }
+    end
 
     def step_to(number)
       update!(definition_cursor: number) if number
