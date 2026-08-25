@@ -126,5 +126,14 @@ module Alembic
 
       assert_equal 1, Diagnostic.where(slug: "seeded").count
     end
+
+    test "can be deleted once a definition has been recorded" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_definition("slug" => "demo")
+
+      assert_difference -> { Diagnostic.count }, -1 do
+        diagnostic.destroy!
+      end
+    end
   end
 end

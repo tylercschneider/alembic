@@ -4,8 +4,6 @@ module Alembic
 
     validates :number, uniqueness: { scope: :diagnostic_id }
 
-    def readonly?
-      persisted?
-    end
+    before_update { raise ActiveRecord::ReadOnlyRecord }
   end
 end
