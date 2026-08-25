@@ -62,12 +62,12 @@ const Control = ({ type, value, onChange, onSettle }) => {
     return <textarea style={{ ...S.control, height: 74 }} value={Array.isArray(value) ? value.join("\n") : value ?? ""}
                      onChange={(e) => onChange(split(e.target.value))} onBlur={(e) => onSettle(split(e.target.value))} />
   }
-  if (type === "text") {
-    return <textarea style={{ ...S.control, height: 64 }} value={value ?? ""}
-                     onChange={(e) => onChange(e.target.value)} onBlur={(e) => onSettle(e.target.value)} />
+  if (type === "integer" || type === "float") {
+    return <input style={S.control} type="number" step={type === "integer" ? "1" : "any"} value={value ?? ""}
+                  onChange={(e) => onChange(e.target.value)} onBlur={(e) => onSettle(e.target.value)} />
   }
 
-  return <input style={S.control} type={type === "number" ? "number" : "text"} value={value ?? ""}
+  return <input style={S.control} type="text" value={value ?? ""}
                 onChange={(e) => onChange(e.target.value)} onBlur={(e) => onSettle(e.target.value)} />
 }
 

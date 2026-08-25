@@ -5,8 +5,8 @@ module Alembic
 
       label "Question"
 
-      setting :text, type: :text
-      setting :options, type: :records, of: { value: :string, label: :string, weight: :number }
+      setting :text, type: :string
+      setting :options, type: :records, of: { value: :string, label: :string, weight: :integer }
       setting :tag, type: :string
 
       names_by :text

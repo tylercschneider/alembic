@@ -74,7 +74,7 @@ module MyApp
 
       label "Agent"
 
-      setting :prompt, type: :text
+      setting :prompt, type: :string
       setting :model, type: :string
 
       names_by :prompt
@@ -136,7 +136,7 @@ available for a host that would rather not include a module into its class:
 ```ruby
 MyApp::AGENT = Alembic::Flow::StepType.define(:agent) do
   label "Agent"
-  setting :prompt, type: :text
+  setting :prompt, type: :string
 end
 
 Alembic::Flow.registry.register(MyApp::AGENT)
@@ -147,7 +147,7 @@ Alembic::Flow.registry.register(MyApp::AGENT)
 | Method | Effect |
 |---|---|
 | `label "Agent"` | human name, shown in the builder palette. Defaults to the id |
-| `setting :name, type: :text` | declares a config key and how the builder should edit it |
+| `setting :name, type: :string` | declares a config key and how the builder should edit it |
 | `outputs :pass, :fail` | named output ports. Omit for a single unnamed output |
 | `awaits_input` | this step stops the walk until the host records a value for it |
 | `names_by :prompt` | which setting titles the node on the canvas |
@@ -157,15 +157,21 @@ Alembic::Flow.registry.register(MyApp::AGENT)
 
 ### Setting types
 
-`:text` `:string` `:number` `:boolean` `:select` `:list` `:records`
+`:string` `:integer` `:float` `:boolean` `:select` `:list` `:records`
 
 Anything else raises `Flow::UnknownFieldType`. These describe the *editing
 affordance* the builder offers; the engine never interprets a setting's value.
 
+`:integer` and `:float` differ only in the editor they produce — a whole-number
+step versus any decimal. **Declaring either does not yet coerce what is stored**:
+a submitted value is written through as the form supplied it, so an `:integer`
+setting can still hold `"1"` rather than `1`. Transforms that read a number
+should coerce defensively until that is fixed.
+
 `:records` is a repeating sub-form and must say what one record holds:
 
 ```ruby
-setting :options, type: :records, of: { value: :string, label: :string, weight: :number }
+setting :options, type: :records, of: { value: :string, label: :string, weight: :integer }
 ```
 
 This is how scoring data rides along on a step: authored in the builder, stored
@@ -395,7 +401,7 @@ class Agent
   include Alembic::Flow::Step
 
   label "Agent"
-  setting :prompt, type: :text
+  setting :prompt, type: :string
   setting :model, type: :string
   names_by :prompt
   awaits_input

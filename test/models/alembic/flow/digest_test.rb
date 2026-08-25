@@ -5,7 +5,7 @@ module Alembic
     class DigestTest < ActiveSupport::TestCase
       def registry
         @registry ||= Registry.new.tap do |built|
-          built.register(StepType.define(:ask) { setting :text, type: :text; awaits_input })
+          built.register(StepType.define(:ask) { setting :text, type: :string; awaits_input })
           built.register(StepType.define(:branch) do
             setting :answer, type: :string
             outputs :yes, :no

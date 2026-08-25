@@ -4,7 +4,7 @@ module Alembic
   module Steps
     class QuestionTest < ActiveSupport::TestCase
       test "declares a field for the text it asks" do
-        assert_equal :text, Question.step_type.fields[:text]
+        assert_equal :string, Question.step_type.fields[:text]
       end
 
       test "declares a field for the options it offers" do
@@ -12,7 +12,7 @@ module Alembic
       end
 
       test "an option carries the weight the summary scores it by" do
-        assert_equal :number, Question.step_type.record_fields[:options][:weight]
+        assert_equal :integer, Question.step_type.record_fields[:options][:weight]
       end
 
       test "declares a tag the summary can group it by" do
