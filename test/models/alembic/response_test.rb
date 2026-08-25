@@ -150,6 +150,16 @@ module Alembic
       assert_equal 5, response.reload.summary_of("budget" => "high").first.value
     end
 
+    test "summarises from its pinned flow version when option weights change" do
+      diagnostic = scored_diagnostic
+      response = Response.start(diagnostic)
+      diagnostic.record_definition("slug" => "scored", "entry" => "budget", "edges" => [],
+        "nodes" => [ { "id" => "budget", "type" => "question", "text" => "Budget?",
+                       "options" => [ { "value" => "high", "weight" => 99 } ] } ])
+
+      assert_equal 5, response.reload.summary_of("budget" => "high").first.value
+    end
+
     def scored_diagnostic
       Diagnostic.create!(slug: "scored").tap do |diagnostic|
         diagnostic.record_definition("slug" => "scored", "entry" => "budget", "edges" => [],
