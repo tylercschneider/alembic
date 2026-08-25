@@ -307,5 +307,36 @@ module Alembic
 
       assert_equal "Cannot publish: “adrift” is unreachable.", response.parsed_body["error"]
     end
+
+    test "creating a version says which one it created" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+
+      post "#{canvas_path}/versions"
+
+      assert_equal "Created version 2.", response.parsed_body["notice"]
+    end
+
+    test "creating a version says when there was nothing to capture" do
+      post "#{canvas_path}/versions"
+
+      assert_equal "Nothing has changed since version 1.", response.parsed_body["notice"]
+    end
+
+    test "publishing says which version visitors now run" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/edges", params: { from: "b", to: "c" }
+
+      post "#{canvas_path}/publish"
+
+      assert_equal "Published version 2. Visitors run it now.", response.parsed_body["notice"]
+    end
+
+    test "publishing says when visitors already run this version" do
+      post "#{canvas_path}/publish"
+
+      post "#{canvas_path}/publish"
+
+      assert_equal "Visitors already run version 1.", response.parsed_body["notice"]
+    end
   end
 end

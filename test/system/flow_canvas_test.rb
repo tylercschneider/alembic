@@ -264,6 +264,35 @@ module Alembic
       assert_selector "[data-refusal]"
     end
 
+    test "the flow's panel says when there was nothing to capture" do
+      canvas_for(flow)
+      find("[data-open-panel]").click
+
+      find("[data-create-version]").click
+
+      assert_selector "[data-notice]", text: "Nothing has changed"
+    end
+
+    test "the flow's panel says which version it created" do
+      canvas_for(flow)
+      step_card("start").click
+      fill_in_first_field_with("Changed by hand")
+      find("[data-open-panel]").click
+
+      find("[data-create-version]").click
+
+      assert_selector "[data-notice]", text: "Created version 2."
+    end
+
+    test "the flow's panel closes when the canvas is clicked" do
+      canvas_for(flow)
+      find("[data-open-panel]").click
+
+      find("body").click
+
+      assert_no_selector "[data-builder-panel]"
+    end
+
     private
 
     def fill_in_first_field_with(text)

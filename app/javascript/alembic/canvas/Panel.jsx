@@ -9,7 +9,7 @@ const quiet = { color: "#6b7280", fontSize: 12 }
 const item = { fontSize: 12, marginBottom: 4, lineHeight: 1.4 }
 const link = { ...action, textAlign: "center", textDecoration: "none", color: "#111827" }
 
-const Panel = ({ flow, changes, problems, refusal, onCreate, onPublish, onClose }) => (
+const Panel = ({ flow, changes, problems, refusal, notice, onCreate, onPublish, onClose }) => (
   <aside style={sheet} data-builder-panel>
     <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", gap: 8 }}>
       <h2 style={{ fontWeight: 600 }}>{flow.title}</h2>
@@ -20,6 +20,7 @@ const Panel = ({ flow, changes, problems, refusal, onCreate, onPublish, onClose 
 
     <h2 style={heading}>Problems</h2>
     {refusal && <p style={{ ...item, color: "#991b1b", fontWeight: 600 }} data-refusal>{refusal}</p>}
+    {notice && !refusal && <p style={{ ...item, color: "#065f46", fontWeight: 600 }} data-notice>{notice}</p>}
     {problems.length === 0 && !refusal
       ? <p style={quiet}>Nothing wrong with this flow.</p>
       : problems.map((problem) => (
