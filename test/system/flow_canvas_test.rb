@@ -200,7 +200,7 @@ module Alembic
 
       find("[data-open-panel]").click
 
-      assert_selector "[data-versions]", text: "Version 1"
+      assert_selector "[data-versions]", text: "Version 1 · never published"
     end
 
     test "a version is created from the flow's panel" do
