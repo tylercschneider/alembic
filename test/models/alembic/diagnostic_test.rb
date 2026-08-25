@@ -143,5 +143,14 @@ module Alembic
 
       assert_equal 1, diagnostic.summary_versions.sole.number
     end
+
+    test "numbers a second summary template after the first" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_summary("outputs" => [])
+
+      diagnostic.record_summary("outputs" => [ { "id" => "score" } ])
+
+      assert_equal 2, diagnostic.summary_versions.maximum(:number)
+    end
   end
 end
