@@ -72,7 +72,7 @@ module MyApp
     class Agent
       include Alembic::Flow::Step
 
-      label "Agent"
+      step_name "Agent"
 
       setting :prompt, type: :string
       setting :model, type: :string
@@ -135,7 +135,7 @@ available for a host that would rather not include a module into its class:
 
 ```ruby
 MyApp::AGENT = Alembic::Flow::StepType.define(:agent) do
-  label "Agent"
+  step_name "Agent"
   setting :prompt, type: :string
 end
 
@@ -146,7 +146,7 @@ Alembic::Flow.registry.register(MyApp::AGENT)
 
 | Method | Effect |
 |---|---|
-| `label "Agent"` | human name, shown in the builder palette. Defaults to the id |
+| `step_name "Agent"` | the name shown in the builder palette. Defaults to the id |
 | `setting :name, type: :string` | declares a config key and how the builder should edit it |
 | `outputs :pass, :fail` | named output ports. Omit for a single unnamed output |
 | `awaits_input` | this step stops the walk until the host records a value for it |
@@ -407,7 +407,7 @@ Nothing above is question-shaped. The same engine orchestrating agent work:
 class Agent
   include Alembic::Flow::Step
 
-  label "Agent"
+  step_name "Agent"
   setting :prompt, type: :string
   setting :model, type: :string
   names_by :prompt
@@ -417,7 +417,7 @@ end
 class Review
   include Alembic::Flow::Step
 
-  label "Review gate"
+  step_name "Review gate"
   setting :of, type: :string
   outputs :approved, :rejected
 
