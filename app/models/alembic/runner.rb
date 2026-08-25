@@ -32,7 +32,7 @@ module Alembic
     end
 
     def question_text(id)
-      @digest.step(id.to_s)&.config&.fetch("text", nil)
+      Steps::Question.asked(@digest.step(id.to_s)&.config)
     end
 
     def choice_label(id, value)
@@ -44,11 +44,11 @@ module Alembic
     private
 
     def question_from(node)
-      Asked.new(id: node.id.to_sym, text: node.config["text"], choices: choices_in(node))
+      Asked.new(id: node.id.to_sym, text: Steps::Question.asked(node.config), choices: choices_in(node))
     end
 
     def choices_in(node)
-      Array(node.config["options"]).map { |option| choice_from(option) }
+      Steps::Question.answers_of(node.config).map { |option| choice_from(option) }
     end
 
     def choice_from(option)

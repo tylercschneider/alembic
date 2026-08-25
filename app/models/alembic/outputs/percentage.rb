@@ -24,7 +24,7 @@ module Alembic
       end
 
       def self.most(step)
-        Array(step["options"]).filter_map { |option| option["weight"].to_i if option.is_a?(Hash) }.max.to_i
+        Steps::Question.answers_of(step).filter_map { |option| option["weight"].to_i if option.is_a?(Hash) }.max.to_i
       end
     end
   end

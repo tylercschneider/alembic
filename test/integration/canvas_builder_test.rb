@@ -158,11 +158,11 @@ module Alembic
     end
 
     test "configuring a step stores a number for a setting declared as one" do
-      patch "#{canvas_path}/steps/a", params: { config: { options: [ { value: "low", weight: "4" } ] } }
+      patch "#{canvas_path}/steps/a", params: { config: { answers: [ { value: "low", weight: "4" } ] } }
 
       stored = diagnostic.reload.definition["nodes"].first
 
-      assert_equal 4, stored["options"].first["weight"]
+      assert_equal 4, stored["answers"].first["weight"]
     end
   end
 end
