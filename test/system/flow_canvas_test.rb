@@ -15,6 +15,13 @@ module Alembic
       end
     end
 
+    def adrift
+      flow.tap do |diagnostic|
+        diagnostic.record_definition(diagnostic.definition.merge(
+          "nodes" => diagnostic.definition["nodes"] + [ { "id" => "adrift", "type" => "question", "question" => "Adrift" } ]))
+      end
+    end
+
     def edges
       flow.reload.document["edges"].map { |edge| [ edge["from"], edge["to"] ] }
     end
@@ -163,6 +170,43 @@ module Alembic
       click_button("↷ Redo")
 
       assert_selector "svg path[marker-end]", count: 1
+    end
+
+    test "the panel says nothing has changed before anything is edited" do
+      canvas_for(flow)
+
+      assert_selector "[data-builder-panel]", text: "Nothing has changed."
+    end
+
+    test "the panel lists a change once a step is edited" do
+      canvas_for(flow)
+      step_card("start").click
+      fill_in_first_field_with("Changed by hand")
+
+      assert_selector "[data-change]", text: "Updated"
+    end
+
+    test "the panel names a step that cannot be reached" do
+      canvas_for(adrift)
+
+      assert_selector "[data-problem]", text: "unreachable"
+    end
+
+    test "cutting a version empties the change list" do
+      canvas_for(flow)
+      step_card("start").click
+      fill_in_first_field_with("Changed by hand")
+      find("[data-cut-version]").click
+
+      assert_selector "[data-builder-panel]", text: "Nothing has changed."
+    end
+
+    test "publishing a flow with a problem is refused" do
+      canvas_for(adrift)
+
+      find("[data-publish]").click
+
+      assert_selector "[data-refusal]"
     end
 
     private

@@ -3,6 +3,7 @@ import StepCard from "./StepCard"
 import Inspector from "./Inspector"
 import TypePicker from "./TypePicker"
 import Toolbar from "./Toolbar"
+import Panel from "./Panel"
 import ConnectorLayer from "./ConnectorLayer"
 import useFlow from "./useFlow"
 import useConnectors from "./useConnectors"
@@ -52,8 +53,7 @@ const Canvas = ({ base, token, initial }) => {
          tabIndex={-1}>
       <div ref={surface} style={scroll}
            onClick={(event) => { if (event.target === surface.current) { setSelected(null); setArmed(null) } }}>
-        {error && <div style={{ ...notice, background: "#fee2e2", color: "#991b1b" }}>{error}</div>}
-        {armed && !error && (
+        {armed && (
           <div style={{ ...notice, background: "#dbeafe", color: "#1e40af" }}>
             Choose the step “{armed[1] || "next"}” should lead to — <button onClick={() => setArmed(null)} style={{ border: "none", background: "none", color: "#1e40af", textDecoration: "underline", cursor: "pointer", fontSize: 12, padding: 0 }}>cancel</button>
           </div>
@@ -107,6 +107,10 @@ const Canvas = ({ base, token, initial }) => {
                       }} />
         )}
       </div>
+
+      <Panel changes={flow.changes || []} problems={flow.violations} refusal={error}
+             onCut={() => { setSelected(null); send("/versions", "POST") }}
+             onPublish={() => { setSelected(null); send("/publish", "POST") }} />
 
       {selectedNode && (
         <Inspector node={selectedNode}
