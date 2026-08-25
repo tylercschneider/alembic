@@ -50,6 +50,14 @@ module Alembic
       Runner.for(definition)
     end
 
+    def summarises?
+      summary_definition.present?
+    end
+
+    def summary_of(state)
+      Summary::Report.new(summary_definition).results(state)
+    end
+
     private
 
     def step_to(number)

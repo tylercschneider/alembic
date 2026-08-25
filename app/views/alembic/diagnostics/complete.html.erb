@@ -7,7 +7,20 @@
     <% end %>
   <% end %>
 
-  <%= ui_section do %>
+  <% if @outputs.any? %>
+    <%= ui_section do %>
+      <%= ui_grid(cols: { default: 1, sm: 2 }, gap: :lg) do %>
+        <% @outputs.each do |output| %>
+          <div data-output="<%= output.id %>" class="rounded-lg border border-gray-200 px-5 py-4 dark:border-zinc-700">
+            <p class="text-xs font-semibold uppercase tracking-widest text-accent-600"><%= output.label %></p>
+            <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white"><%= output.value %></p>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= ui_section(title: @outputs.any? ? "What you told us" : nil) do %>
     <ul class="divide-y divide-gray-100 border-y border-gray-100">
       <% @answered.each do |step, value| %>
         <li data-answer="<%= step %>" class="flex items-baseline justify-between gap-6 py-3">

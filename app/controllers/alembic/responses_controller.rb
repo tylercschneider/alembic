@@ -25,7 +25,12 @@ module Alembic
 
     def render_completion
       @answered = @guide.answers_on_path(@answers)
+      @outputs = summarising_diagnostic&.summary_of(@answered.transform_keys(&:to_s)).to_a
       render template: "alembic/diagnostics/complete"
+    end
+
+    def summarising_diagnostic
+      @response.diagnostic if @response.diagnostic.summarises?
     end
 
     def render_result
