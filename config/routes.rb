@@ -9,6 +9,7 @@ Alembic::Engine.routes.draw do
         delete "steps/:step",      action: :remove_step
         patch  "steps/:step/move", action: :move_step
         post   "versions",    action: :cut
+        post   "publish",     action: :publish
         post   "undo",        action: :undo
         post   "redo",        action: :redo
         post   "edges",       action: :connect

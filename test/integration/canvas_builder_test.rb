@@ -237,5 +237,20 @@ module Alembic
 
       assert_empty diagnostic.reload.changes_since_version.to_a
     end
+
+    test "publishing refuses a document with problems" do
+      post "#{canvas_path}/steps", params: { id: "adrift", type: "question" }
+
+      post "#{canvas_path}/publish"
+
+      assert_response :unprocessable_entity
+      assert_nil diagnostic.reload.published_version
+    end
+
+    test "publishing a sound document marks it for visitors" do
+      post "#{canvas_path}/publish"
+
+      assert_equal diagnostic.reload.definition_versions.last, diagnostic.published_version
+    end
   end
 end
