@@ -190,5 +190,11 @@ module Alembic
 
       assert_equal "a", diagnostic.reload.document["entry"]
     end
+
+    test "starts with nothing changed since its last version" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      assert_empty diagnostic.changes_since_version.to_a
+    end
   end
 end
