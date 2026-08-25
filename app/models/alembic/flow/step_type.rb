@@ -5,9 +5,9 @@ module Alembic
         Declaration.new(id).tap { |decl| decl.instance_eval(&declaration) }.to_step_type
       end
 
-      attr_reader :id, :step_name, :fields, :labels, :record_fields, :record_labels, :ports, :naming_field
+      attr_reader :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :ports, :naming_field
 
-      def initialize(id:, step_name:, fields:, ports:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil, record_fields: {}, labels: {}, record_labels: {})
+      def initialize(id:, step_name:, fields:, ports:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil, record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
         @id = id
         @step_name = step_name
         @fields = fields
@@ -20,6 +20,9 @@ module Alembic
         @record_fields = record_fields
         @labels = labels
         @record_labels = record_labels
+        @choices = choices
+        @limits = limits
+        @checks = checks
       end
 
       def process(node, state)
@@ -72,6 +75,9 @@ module Alembic
           @labels = {}
           @record_fields = {}
           @record_labels = {}
+          @choices = {}
+          @limits = {}
+          @checks = {}
           @ports = []
           @awaits_input = false
         end
@@ -104,10 +110,13 @@ module Alembic
           @ports = names
         end
 
-        def setting(name, type:, label: nil, &entries)
+        def setting(name, type:, label: nil, options: nil, limit: nil, check: nil, &entries)
           raise UnknownFieldType, "#{type} is not one of #{FIELD_TYPES.join(', ')}" unless FIELD_TYPES.include?(type)
 
           declare_entries(name, entries) if type == :list
+          declare_choices(name, type, options)
+          @limits[name] = limit if limit
+          @checks[name] = check if check
           @labels[name] = label.presence || name.to_s.humanize
           @fields[name] = type
         end
@@ -117,6 +126,11 @@ module Alembic
         attr_reader :fields, :labels
 
         private
+
+        def declare_choices(name, type, options)
+          return @choices[name] = options if options.present?
+          raise UnknownFieldType, "a #{type} must offer options" if %i[select multi_select].include?(type)
+        end
 
         def declare_entries(name, entries)
           raise UnknownFieldType, "a list must say what an entry holds" if entries.nil?
@@ -129,7 +143,7 @@ module Alembic
         public
 
         def to_step_type
-          StepType.new(id: @id, step_name: @step_name, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, record_fields: @record_fields, labels: @labels, record_labels: @record_labels)
+          StepType.new(id: @id, step_name: @step_name, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
         end
       end
     end

@@ -217,6 +217,10 @@ module Alembic
 
         assert_equal 3, coerced["options"].first["weight"]
       end
+
+      test "refuses a multi select that offers no options" do
+        assert_raises(UnknownFieldType) { StepType.define(:probe) { setting :channels, type: :multi_select } }
+      end
     end
   end
 end
