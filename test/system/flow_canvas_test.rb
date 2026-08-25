@@ -116,17 +116,17 @@ module Alembic
 
       step_card("gate").click
 
-      assert_selector "aside", text: "Answer"
-      assert_selector "aside", text: "Equals"
+      assert_selector "[data-inspector]", text: "Answer"
+      assert_selector "[data-inspector]", text: "Equals"
     end
 
     test "closing the panel leaves the flow drawn" do
       canvas_for(flow)
       step_card("gate").click
 
-      find("aside").click_button("×")
+      find("[data-inspector]").click_button("×")
 
-      assert_no_selector "aside"
+      assert_no_selector "[data-inspector]"
       assert_selector "svg path[marker-end]", count: 2
     end
 
@@ -212,7 +212,7 @@ module Alembic
     private
 
     def fill_in_first_field_with(text)
-      field = find("aside input[type='text']", match: :first)
+      field = find("[data-inspector] input[type='text']", match: :first)
       field.set(text)
       find("body").click
     end
