@@ -39,59 +39,67 @@ module Alembic
       assert_equal 2, diagnostic.definition_versions.last.number
     end
 
-    test "undoing steps the definition back to the version before it" do
-      diagnostic = Diagnostic.create!(slug: "undo")
-      diagnostic.record_definition({ "slug" => "one" })
-      diagnostic.record_definition({ "slug" => "two" })
-
-      diagnostic.undo_definition
-
-      assert_equal({ "slug" => "one" }, diagnostic.definition)
+    def edited(diagnostic, entry, before)
+      diagnostic.update!(document: { "entry" => entry }, undone_changes: [],
+        changes_since_version: diagnostic.changes_since_version.to_a +
+          [ { "action" => "updated", "steps" => [], "named" => [], "before" => before } ])
     end
 
-    test "redoing steps the definition forward again" do
-      diagnostic = Diagnostic.create!(slug: "undo")
-      diagnostic.record_definition({ "slug" => "one" })
-      diagnostic.record_definition({ "slug" => "two" })
-      diagnostic.undo_definition
+    test "undoing puts back the document as it was before the change" do
+      diagnostic = Diagnostic.create!(slug: "undo", document: { "entry" => "one" })
+      edited(diagnostic, "two", { "entry" => "one" })
 
-      diagnostic.redo_definition
+      diagnostic.undo_change
 
-      assert_equal({ "slug" => "two" }, diagnostic.definition)
+      assert_equal({ "entry" => "one" }, diagnostic.reload.document)
     end
 
-    test "undoing keeps every version it stepped past" do
-      diagnostic = Diagnostic.create!(slug: "undo")
-      diagnostic.record_definition({ "slug" => "one" })
-      diagnostic.record_definition({ "slug" => "two" })
+    test "redoing puts the change back" do
+      diagnostic = Diagnostic.create!(slug: "undo", document: { "entry" => "one" })
+      edited(diagnostic, "two", { "entry" => "one" })
+      diagnostic.undo_change
+
+      diagnostic.redo_change
+
+      assert_equal({ "entry" => "two" }, diagnostic.reload.document)
+    end
+
+    test "undoing records no version" do
+      diagnostic = Diagnostic.create!(slug: "undo", document: { "entry" => "one" })
+      edited(diagnostic, "two", { "entry" => "one" })
 
       assert_no_difference -> { diagnostic.definition_versions.count } do
-        diagnostic.undo_definition
+        diagnostic.undo_change
       end
     end
 
-    test "there is nothing to undo before the first version" do
-      diagnostic = Diagnostic.create!(slug: "undo")
-      diagnostic.record_definition({ "slug" => "one" })
+    test "there is nothing to undo before anything is changed" do
+      diagnostic = Diagnostic.create!(slug: "undo", document: { "entry" => "one" })
 
       assert_not diagnostic.undoable?
     end
 
     test "there is nothing to redo until something is undone" do
-      diagnostic = Diagnostic.create!(slug: "undo")
-      diagnostic.record_definition({ "slug" => "one" })
-      diagnostic.record_definition({ "slug" => "two" })
+      diagnostic = Diagnostic.create!(slug: "undo", document: { "entry" => "one" })
+      edited(diagnostic, "two", { "entry" => "one" })
 
       assert_not diagnostic.redoable?
     end
 
-    test "a fresh edit after undoing leaves nothing to redo" do
-      diagnostic = Diagnostic.create!(slug: "undo")
-      diagnostic.record_definition({ "slug" => "one" })
-      diagnostic.record_definition({ "slug" => "two" })
-      diagnostic.undo_definition
+    test "undoing with nothing behind it leaves the document alone" do
+      diagnostic = Diagnostic.create!(slug: "undo", document: { "entry" => "one" })
 
-      diagnostic.record_definition({ "slug" => "three" })
+      diagnostic.undo_change
+
+      assert_equal({ "entry" => "one" }, diagnostic.reload.document)
+    end
+
+    test "cutting a version leaves nothing to redo but keeps what can be undone" do
+      diagnostic = Diagnostic.create!(slug: "undo", document: { "entry" => "one" })
+      edited(diagnostic, "two", { "entry" => "one" })
+      diagnostic.undo_change
+
+      diagnostic.cut_version
 
       assert_not diagnostic.redoable?
     end

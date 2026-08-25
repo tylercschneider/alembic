@@ -40,6 +40,30 @@ module Alembic
         .tap { |version| update!(summary_cursor: version.number) }
     end
 
+    def undoable?
+      changes_since_version.to_a.any?
+    end
+
+    def redoable?
+      undone_changes.to_a.any?
+    end
+
+    def undo_change
+      undone = changes_since_version.to_a.last
+      return unless undone
+
+      update!(document: undone["before"], undone_changes: undone_changes.to_a + [ undone.merge("after" => document) ],
+        changes_since_version: changes_since_version.to_a[0...-1])
+    end
+
+    def redo_change
+      redone = undone_changes.to_a.last
+      return unless redone
+
+      update!(document: redone["after"], undone_changes: undone_changes.to_a[0...-1],
+        changes_since_version: changes_since_version.to_a + [ redone.except("after") ])
+    end
+
     def publish
       cut_version
 
@@ -49,7 +73,7 @@ module Alembic
     def cut_version
       record_definition(document) unless cut?
 
-      update!(changes_since_version: [])
+      update!(changes_since_version: [], undone_changes: [])
     end
 
     def cut?
@@ -69,12 +93,28 @@ module Alembic
       recorded_numbers.any? { |number| number > cursor }
     end
 
-    def undo_definition
-      step_to(recorded_numbers.select { |number| number < cursor }.max)
+    def undoable?
+      changes_since_version.to_a.any?
     end
 
-    def redo_definition
-      step_to(recorded_numbers.select { |number| number > cursor }.min)
+    def redoable?
+      undone_changes.to_a.any?
+    end
+
+    def undo_change
+      undone = changes_since_version.to_a.last
+      return unless undone
+
+      update!(document: undone["before"], undone_changes: undone_changes.to_a + [ undone.merge("after" => document) ],
+        changes_since_version: changes_since_version.to_a[0...-1])
+    end
+
+    def redo_change
+      redone = undone_changes.to_a.last
+      return unless redone
+
+      update!(document: redone["after"], undone_changes: undone_changes.to_a[0...-1],
+        changes_since_version: changes_since_version.to_a + [ redone.except("after") ])
     end
 
     def published_definition
@@ -97,10 +137,6 @@ module Alembic
 
     def steps_by_id
       Array(definition.to_h["nodes"]).index_by { |node| node["id"] }
-    end
-
-    def step_to(number)
-      update!(definition_cursor: number) if number
     end
 
     def cursor
