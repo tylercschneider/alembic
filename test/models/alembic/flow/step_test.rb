@@ -16,6 +16,14 @@ module Alembic
       test "carries a declaration made at class level" do
         assert_equal "Probe step", Probe.step_type.label
       end
+
+      test "registers itself without defining a register method" do
+        registry = Registry.new
+
+        Probe.register(registry)
+
+        assert registry.registered?(:probe)
+      end
     end
   end
 end

@@ -23,6 +23,10 @@ module Alembic
           end
         end
 
+        def register(registry = Flow.registry)
+          registry.register(step_type)
+        end
+
         def step_type_id
           name.demodulize.underscore.to_sym
         end
