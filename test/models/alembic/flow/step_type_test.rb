@@ -151,6 +151,10 @@ module Alembic
       test "refuses a setting whose type it does not know" do
         assert_raises(UnknownFieldType) { StepType.define(:probe) { setting :prompt, type: :nonsense } }
       end
+
+      test "refuses a repeating group that does not say what an entry holds" do
+        assert_raises(UnknownFieldType) { StepType.define(:probe) { setting :answers, type: :records } }
+      end
     end
   end
 end
