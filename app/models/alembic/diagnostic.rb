@@ -26,6 +26,11 @@ module Alembic
       definition_versions.find_by(number: cursor)
     end
 
+    def record_summary(payload)
+      summary_versions.create!(number: next_summary_number, summary: payload)
+        .tap { |version| update!(summary_cursor: version.number) }
+    end
+
     def record_definition(payload)
       definition_versions.create!(number: next_definition_number, definition: payload)
         .tap { |version| update!(definition_cursor: version.number) }
@@ -87,6 +92,10 @@ module Alembic
 
     def next_definition_number
       (definition_versions.maximum(:number) || 0) + 1
+    end
+
+    def next_summary_number
+      (summary_versions.maximum(:number) || 0) + 1
     end
   end
 end

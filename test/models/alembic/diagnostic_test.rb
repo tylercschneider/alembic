@@ -135,5 +135,13 @@ module Alembic
         diagnostic.destroy!
       end
     end
+
+    test "records a summary template as a numbered version" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      diagnostic.record_summary("outputs" => [ { "id" => "score" } ])
+
+      assert_equal 1, diagnostic.summary_versions.sole.number
+    end
   end
 end
