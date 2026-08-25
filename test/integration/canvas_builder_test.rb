@@ -212,5 +212,30 @@ module Alembic
 
       assert_equal "added", diagnostic.reload.changes_since_version.last["action"]
     end
+
+    test "a change names the step it touched" do
+      patch "#{canvas_path}/steps/a", params: { config: { question: "What is your budget?" } }
+
+      assert_equal [ "What is your budget?" ], diagnostic.reload.changes_since_version.last["named"]
+    end
+
+    test "a change falls back to the step id when it has no name" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+
+      assert_equal [ "c" ], diagnostic.reload.changes_since_version.last["named"]
+    end
+
+    test "changes accumulate in the order the edits happened" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/edges", params: { from: "a", to: "c" }
+
+      assert_equal %w[added connected], diagnostic.reload.changes_since_version.map { |change| change["action"] }
+    end
+
+    test "a refused edit records nothing" do
+      post "#{canvas_path}/steps", params: { id: "a", type: "question" }
+
+      assert_empty diagnostic.reload.changes_since_version.to_a
+    end
   end
 end
