@@ -196,5 +196,13 @@ module Alembic
 
       assert_empty diagnostic.changes_since_version.to_a
     end
+
+    test "recording a first definition gives the diagnostic a document to edit" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
+
+      assert_equal "a", diagnostic.reload.document["entry"]
+    end
   end
 end

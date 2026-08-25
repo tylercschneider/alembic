@@ -47,7 +47,7 @@ module Alembic
       private
 
       def apply
-        diagnostic.record_definition(yield(document).to_h)
+        diagnostic.update!(document: yield(document).to_h)
         head :no_content
       rescue Flow::InvalidEdit => invalid
         render json: { error: invalid.message }, status: :unprocessable_entity
@@ -63,7 +63,7 @@ module Alembic
       end
 
       def document
-        Flow::Document.new(diagnostic.definition || {})
+        Flow::Document.new(diagnostic.document || diagnostic.definition || {})
       end
 
       def new_step
