@@ -77,27 +77,27 @@ module Alembic
       end
 
       test "can declare which field names an instance of it" do
-        step_type = StepType.define(:ask) { setting :text, type: :text; names_by :text }
+        step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 
         assert_equal :text, step_type.naming_field
       end
 
       test "names an instance by nothing unless it says so" do
-        step_type = StepType.define(:branch) { setting :answer, type: :text }
+        step_type = StepType.define(:branch) { setting :answer, type: :string }
 
         assert_nil step_type.naming_field
       end
 
       test "declares a field holding a list of records" do
-        step_type = StepType.define(:ask) { setting :options, type: :records, of: { value: :text, weight: :integer } }
+        step_type = StepType.define(:ask) { setting :options, type: :records, of: { value: :string, weight: :integer } }
 
         assert_equal :records, step_type.fields[:options]
       end
 
       test "carries what each record in the list holds" do
-        step_type = StepType.define(:ask) { setting :options, type: :records, of: { value: :text, weight: :integer } }
+        step_type = StepType.define(:ask) { setting :options, type: :records, of: { value: :string, weight: :integer } }
 
-        assert_equal({ value: :text, weight: :integer }, step_type.record_fields[:options])
+        assert_equal({ value: :string, weight: :integer }, step_type.record_fields[:options])
       end
 
       test "refuses a list of records that does not say what a record holds" do
@@ -113,9 +113,9 @@ module Alembic
       end
 
       test "carries the fields it declares" do
-        step_type = StepType.define(:agent) { setting :prompt, type: :text }
+        step_type = StepType.define(:agent) { setting :prompt, type: :string }
 
-        assert_equal({ prompt: :text }, step_type.fields)
+        assert_equal({ prompt: :string }, step_type.fields)
       end
 
       test "refuses a field type outside the vocabulary" do
@@ -143,9 +143,9 @@ module Alembic
       end
 
       test "declares a configurable value with setting" do
-        step_type = StepType.define(:probe) { setting :prompt, type: :text }
+        step_type = StepType.define(:probe) { setting :prompt, type: :string }
 
-        assert_equal({ prompt: :text }, step_type.fields)
+        assert_equal({ prompt: :string }, step_type.fields)
       end
 
       test "refuses a setting whose type it does not know" do
@@ -156,8 +156,8 @@ module Alembic
         assert_raises(UnknownFieldType) { StepType.define(:probe) { setting :answers, type: :records } }
       end
 
-      test "refuses the string type in favour of text" do
-        assert_raises(UnknownFieldType) { StepType.define(:probe) { setting :prompt, type: :string } }
+      test "refuses the text type in favour of string" do
+        assert_raises(UnknownFieldType) { StepType.define(:probe) { setting :prompt, type: :text } }
       end
 
       test "refuses the number type in favour of integer and float" do

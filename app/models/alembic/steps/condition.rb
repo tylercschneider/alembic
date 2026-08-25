@@ -5,8 +5,8 @@ module Alembic
 
       label "Condition"
 
-      setting :answer, type: :text
-      setting :equals, type: :text
+      setting :answer, type: :string
+      setting :equals, type: :string
       setting :in, type: :list
 
       outputs :yes, :no

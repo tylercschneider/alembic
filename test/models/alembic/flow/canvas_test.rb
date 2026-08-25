@@ -7,8 +7,8 @@ module Alembic
         Registry.new.tap do |built|
           built.register(StepType.define(:ask) do
             label "Ask"
-            setting :text, type: :text
-            setting :options, type: :records, of: { value: :text, weight: :integer }
+            setting :text, type: :string
+            setting :options, type: :records, of: { value: :string, weight: :integer }
             names_by :text
           end)
           built.register(StepType.define(:branch) { label "Branch"; outputs :yes, :no })
@@ -50,11 +50,11 @@ module Alembic
       test "carries what a palette entry's record field holds" do
         entry = canvas(flow)["palette"].first
 
-        assert_equal({ "options" => { "value" => "text", "weight" => "integer" } }, entry["records"])
+        assert_equal({ "options" => { "value" => "string", "weight" => "integer" } }, entry["records"])
       end
 
       test "carries a palette entry's declared fields" do
-        assert_equal("text", canvas(flow)["palette"].first["fields"]["text"])
+        assert_equal("string", canvas(flow)["palette"].first["fields"]["text"])
       end
 
       test "carries a palette entry's output ports" do

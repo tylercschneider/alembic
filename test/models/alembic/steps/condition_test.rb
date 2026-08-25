@@ -66,11 +66,11 @@ module Alembic
       end
 
       test "declares the step whose state it tests" do
-        assert_equal :text, Condition.step_type.fields[:answer]
+        assert_equal :string, Condition.step_type.fields[:answer]
       end
 
       test "declares the value it tests for equality" do
-        assert_equal :text, Condition.step_type.fields[:equals]
+        assert_equal :string, Condition.step_type.fields[:equals]
       end
 
       test "declares the set it tests for membership" do
