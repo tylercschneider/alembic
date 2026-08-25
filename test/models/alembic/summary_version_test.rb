@@ -18,5 +18,12 @@ module Alembic
 
       assert_not duplicate.valid?
     end
+
+    test "refuses to be updated once persisted" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      version = diagnostic.summary_versions.create!(number: 1, summary: { "outputs" => [] })
+
+      assert_raises(ActiveRecord::ReadOnlyRecord) { version.update!(summary: { "outputs" => [ { "id" => "x" } ] }) }
+    end
   end
 end
