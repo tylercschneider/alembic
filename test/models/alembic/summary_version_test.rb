@@ -25,5 +25,14 @@ module Alembic
 
       assert_raises(ActiveRecord::ReadOnlyRecord) { version.update!(summary: { "outputs" => [ { "id" => "x" } ] }) }
     end
+
+    test "is destroyed along with its diagnostic" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.summary_versions.create!(number: 1, summary: { "outputs" => [] })
+
+      assert_difference -> { SummaryVersion.count }, -1 do
+        diagnostic.destroy!
+      end
+    end
   end
 end
