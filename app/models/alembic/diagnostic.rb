@@ -41,7 +41,7 @@ module Alembic
 
     def record_definition(payload)
       definition_versions.create!(number: next_definition_number, definition: payload)
-        .tap { |version| update!(definition_cursor: version.number) }
+        .tap { |version| update!(definition_cursor: version.number, document: document.presence || payload) }
     end
 
     def undoable?

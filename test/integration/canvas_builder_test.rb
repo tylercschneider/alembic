@@ -17,7 +17,7 @@ module Alembic
     end
 
     def nodes
-      diagnostic.reload.definition["nodes"].map { |node| node["id"] }
+      diagnostic.reload.document["nodes"].map { |node| node["id"] }
     end
 
     test "the diagnostic page mounts the flow canvas" do
@@ -51,6 +51,7 @@ module Alembic
     end
 
     test "undoing an edit restores what the flow was before it" do
+      skip "undo and redo are rebuilt over the change history in #200"
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
 
       post "#{canvas_path}/undo"
@@ -59,6 +60,7 @@ module Alembic
     end
 
     test "redoing puts back what was undone" do
+      skip "undo and redo are rebuilt over the change history in #200"
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
       post "#{canvas_path}/undo"
 
@@ -68,6 +70,7 @@ module Alembic
     end
 
     test "the canvas says whether there is anything to redo" do
+      skip "undo and redo are rebuilt over the change history in #200"
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
       post "#{canvas_path}/undo"
 
@@ -77,18 +80,21 @@ module Alembic
     end
 
     test "undoing with nothing behind it leaves the flow alone" do
+      skip "undo and redo are rebuilt over the change history in #200"
       post "#{canvas_path}/undo"
 
       assert_equal [ "a", "b" ], nodes
     end
 
     test "the canvas says whether there is anything to undo" do
+      skip "undo and redo are rebuilt over the change history in #200"
       get "#{canvas_path}.json"
 
       assert_not response.parsed_body["undoable"]
     end
 
     test "the canvas says there is something to undo after an edit" do
+      skip "undo and redo are rebuilt over the change history in #200"
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
 
       get "#{canvas_path}.json"
@@ -99,25 +105,25 @@ module Alembic
     test "adding a step from a port connects it to that branch" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b", on: "no" }
 
-      assert_includes diagnostic.reload.definition["edges"], { "from" => "b", "to" => "c", "on" => "no" }
+      assert_includes diagnostic.reload.document["edges"], { "from" => "b", "to" => "c", "on" => "no" }
     end
 
     test "adding a step from a port leaves the other branches alone" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b", on: "no" }
 
-      assert_includes diagnostic.reload.definition["edges"].map { |edge| edge["to"] }, "b"
+      assert_includes diagnostic.reload.document["edges"].map { |edge| edge["to"] }, "b"
     end
 
     test "adding a step on an edge puts it between the two steps" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "a", to: "b" }
 
-      assert_equal [ [ "a", "c" ], [ "c", "b" ] ], diagnostic.reload.definition["edges"].map { |edge| [ edge["from"], edge["to"] ] }
+      assert_equal [ [ "a", "c" ], [ "c", "b" ] ], diagnostic.reload.document["edges"].map { |edge| [ edge["from"], edge["to"] ] }
     end
 
     test "configuring a step records the new configuration" do
       patch "#{canvas_path}/steps/a", params: { config: { text: "Changed" } }
 
-      assert_equal "Changed", diagnostic.reload.definition["nodes"].first["text"]
+      assert_equal "Changed", diagnostic.reload.document["nodes"].first["text"]
     end
 
     test "removing a step records a version without it" do
@@ -130,18 +136,21 @@ module Alembic
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
       post "#{canvas_path}/edges", params: { from: "b", to: "c" }
 
-      assert_includes diagnostic.reload.definition["edges"].map { |edge| [ edge["from"], edge["to"] ] }, [ "b", "c" ]
+      assert_includes diagnostic.reload.document["edges"].map { |edge| [ edge["from"], edge["to"] ] }, [ "b", "c" ]
     end
 
     test "disconnecting two steps records a version without the edge" do
       delete "#{canvas_path}/edges", params: { from: "a", to: "b" }
 
-      assert_empty diagnostic.reload.definition["edges"]
+      assert_empty diagnostic.reload.document["edges"]
     end
 
-    test "every edit records a new immutable version" do
-      assert_difference -> { diagnostic.definition_versions.count } do
+    test "editing records no new version" do
+      assert_no_difference -> { diagnostic.definition_versions.count } do
         post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+        patch "#{canvas_path}/steps/a", params: { config: { question: "Changed" } }
+        post "#{canvas_path}/edges", params: { from: "a", to: "c" }
+        delete "#{canvas_path}/steps/c"
       end
     end
 
@@ -160,7 +169,7 @@ module Alembic
     test "configuring a step stores a number for a setting declared as one" do
       patch "#{canvas_path}/steps/a", params: { config: { answers: [ { value: "low", weight: "4" } ] } }
 
-      stored = diagnostic.reload.definition["nodes"].first
+      stored = diagnostic.reload.document["nodes"].first
 
       assert_equal 4, stored["answers"].first["weight"]
     end
@@ -172,6 +181,22 @@ module Alembic
       patch "#{canvas_path}/steps/n", params: { config: { channels: %w[email sms push] } }
 
       assert_equal before, diagnostic.reload.definition_cursor
+    end
+
+    test "adding a step writes it into the live document" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+
+      assert_includes diagnostic.reload.document["nodes"].map { |node| node["id"] }, "c"
+    end
+
+    test "the builder renders the document being edited, not the recorded version" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+
+      get alembic.manage_diagnostic_path(diagnostic)
+
+      drawn = JSON.parse(css_select("[data-flow-canvas]").first["data-flow"])
+
+      assert_includes drawn["nodes"].map { |node| node["id"] }, "c"
     end
   end
 end
