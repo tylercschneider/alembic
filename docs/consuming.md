@@ -74,8 +74,8 @@ module MyApp
 
       label "Agent"
 
-      field :prompt, :text
-      field :model, :string
+      setting :prompt, type: :text
+      setting :model, type: :string
 
       names_by :prompt
       awaits_input
@@ -111,7 +111,7 @@ module MyApp
     class Gate
       include Alembic::Flow::Step
 
-      field :of, :string
+      setting :of, type: :string
       outputs :approved, :rejected
 
       def route(node, state)
@@ -136,7 +136,7 @@ available for a host that would rather not include a module into its class:
 ```ruby
 MyApp::AGENT = Alembic::Flow::StepType.define(:agent) do
   label "Agent"
-  field :prompt, :text
+  setting :prompt, type: :text
 end
 
 Alembic::Flow.registry.register(MyApp::AGENT)
@@ -147,25 +147,25 @@ Alembic::Flow.registry.register(MyApp::AGENT)
 | Method | Effect |
 |---|---|
 | `label "Agent"` | human name, shown in the builder palette. Defaults to the id |
-| `field :name, :type` | declares a config key and how the builder should edit it |
+| `setting :name, type: :text` | declares a config key and how the builder should edit it |
 | `outputs :pass, :fail` | named output ports. Omit for a single unnamed output |
 | `awaits_input` | this step stops the walk until the host records a value for it |
-| `names_by :prompt` | which config field titles the node on the canvas |
+| `names_by :prompt` | which setting titles the node on the canvas |
 | `requires { \|node\| }` | returns ids this node's config depends on |
 | `route { \|node, state\| }` | returns which port to leave by |
 | `process { \|node, state\| }` | **declared but not yet called — see §8** |
 
-### Field types
+### Setting types
 
 `:text` `:string` `:number` `:boolean` `:select` `:list` `:records`
 
 Anything else raises `Flow::UnknownFieldType`. These describe the *editing
-affordance* the builder offers; the engine never interprets a field's value.
+affordance* the builder offers; the engine never interprets a setting's value.
 
 `:records` is a repeating sub-form and must say what one record holds:
 
 ```ruby
-field :options, :records, of: { value: :string, label: :string, weight: :number }
+setting :options, type: :records, of: { value: :string, label: :string, weight: :number }
 ```
 
 This is how scoring data rides along on a step: authored in the builder, stored
@@ -395,8 +395,8 @@ class Agent
   include Alembic::Flow::Step
 
   label "Agent"
-  field :prompt, :text
-  field :model, :string
+  setting :prompt, type: :text
+  setting :model, type: :string
   names_by :prompt
   awaits_input
 end
@@ -405,7 +405,7 @@ class Review
   include Alembic::Flow::Step
 
   label "Review gate"
-  field :of, :string
+  setting :of, type: :string
   outputs :approved, :rejected
 
   requires { |node| [ node.config["of"] ].compact }

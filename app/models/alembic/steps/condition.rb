@@ -5,9 +5,9 @@ module Alembic
 
       label "Condition"
 
-      field :answer, :string
-      field :equals, :string
-      field :in, :list
+      setting :answer, type: :string
+      setting :equals, type: :string
+      setting :in, type: :list
 
       outputs :yes, :no
 

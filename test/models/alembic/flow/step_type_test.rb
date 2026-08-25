@@ -77,50 +77,50 @@ module Alembic
       end
 
       test "can declare which field names an instance of it" do
-        step_type = StepType.define(:ask) { field :text, :text; names_by :text }
+        step_type = StepType.define(:ask) { setting :text, type: :text; names_by :text }
 
         assert_equal :text, step_type.naming_field
       end
 
       test "names an instance by nothing unless it says so" do
-        step_type = StepType.define(:branch) { field :answer, :string }
+        step_type = StepType.define(:branch) { setting :answer, type: :string }
 
         assert_nil step_type.naming_field
       end
 
       test "declares a field holding a list of records" do
-        step_type = StepType.define(:ask) { field :options, :records, of: { value: :string, weight: :number } }
+        step_type = StepType.define(:ask) { setting :options, type: :records, of: { value: :string, weight: :number } }
 
         assert_equal :records, step_type.fields[:options]
       end
 
       test "carries what each record in the list holds" do
-        step_type = StepType.define(:ask) { field :options, :records, of: { value: :string, weight: :number } }
+        step_type = StepType.define(:ask) { setting :options, type: :records, of: { value: :string, weight: :number } }
 
         assert_equal({ value: :string, weight: :number }, step_type.record_fields[:options])
       end
 
       test "refuses a list of records that does not say what a record holds" do
         assert_raises UnknownFieldType do
-          StepType.define(:ask) { field :options, :records }
+          StepType.define(:ask) { setting :options, type: :records }
         end
       end
 
       test "refuses a record holding a type outside the vocabulary" do
         assert_raises UnknownFieldType do
-          StepType.define(:ask) { field :options, :records, of: { value: :wormhole } }
+          StepType.define(:ask) { setting :options, type: :records, of: { value: :wormhole } }
         end
       end
 
       test "carries the fields it declares" do
-        step_type = StepType.define(:agent) { field :prompt, :text }
+        step_type = StepType.define(:agent) { setting :prompt, type: :text }
 
         assert_equal({ prompt: :text }, step_type.fields)
       end
 
       test "refuses a field type outside the vocabulary" do
         assert_raises UnknownFieldType do
-          StepType.define(:agent) { field :prompt, :wormhole }
+          StepType.define(:agent) { setting :prompt, type: :wormhole }
         end
       end
 
@@ -140,6 +140,20 @@ module Alembic
         step_type = StepType.define(:agent) { label "Agent call" }
 
         assert_equal :agent, step_type.id
+      end
+
+      test "declares a configurable value with setting" do
+        step_type = StepType.define(:probe) { setting :prompt, type: :text }
+
+        assert_equal({ prompt: :text }, step_type.fields)
+      end
+
+      test "refuses a setting whose type it does not know" do
+        assert_raises(UnknownFieldType) { StepType.define(:probe) { setting :prompt, type: :nonsense } }
+      end
+
+      test "refuses a repeating group that does not say what an entry holds" do
+        assert_raises(UnknownFieldType) { StepType.define(:probe) { setting :answers, type: :records } }
       end
     end
   end

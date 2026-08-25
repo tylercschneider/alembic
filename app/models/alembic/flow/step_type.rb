@@ -78,7 +78,7 @@ module Alembic
           @ports = names
         end
 
-        def field(name, type, of: nil)
+        def setting(name, type:, of: nil)
           raise UnknownFieldType, "#{type} is not one of #{FIELD_TYPES.join(', ')}" unless FIELD_TYPES.include?(type)
 
           @record_fields[name] = holdings(of) if type == :records
