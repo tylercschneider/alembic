@@ -9,6 +9,7 @@ module Alembic
     # destroying a diagnostic trips the responses -> definition_versions FK.
     has_many :responses, dependent: :destroy
     has_many :definition_versions, dependent: :destroy
+    belongs_to :published_version, class_name: "DefinitionVersion", optional: true
     has_many :summary_versions, dependent: :destroy
 
     def self.upsert_definition(definition)
@@ -37,6 +38,12 @@ module Alembic
     def record_summary(payload)
       summary_versions.create!(number: next_summary_number, summary: payload)
         .tap { |version| update!(summary_cursor: version.number) }
+    end
+
+    def publish
+      cut_version
+
+      update!(published_version: current_definition_version, status: :published)
     end
 
     def cut_version

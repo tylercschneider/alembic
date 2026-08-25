@@ -233,5 +233,15 @@ module Alembic
         diagnostic.cut_version
       end
     end
+
+    test "publishing marks the cut version as the one visitors run" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
+      diagnostic.update!(document: { "entry" => "b", "nodes" => [], "edges" => [] })
+
+      diagnostic.publish
+
+      assert_equal "b", diagnostic.reload.published_version.definition["entry"]
+    end
   end
 end
