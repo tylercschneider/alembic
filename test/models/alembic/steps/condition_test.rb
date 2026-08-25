@@ -25,6 +25,12 @@ module Alembic
         assert_equal :condition, registry.fetch("condition").id
       end
 
+      test "ignores an empty set and falls back to the value it tests for" do
+        node = branch({ "answer" => "budget", "equals" => "high", "in" => [] })
+
+        assert_equal :yes, Condition.step_type.route(node, { "budget" => "high" })
+      end
+
       test "leaves by the yes port when the tested state equals the value" do
         node = branch({ "answer" => "budget", "equals" => "high" })
 

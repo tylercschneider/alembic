@@ -47,7 +47,7 @@ module Alembic
     end
 
     def to_guide
-      DefinitionLoader.new(definition).build
+      Runner.for(definition)
     end
 
     private

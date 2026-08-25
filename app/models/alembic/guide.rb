@@ -68,6 +68,10 @@ module Alembic
       @domains = domains
     end
 
+    def scored?
+      true
+    end
+
     def warning_text(key)
       warnings[key]
     end
