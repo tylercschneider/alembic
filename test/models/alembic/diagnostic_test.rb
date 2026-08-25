@@ -104,6 +104,15 @@ module Alembic
       assert_not diagnostic.redoable?
     end
 
+    test "cutting a version leaves the author able to undo past it" do
+      diagnostic = Diagnostic.create!(slug: "undo", document: { "entry" => "one" })
+      edited(diagnostic, "two", { "entry" => "one" })
+
+      diagnostic.cut_version
+
+      assert_predicate diagnostic, :undoable?
+    end
+
     test "reports its current definition as the highest-numbered version" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition({ "slug" => "first" })

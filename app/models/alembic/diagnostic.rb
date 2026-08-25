@@ -41,7 +41,7 @@ module Alembic
     end
 
     def undoable?
-      changes_since_version.to_a.any?
+      undoable.any?
     end
 
     def redoable?
@@ -49,11 +49,11 @@ module Alembic
     end
 
     def undo_change
-      undone = changes_since_version.to_a.last
+      undone = undoable.last
       return unless undone
 
       update!(document: undone["before"], undone_changes: undone_changes.to_a + [ undone.merge("after" => document) ],
-        changes_since_version: changes_since_version.to_a[0...-1])
+        undo_history: undo_history.to_a[0...-1], changes_since_version: changes_since_version.to_a[0...-1])
     end
 
     def redo_change
@@ -73,7 +73,11 @@ module Alembic
     def cut_version
       record_definition(document) unless cut?
 
-      update!(changes_since_version: [], undone_changes: [])
+      update!(undo_history: undoable, changes_since_version: [], undone_changes: [])
+    end
+
+    def undoable
+      undo_history.to_a + changes_since_version.to_a
     end
 
     def cut?
@@ -83,38 +87,6 @@ module Alembic
     def record_definition(payload)
       definition_versions.create!(number: next_definition_number, definition: payload)
         .tap { |version| update!(definition_cursor: version.number, document: payload) }
-    end
-
-    def undoable?
-      recorded_numbers.any? { |number| number < cursor }
-    end
-
-    def redoable?
-      recorded_numbers.any? { |number| number > cursor }
-    end
-
-    def undoable?
-      changes_since_version.to_a.any?
-    end
-
-    def redoable?
-      undone_changes.to_a.any?
-    end
-
-    def undo_change
-      undone = changes_since_version.to_a.last
-      return unless undone
-
-      update!(document: undone["before"], undone_changes: undone_changes.to_a + [ undone.merge("after" => document) ],
-        changes_since_version: changes_since_version.to_a[0...-1])
-    end
-
-    def redo_change
-      redone = undone_changes.to_a.last
-      return unless redone
-
-      update!(document: redone["after"], undone_changes: undone_changes.to_a[0...-1],
-        changes_since_version: changes_since_version.to_a + [ redone.except("after") ])
     end
 
     def published_definition
