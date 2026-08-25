@@ -30,12 +30,12 @@ A flow is plain JSON. Three keys:
 {
   "entry": "budget",
   "nodes": [
-    { "id": "budget", "type": "question", "text": "What is your budget?",
-      "tag": "money",
-      "options": [ { "value": "low",  "label": "Modest",   "weight": 1 },
+    { "id": "budget", "type": "question", "question": "What is your budget?",
+      "category": "money",
+      "answers": [ { "value": "low",  "label": "Modest",   "weight": 1 },
                    { "value": "high", "label": "Generous", "weight": 5 } ] },
     { "id": "rich", "type": "condition", "answer": "budget", "equals": "high" },
-    { "id": "posh", "type": "question", "text": "Which premium tier?" }
+    { "id": "posh", "type": "question", "question": "Which premium tier?" }
   ],
   "edges": [
     { "from": "budget", "to": "rich" },
@@ -364,8 +364,8 @@ unknown type raises `Summary::UnknownOutputType`.
 
 Two step types, both registered by the engine:
 
-- **`question`** — `text`, `options` (a list of `value`/`label`/`weight` entries),
-  `tag`. Awaits input.
+- **`question`** — `question`, `answers` (a list of `value`/`label`/`weight`
+  entries), `category`. Awaits input.
 - **`condition`** — `answer`, and either `equals` or `in` (a list of `value`
   entries). Ports `yes`/`no`. `in` wins when it has entries.
 
@@ -375,9 +375,9 @@ Six output types:
 |---|---|---|
 | `weighted_sum` | — | sum of the chosen options' weights |
 | `percentage` | — | that sum as a share of the maximum reachable on the path taken |
-| `grouped` | `by` (default `"tag"`) | `{ tag => percentage }` for each tag answered |
+| `grouped` | `by` (defaults to the step's `category`) | `{ category => percentage }` for each category answered |
 | `lowest` | `of`, `count` (default 1) | the weakest tags from a `grouped` output |
-| `tally` | `tag`, `by` (default `"tag"`) | how many steps were answered, optionally for one tag |
+| `tally` | `tag`, `by` (defaults to the step's `category`) | how many steps were answered, optionally for one category |
 | `band` | `of`, `bands` | the first band whose `ceiling` the value falls under |
 
 `bands` are sorted by `ceiling`; a band with no `ceiling` is the catch-all.
