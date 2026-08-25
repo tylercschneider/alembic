@@ -5,6 +5,11 @@ module Alembic
         render json: canvas_payload
       end
 
+      def cut
+        diagnostic.cut_version
+        head :no_content
+      end
+
       def undo
         diagnostic.undo_definition
         head :no_content

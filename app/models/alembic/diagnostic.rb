@@ -39,6 +39,16 @@ module Alembic
         .tap { |version| update!(summary_cursor: version.number) }
     end
 
+    def cut_version
+      record_definition(document) unless cut?
+
+      update!(changes_since_version: [])
+    end
+
+    def cut?
+      document == definition
+    end
+
     def record_definition(payload)
       definition_versions.create!(number: next_definition_number, definition: payload)
         .tap { |version| update!(definition_cursor: version.number, document: payload) }
