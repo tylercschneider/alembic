@@ -21,7 +21,7 @@ module Alembic
       end
 
       def add_step
-        apply do |flow|
+        apply(:added, params[:id]) do |flow|
           next flow.insert(new_step, on: edge_endpoints, leaving: first_port) if placed_on_edge?
           next flow.add(new_step).connect(from: params[:from], to: params[:id], on: params[:on].presence) if branched_from?
 
@@ -30,29 +30,30 @@ module Alembic
       end
 
       def configure_step
-        apply { |flow| flow.configure(params[:step], coerced(flow, params[:step])) }
+        apply(:updated, params[:step]) { |flow| flow.configure(params[:step], coerced(flow, params[:step])) }
       end
 
       def move_step
-        apply { |flow| flow.move(params[:step], on: edge_endpoints, leaving: port_for(params[:step])) }
+        apply(:moved, params[:step]) { |flow| flow.move(params[:step], on: edge_endpoints, leaving: port_for(params[:step])) }
       end
 
       def remove_step
-        apply { |flow| flow.remove(params[:step]) }
+        apply(:removed, params[:step]) { |flow| flow.remove(params[:step]) }
       end
 
       def connect
-        apply { |flow| flow.connect(from: params[:from], to: params[:to], on: params[:on].presence) }
+        apply(:connected, params[:from], params[:to]) { |flow| flow.connect(from: params[:from], to: params[:to], on: params[:on].presence) }
       end
 
       def disconnect
-        apply { |flow| flow.disconnect(from: params[:from], to: params[:to]) }
+        apply(:disconnected, params[:from], params[:to]) { |flow| flow.disconnect(from: params[:from], to: params[:to]) }
       end
 
       private
 
-      def apply
-        diagnostic.update!(document: yield(document).to_h)
+      def apply(action = nil, *steps)
+        edited = yield(document)
+        diagnostic.update!(document: edited.to_h, changes_since_version: recorded(action, edited, steps))
         head :no_content
       rescue Flow::InvalidEdit => invalid
         render json: { error: invalid.message }, status: :unprocessable_entity
@@ -69,6 +70,17 @@ module Alembic
 
       def document
         Flow::Document.new(diagnostic.document || diagnostic.definition || {})
+      end
+
+      def recorded(action, edited, steps)
+        return diagnostic.changes_since_version.to_a unless action
+
+        diagnostic.changes_since_version.to_a +
+          [ { "action" => action.to_s, "steps" => steps.map(&:to_s), "named" => steps.map { |id| named(edited, id) } } ]
+      end
+
+      def named(edited, id)
+        Flow::Name.of(edited.node(id.to_s) || document.node(id.to_s))
       end
 
       def new_step

@@ -206,5 +206,11 @@ module Alembic
         post "#{canvas_path}/versions"
       end
     end
+
+    test "adding a step records what changed" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+
+      assert_equal "added", diagnostic.reload.changes_since_version.last["action"]
+    end
   end
 end
