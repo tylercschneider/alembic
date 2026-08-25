@@ -72,14 +72,6 @@ module Alembic
       Summary::Report.new(summary_definition).results(Summary::Run.new(state: state, steps: steps_by_id))
     end
 
-    def summarises?
-      summary_definition.present?
-    end
-
-    def summary_of(state)
-      Summary::Report.new(summary_definition).results(Summary::Run.new(state: state, steps: steps_by_id))
-    end
-
     private
 
     def steps_by_id
