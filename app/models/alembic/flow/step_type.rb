@@ -37,9 +37,31 @@ module Alembic
         @awaits_input
       end
 
+      def coerce(config)
+        config.to_h.to_h { |name, value| [ name, cast(fields[name.to_sym], value, record_fields[name.to_sym]) ] }
+      end
+
       def single_output?
         ports.empty?
       end
+
+      private
+
+      def cast(type, value, holds = nil)
+        case type
+        when :integer then Integer(value, exception: false)
+        when :float then Float(value, exception: false)
+        when :boolean then ActiveModel::Type::Boolean.new.cast(value).present?
+        when :list then Array(value).map { |entry| cast_entry(entry, holds.to_h) }
+        else value
+        end
+      end
+
+      def cast_entry(entry, holds)
+        entry.to_h.to_h { |name, value| [ name, cast(holds[name.to_sym], value) ] }
+      end
+
+      public
 
       class Declaration
         def initialize(id)
