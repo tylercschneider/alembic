@@ -13,7 +13,16 @@
         <% @outputs.each do |output| %>
           <div data-output="<%= output.id %>" class="rounded-lg border border-gray-200 px-5 py-4 dark:border-zinc-700">
             <p class="text-xs font-semibold uppercase tracking-widest text-accent-600"><%= output.label %></p>
-            <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white"><%= output.value %></p>
+            <% lines = alembic_output_lines(output.value) %>
+            <% if lines.one? %>
+              <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white"><%= lines.first %></p>
+            <% else %>
+              <ul class="mt-1 space-y-0.5">
+                <% lines.each do |line| %>
+                  <li class="font-medium text-gray-900 dark:text-white"><%= line %></li>
+                <% end %>
+              </ul>
+            <% end %>
           </div>
         <% end %>
       <% end %>

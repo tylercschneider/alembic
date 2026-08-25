@@ -27,7 +27,9 @@ module Alembic
           "outputs" => [
             { "id" => "score", "type" => "weighted_sum", "label" => "Your score" },
             { "id" => "band", "type" => "band", "label" => "Where that puts you", "of" => "score",
-              "bands" => [ { "ceiling" => 4, "name" => "Modest" }, { "name" => "Generous" } ] }
+              "bands" => [ { "ceiling" => 4, "name" => "Modest" }, { "name" => "Generous" } ] },
+            { "id" => "areas", "type" => "grouped", "label" => "By area" },
+            { "id" => "answered", "type" => "tally", "label" => "Steps answered" }
           ]
         })
       end
@@ -49,6 +51,18 @@ module Alembic
       get alembic.diagnostic_step_path(summarised.slug), params: { answers: { budget: "low", posh: "a", plain: "b" } }
 
       assert_select "[data-output=?]", "score", text: /2/
+    end
+
+    test "a finished run reports a share for each area it touched" do
+      get alembic.diagnostic_step_path(summarised.slug), params: { answers: { budget: "high", posh: "a" } }
+
+      assert_select "[data-output=?]", "areas", text: /money/
+    end
+
+    test "a finished run counts the steps it answered" do
+      get alembic.diagnostic_step_path(summarised.slug), params: { answers: { budget: "high", posh: "a" } }
+
+      assert_select "[data-output=?]", "answered", text: /2/
     end
 
     test "a diagnostic with no summary still shows what was said" do
