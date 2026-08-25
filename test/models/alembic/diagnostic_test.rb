@@ -14,9 +14,10 @@ module Alembic
       assert_not Diagnostic.new(slug: nil).valid?
     end
 
-    test "builds a runner from its current definition" do
+    test "builds a runner from the version it published" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition({ "slug" => "demo" })
+      diagnostic.publish
 
       assert_equal "demo", diagnostic.runner.slug
     end
@@ -232,6 +233,16 @@ module Alembic
       assert_no_difference -> { diagnostic.definition_versions.count } do
         diagnostic.cut_version
       end
+    end
+
+    test "publishing marks the cut version as the one visitors run" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
+      diagnostic.update!(document: { "entry" => "b", "nodes" => [], "edges" => [] })
+
+      diagnostic.publish
+
+      assert_equal "b", diagnostic.reload.published_version.definition["entry"]
     end
   end
 end

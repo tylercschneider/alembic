@@ -15,7 +15,7 @@ module Alembic
     end
 
     def saved
-      @saved ||= Diagnostic.create!(slug: "saved").tap { |diagnostic| diagnostic.record_definition(branching) }
+      @saved ||= Diagnostic.create!(slug: "saved").tap { |diagnostic| diagnostic.record_definition(branching); diagnostic.publish }
     end
 
     test "starting a saved session sends the visitor to its durable URL" do

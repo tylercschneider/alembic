@@ -30,7 +30,7 @@ module Alembic
 
     def runner
       diagnostic = Diagnostic.find_by(slug: params[:slug])
-      return if diagnostic&.definition.blank?
+      return if diagnostic&.published_definition.blank?
 
       @stored_diagnostic = diagnostic
       diagnostic.runner

@@ -13,6 +13,7 @@ module Alembic
         ],
         "edges" => [ { "from" => "a", "to" => "c" }, { "from" => "c", "to" => "b" } ]
       })
+      diagnostic.update!(published_version: diagnostic.definition_versions.first)
       response = Response.start(diagnostic)
       response.update!(answers: { a: "x", c: "x", b: "x" })
 
@@ -24,6 +25,7 @@ module Alembic
     test "belongs to a diagnostic" do
       diagnostic = Diagnostic.create!(slug: "demo")
       version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
+      diagnostic.update!(published_version: version)
 
       response = diagnostic.responses.create!(definition_version: version)
 
@@ -33,25 +35,29 @@ module Alembic
     test "pins to the diagnostic's current definition version when started" do
       diagnostic = Diagnostic.create!(slug: "demo")
       version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
+      diagnostic.update!(published_version: version)
 
       response = Response.start(diagnostic)
 
       assert_equal version, response.definition_version
     end
 
-    test "pins to the newer version when started after a recompile" do
+    test "pins to the newer version once that version is published" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
-      recompiled = diagnostic.definition_versions.create!(number: 2, definition: { "slug" => "demo" })
+      diagnostic.update!(published_version: diagnostic.definition_versions.first)
+      republished = diagnostic.definition_versions.create!(number: 2, definition: { "slug" => "demo" })
+      diagnostic.update!(published_version: republished)
 
       response = Response.start(diagnostic.reload)
 
-      assert_equal recompiled, response.definition_version
+      assert_equal republished, response.definition_version
     end
 
     test "leaves an earlier response pinned to the version it began on" do
       diagnostic = Diagnostic.create!(slug: "demo")
       began_on = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
+      diagnostic.update!(published_version: began_on)
       response = Response.start(diagnostic)
 
       diagnostic.definition_versions.create!(number: 2, definition: { "slug" => "demo" })
@@ -62,6 +68,7 @@ module Alembic
     test "takes an owner of any type the host application supplies" do
       diagnostic = Diagnostic.create!(slug: "demo")
       version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
+      diagnostic.update!(published_version: version)
       owner = Diagnostic.create!(slug: "owning-record")
 
       response = diagnostic.responses.create!(definition_version: version, owner: owner)
@@ -72,6 +79,7 @@ module Alembic
     test "is valid with no owner at all" do
       diagnostic = Diagnostic.create!(slug: "demo")
       version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
+      diagnostic.update!(published_version: version)
 
       response = diagnostic.responses.build(definition_version: version, owner: nil)
 
@@ -112,13 +120,15 @@ module Alembic
 
     def diagnostic_with_a_version
       Diagnostic.create!(slug: "demo").tap do |diagnostic|
-        diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
+        version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
+        diagnostic.update!(published_version: version)
       end
     end
 
     test "pins the summary version the diagnostic is on when it starts" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition("slug" => "demo")
+      diagnostic.publish
       diagnostic.record_summary("outputs" => [])
 
       assert_equal diagnostic.current_summary_version, Response.start(diagnostic).summary_version
@@ -127,6 +137,7 @@ module Alembic
     test "starts without a summary version when the diagnostic has no summary" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition("slug" => "demo")
+      diagnostic.publish
 
       assert_nil Response.start(diagnostic).summary_version
     end
@@ -134,6 +145,7 @@ module Alembic
     test "keeps its pinned summary version when the diagnostic records a newer one" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition("slug" => "demo")
+      diagnostic.publish
       diagnostic.record_summary("outputs" => [])
       response = Response.start(diagnostic)
 
@@ -163,6 +175,7 @@ module Alembic
     test "produces no outputs when its diagnostic has no summary" do
       diagnostic = Diagnostic.create!(slug: "unscored")
       diagnostic.record_definition("slug" => "unscored")
+      diagnostic.publish
 
       assert_empty Response.start(diagnostic).summary_of({})
     end
@@ -173,6 +186,7 @@ module Alembic
           "nodes" => [ { "id" => "budget", "type" => "question", "text" => "Budget?",
                          "options" => [ { "value" => "high", "weight" => 5 } ] } ])
         diagnostic.record_summary("outputs" => [ { "id" => "score", "type" => "weighted_sum" } ])
+        diagnostic.publish
       end
     end
   end

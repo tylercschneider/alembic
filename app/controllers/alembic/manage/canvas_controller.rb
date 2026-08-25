@@ -10,6 +10,15 @@ module Alembic
         head :no_content
       end
 
+      def publish
+        objections = Flow::Validator.new(document).violations
+        return render json: { error: objections.map { |v| "#{v.node}: #{v.problem}" }.join(", ") },
+          status: :unprocessable_entity if objections.any?
+
+        diagnostic.publish
+        head :no_content
+      end
+
       def undo
         diagnostic.undo_definition
         head :no_content
