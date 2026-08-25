@@ -159,5 +159,14 @@ module Alembic
 
       assert_equal({ "outputs" => [ { "id" => "score" } ] }, diagnostic.summary_document)
     end
+
+    test "recording a summary leaves the flow version untouched" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_definition("slug" => "demo")
+
+      assert_no_changes -> { diagnostic.reload.definition_cursor } do
+        diagnostic.record_summary("outputs" => [])
+      end
+    end
   end
 end
