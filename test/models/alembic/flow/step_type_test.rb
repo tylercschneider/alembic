@@ -83,21 +83,21 @@ module Alembic
       end
 
       test "names an instance by nothing unless it says so" do
-        step_type = StepType.define(:branch) { setting :answer, type: :string }
+        step_type = StepType.define(:branch) { setting :answer, type: :text }
 
         assert_nil step_type.naming_field
       end
 
       test "declares a field holding a list of records" do
-        step_type = StepType.define(:ask) { setting :options, type: :records, of: { value: :string, weight: :number } }
+        step_type = StepType.define(:ask) { setting :options, type: :records, of: { value: :text, weight: :integer } }
 
         assert_equal :records, step_type.fields[:options]
       end
 
       test "carries what each record in the list holds" do
-        step_type = StepType.define(:ask) { setting :options, type: :records, of: { value: :string, weight: :number } }
+        step_type = StepType.define(:ask) { setting :options, type: :records, of: { value: :text, weight: :integer } }
 
-        assert_equal({ value: :string, weight: :number }, step_type.record_fields[:options])
+        assert_equal({ value: :text, weight: :integer }, step_type.record_fields[:options])
       end
 
       test "refuses a list of records that does not say what a record holds" do
@@ -154,6 +154,10 @@ module Alembic
 
       test "refuses a repeating group that does not say what an entry holds" do
         assert_raises(UnknownFieldType) { StepType.define(:probe) { setting :answers, type: :records } }
+      end
+
+      test "refuses the string type in favour of text" do
+        assert_raises(UnknownFieldType) { StepType.define(:probe) { setting :prompt, type: :string } }
       end
     end
   end
