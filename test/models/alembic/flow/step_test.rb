@@ -6,7 +6,7 @@ module Alembic
       class Probe
         include Flow::Step
 
-        label "Probe step"
+        step_name "Probe step"
       end
 
       class Gate
@@ -24,7 +24,7 @@ module Alembic
       end
 
       test "carries a declaration made at class level" do
-        assert_equal "Probe step", Probe.step_type.label
+        assert_equal "Probe step", Probe.step_type.step_name
       end
 
       test "registers itself without defining a register method" do

@@ -6,12 +6,12 @@ module Alembic
       def registry
         Registry.new.tap do |built|
           built.register(StepType.define(:ask) do
-            label "Ask"
+            step_name "Ask"
             setting :text, type: :string
             setting(:options, type: :list) { setting :value, type: :string; setting :weight, type: :integer }
             names_by :text
           end)
-          built.register(StepType.define(:branch) { label "Branch"; outputs :yes, :no })
+          built.register(StepType.define(:branch) { step_name "Branch"; outputs :yes, :no })
         end
       end
 

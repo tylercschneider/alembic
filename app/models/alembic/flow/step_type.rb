@@ -5,11 +5,11 @@ module Alembic
         Declaration.new(id).tap { |decl| decl.instance_eval(&declaration) }.to_step_type
       end
 
-      attr_reader :id, :label, :fields, :record_fields, :ports, :naming_field
+      attr_reader :id, :step_name, :fields, :record_fields, :ports, :naming_field
 
-      def initialize(id:, label:, fields:, ports:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil, record_fields: {})
+      def initialize(id:, step_name:, fields:, ports:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil, record_fields: {})
         @id = id
-        @label = label
+        @step_name = step_name
         @fields = fields
         @ports = ports
         @awaits_input = awaits_input
@@ -43,7 +43,7 @@ module Alembic
       class Declaration
         def initialize(id)
           @id = id
-          @label = id.to_s
+          @step_name = id.to_s
           @fields = {}
           @record_fields = {}
           @ports = []
@@ -62,8 +62,8 @@ module Alembic
           @routing = routing
         end
 
-        def label(value)
-          @label = value
+        def step_name(value)
+          @step_name = value
         end
 
         def awaits_input
@@ -100,7 +100,7 @@ module Alembic
         public
 
         def to_step_type
-          StepType.new(id: @id, label: @label, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, record_fields: @record_fields)
+          StepType.new(id: @id, step_name: @step_name, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, record_fields: @record_fields)
         end
       end
     end
