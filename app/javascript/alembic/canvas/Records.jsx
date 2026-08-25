@@ -1,11 +1,12 @@
 import React from "react"
 import Control from "./Control"
+import { amended } from "./rows"
 import { action } from "./styles"
 
 const Records = ({ holds, labels, rows, onChange, onSettle }) => {
   const kept = Array.isArray(rows) ? rows : []
   const amend = (index, name, next, settle) => {
-    const updated = kept.map((row, at) => (at === index ? { ...row, [name]: next } : row))
+    const updated = amended(kept, index, name, next)
     settle ? onSettle(updated) : onChange(updated)
   }
 

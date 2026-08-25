@@ -7,6 +7,7 @@ import ConnectorLayer from "./ConnectorLayer"
 import useFlow from "./useFlow"
 import useConnectors from "./useConnectors"
 import { CARD, GAP_X, GAP_Y } from "./styles"
+import { nextId } from "./ids"
 
 const page = { display: "flex", height: "100%", minHeight: 0, fontSize: 13, color: "#111827" }
 const scroll = { flex: 1, overflow: "auto", position: "relative", background: "#fafafa" }
@@ -33,14 +34,6 @@ const Canvas = ({ base, token, initial }) => {
 
   const rows = Math.max(0, ...flow.nodes.map((node) => node.row)) + 1
   const columns = Math.max(0, ...flow.nodes.map((node) => node.column)) + 1
-
-  const nextId = (type) => {
-    const taken = new Set(flow.nodes.map((node) => node.id))
-    let candidate = type
-    let suffix = 2
-    while (taken.has(candidate)) candidate = `${type}_${suffix++}`
-    return candidate
-  }
 
   const connectTo = (target) => {
     if (!armed) return
@@ -110,7 +103,7 @@ const Canvas = ({ base, token, initial }) => {
                       onPick={(entry) => {
                         const where = adding
                         setAdding(null)
-                        send("/steps", "POST", { id: nextId(entry.type), type: entry.type, from: where.from, to: where.to, on: where.on })
+                        send("/steps", "POST", { id: nextId(entry.type, flow.nodes.map((node) => node.id)), type: entry.type, from: where.from, to: where.to, on: where.on })
                       }} />
         )}
       </div>

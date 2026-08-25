@@ -1,6 +1,6 @@
 import { useLayoutEffect, useState } from "react"
 
-const anchor = (box, side, frame, surface) => {
+export const anchor = (box, side, frame, surface) => {
   const left = box.left - frame.left + surface.scrollLeft
   const top = box.top - frame.top + surface.scrollTop
 
@@ -10,14 +10,14 @@ const anchor = (box, side, frame, surface) => {
   return { x: left + box.width / 2, y: top + box.height }
 }
 
-const shy = (point, side) => {
+export const shy = (point, side) => {
   if (side === "top") return { x: point.x, y: point.y - 3 }
   if (side === "left") return { x: point.x - 3, y: point.y }
   if (side === "right") return { x: point.x + 3, y: point.y }
   return { x: point.x, y: point.y + 3 }
 }
 
-const drawn = (edge, a, b, lane, detour) => {
+export const drawn = (edge, a, b, lane, detour) => {
   const path = {
     straight: `M ${a.x} ${a.y} L ${b.x} ${b.y}`,
     turn: `M ${a.x} ${a.y} H ${b.x} V ${b.y}`,

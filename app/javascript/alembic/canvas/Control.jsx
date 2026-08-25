@@ -1,4 +1,5 @@
 import React from "react"
+import { toggled } from "./choices"
 
 export const control = {
   width: "100%", marginBottom: 12, padding: "6px 8px",
@@ -17,7 +18,7 @@ const Control = ({ type, value, choices, onChange, onSettle }) => {
 
   if (type === "multi_select") {
     const chosen = Array.isArray(value) ? value : []
-    const toggle = (choice) => onSettle(chosen.includes(choice) ? chosen.filter((c) => c !== choice) : [ ...chosen, choice ])
+    const toggle = (choice) => onSettle(toggled(chosen, choice))
     return <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
       {(choices || []).map((choice) => (
         <label key={choice} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
