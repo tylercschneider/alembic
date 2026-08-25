@@ -13,8 +13,7 @@ module Alembic
 
       def publish
         objections = Flow::Validator.new(document).violations
-        return render json: { error: objections.map { |v| "#{v.node}: #{v.problem}" }.join(", ") },
-          status: :unprocessable_entity if objections.any?
+        return render json: { error: refusal(objections) }, status: :unprocessable_entity if objections.any?
 
         diagnostic.publish
         head :no_content
@@ -121,6 +120,16 @@ module Alembic
 
       def configuration
         params.fetch(:config, {}).permit!.to_h
+      end
+
+      def refusal(objections)
+        "Cannot publish: #{objections.map { |problem| worded(problem) }.join(', ')}."
+      end
+
+      def worded(problem)
+        trouble = problem.problem.to_s.humanize(capitalize: false)
+
+        problem.node ? "“#{problem.node}” is #{trouble}" : trouble
       end
 
       def coerced(flow, id)

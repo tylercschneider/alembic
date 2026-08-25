@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import StepCard from "./StepCard"
 import Inspector from "./Inspector"
 import TypePicker from "./TypePicker"
@@ -24,6 +24,12 @@ const Canvas = ({ base, token, initial }) => {
   const [ showing, setShowing ] = useState(false)
   const cards = useRef({})
   const surface = useRef(null)
+
+  useEffect(() => {
+    const open = () => { setSelected(null); setShowing(true) }
+    document.addEventListener("alembic:open-flow", open)
+    return () => document.removeEventListener("alembic:open-flow", open)
+  }, [])
 
   const byId = useMemo(() => Object.fromEntries(flow.nodes.map((node) => [ node.id, node ])), [ flow.nodes ])
   const { links, extent } = useConnectors(flow, surface, cards, [ flow, selected, byId ])
@@ -59,15 +65,7 @@ const Canvas = ({ base, token, initial }) => {
             Choose the step “{armed[1] || "next"}” should lead to — <button onClick={() => setArmed(null)} style={{ border: "none", background: "none", color: "#1e40af", textDecoration: "underline", cursor: "pointer", fontSize: 12, padding: 0 }}>cancel</button>
           </div>
         )}
-        {showing && (
-          <Panel flow={flow.flow || {}} changes={flow.changes || []} problems={flow.violations} refusal={error}
-                 onClose={() => setShowing(false)}
-                 onCreate={() => { setSelected(null); send("/versions", "POST") }}
-                 onPublish={() => { setSelected(null); send("/publish", "POST") }} />
-        )}
-
         <Toolbar empty={flow.nodes.length === 0} undoable={flow.undoable} redoable={flow.redoable}
-                 onOpen={() => setShowing(true)}
                  onAdd={() => setAdding({ at: { x: 16, y: 52 } })}
                  onUndo={() => { setSelected(null); send("/undo", "POST") }}
                  onRedo={() => { setSelected(null); send("/redo", "POST") }} />
@@ -116,6 +114,13 @@ const Canvas = ({ base, token, initial }) => {
                       }} />
         )}
       </div>
+
+      {showing && !selectedNode && (
+        <Panel flow={flow.flow || {}} changes={flow.changes || []} problems={flow.violations} refusal={error}
+               onClose={() => setShowing(false)}
+               onCreate={() => send("/versions", "POST")}
+               onPublish={() => send("/publish", "POST")} />
+      )}
 
       {selectedNode && (
         <Inspector node={selectedNode}

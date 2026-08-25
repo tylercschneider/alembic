@@ -3,18 +3,14 @@ import { action } from "./styles"
 import { phrased, worded } from "./changes"
 import { standing } from "./flow"
 
-const sheet = {
-  position: "absolute", top: 56, left: 16, zIndex: 7, width: 300, maxHeight: "calc(100% - 80px)",
-  overflowY: "auto", padding: 16, background: "#fff", border: "1px solid #e5e7eb",
-  borderRadius: 8, boxShadow: "0 6px 20px rgba(0,0,0,.15)"
-}
+const sheet = { width: 280, padding: 20, overflowY: "auto", background: "#fff", borderLeft: "1px solid #e5e7eb" }
 const heading = { fontWeight: 600, marginBottom: 6, marginTop: 14 }
 const quiet = { color: "#6b7280", fontSize: 12 }
 const item = { fontSize: 12, marginBottom: 4, lineHeight: 1.4 }
 const link = { ...action, textAlign: "center", textDecoration: "none", color: "#111827" }
 
 const Panel = ({ flow, changes, problems, refusal, onCreate, onPublish, onClose }) => (
-  <div style={sheet} data-builder-panel>
+  <aside style={sheet} data-builder-panel>
     <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", gap: 8 }}>
       <h2 style={{ fontWeight: 600 }}>{flow.title}</h2>
       <button title="Close" onClick={onClose}
@@ -23,7 +19,7 @@ const Panel = ({ flow, changes, problems, refusal, onCreate, onPublish, onClose 
     <p style={quiet} data-versions>{standing(flow)}</p>
 
     <h2 style={heading}>Problems</h2>
-    {refusal && <p style={{ ...item, color: "#991b1b", fontWeight: 600 }} data-refusal>Publish refused — see below.</p>}
+    {refusal && <p style={{ ...item, color: "#991b1b", fontWeight: 600 }} data-refusal>{refusal}</p>}
     {problems.length === 0 && !refusal
       ? <p style={quiet}>Nothing wrong with this flow.</p>
       : problems.map((problem) => (
@@ -41,7 +37,7 @@ const Panel = ({ flow, changes, problems, refusal, onCreate, onPublish, onClose 
       <a style={link} href={flow.definition_url} data-definition>Definition</a>
       <a style={link} href={flow.details_url} data-details>Edit details</a>
     </div>
-  </div>
+  </aside>
 )
 
 export default Panel

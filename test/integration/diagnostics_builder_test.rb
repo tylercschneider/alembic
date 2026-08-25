@@ -87,5 +87,21 @@ module Alembic
 
       assert_equal alembic.edit_manage_diagnostic_definition_path(diagnostic), drawn["flow"]["definition_url"]
     end
+
+    test "the definition editor offers the way back to the flow" do
+      diagnostic = alembic_diagnostics(:business_scorecard)
+
+      get alembic.edit_manage_diagnostic_definition_path(diagnostic)
+
+      assert_select "a[href=?]", alembic.manage_diagnostic_path(diagnostic)
+    end
+
+    test "the details editor offers the way back to the flow" do
+      diagnostic = alembic_diagnostics(:business_scorecard)
+
+      get alembic.edit_manage_diagnostic_path(diagnostic)
+
+      assert_select "a[href=?]", alembic.manage_diagnostic_path(diagnostic)
+    end
   end
 end

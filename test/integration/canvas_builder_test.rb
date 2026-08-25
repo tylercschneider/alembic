@@ -299,5 +299,13 @@ module Alembic
 
       assert_equal alembic.edit_manage_diagnostic_path(diagnostic), response.parsed_body["flow"]["details_url"]
     end
+
+    test "a refused publish says it could not publish and why" do
+      post "#{canvas_path}/steps", params: { id: "adrift", type: "question" }
+
+      post "#{canvas_path}/publish"
+
+      assert_equal "Cannot publish: “adrift” is unreachable.", response.parsed_body["error"]
+    end
   end
 end

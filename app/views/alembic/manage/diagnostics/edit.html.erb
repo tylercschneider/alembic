@@ -1,4 +1,8 @@
 <%= ui_page(max_width: :lg) do %>
+  <p class="mb-4">
+    <%= link_to "← Back to the flow", alembic.manage_diagnostic_path(@diagnostic), class: "text-sm text-accent-600 hover:text-accent-700" %>
+  </p>
+
   <%= ui_form_page(title: "Edit details", back_url: alembic.manage_diagnostic_path(@diagnostic)) %>
 
   <%= ui_form(action: alembic.manage_diagnostic_path(@diagnostic), method: :patch) do %>
