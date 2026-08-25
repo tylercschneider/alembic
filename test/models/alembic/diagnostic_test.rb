@@ -135,5 +135,44 @@ module Alembic
         diagnostic.destroy!
       end
     end
+
+    test "records a summary template as a numbered version" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      diagnostic.record_summary("outputs" => [ { "id" => "score" } ])
+
+      assert_equal 1, diagnostic.summary_versions.sole.number
+    end
+
+    test "numbers a second summary template after the first" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_summary("outputs" => [])
+
+      diagnostic.record_summary("outputs" => [ { "id" => "score" } ])
+
+      assert_equal 2, diagnostic.summary_versions.maximum(:number)
+    end
+
+    test "reads back the summary template at its cursor" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_summary("outputs" => [ { "id" => "score" } ])
+
+      assert_equal({ "outputs" => [ { "id" => "score" } ] }, diagnostic.summary_document)
+    end
+
+    test "recording a summary leaves the flow version untouched" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_definition("slug" => "demo")
+
+      assert_no_changes -> { diagnostic.reload.definition_cursor } do
+        diagnostic.record_summary("outputs" => [])
+      end
+    end
+
+    test "reports no summary document when none has been recorded" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      assert_nil diagnostic.summary_document
+    end
   end
 end
