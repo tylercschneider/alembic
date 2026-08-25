@@ -65,11 +65,11 @@ module Alembic
     end
 
     def summarises?
-      summary_definition.present?
+      summary_document.present?
     end
 
     def summary_of(state)
-      Summary::Report.new(summary_definition).results(Summary::Run.new(state: state, steps: steps_by_id))
+      Summary::Report.new(summary_document).results(Summary::Run.new(state: state, steps: steps_by_id))
     end
 
     private

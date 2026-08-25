@@ -23,7 +23,7 @@ module Alembic
 
     def summarised
       flowed.tap do |diagnostic|
-        diagnostic.update!(summary_definition: {
+        diagnostic.record_summary(
           "outputs" => [
             { "id" => "score", "type" => "weighted_sum", "label" => "Your score" },
             { "id" => "band", "type" => "band", "label" => "Where that puts you", "of" => "score",
@@ -31,7 +31,7 @@ module Alembic
             { "id" => "areas", "type" => "grouped", "label" => "By area" },
             { "id" => "answered", "type" => "tally", "label" => "Steps answered" }
           ]
-        })
+        )
       end
     end
 
