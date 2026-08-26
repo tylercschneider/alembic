@@ -25,6 +25,19 @@ module Alembic
           .reject { |other| other == id || @document.reachable(without: other).include?(id) }
       end
 
+      def routing_values(id)
+        named = step(id)
+        return [] unless named && step_type(named)&.routes?
+
+        step_type(named).outputs.flat_map { |output| values_taken(output, named) }.map { |value| value["value"].to_s }
+      end
+
+      def values_taken(output, node)
+        return output.values_for(node) unless output.from
+
+        values_out_of(node.config[output.from.to_s])
+      end
+
       def values_out_of(id)
         named = step(id)
         return [] unless named

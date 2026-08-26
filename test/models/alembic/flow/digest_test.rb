@@ -7,7 +7,10 @@ module Alembic
         @registry ||= Registry.new.tap do |built|
           built.register(StepType.define(:ask) { setting :text, type: :string; awaits_input })
           built.register(StepType.define(:pick) { output :answer, values: ->(node) { Array(node.config["options"]) } })
-          built.register(StepType.define(:check) { route { |_node, state| state["a"] == "yes" } })
+          built.register(StepType.define(:check) do
+            output :result, type: :boolean, values: [ true, false ]
+            route { |_node, state| state["a"] == "yes" }
+          end)
           built.register(StepType.define(:branch) do
             setting :answer, type: :string
             requires { |node| [ node.config["answer"] ].compact }
@@ -111,6 +114,14 @@ module Alembic
                      "edges" => [] }
 
         assert_equal [ { "value" => "high" } ], digest(document).values_out_of("a")
+      end
+
+      test "reports the values a step directs on" do
+        assert_equal [ "true", "false" ], digest(deciding).routing_values("gate")
+      end
+
+      test "reports no directing values for a step that does not route" do
+        assert_empty digest(branching).routing_values("first")
       end
     end
   end
