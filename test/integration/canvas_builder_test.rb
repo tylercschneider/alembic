@@ -320,6 +320,14 @@ module Alembic
       assert_equal "What this asks about", response.parsed_body["flow"]["summary"]
     end
 
+    test "the canvas carries the flow's start label" do
+      diagnostic.update!(start_label: "Begin")
+
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal "Begin", response.parsed_body["flow"]["start_label"]
+    end
+
     test "a refused publish says it could not publish and why" do
       post "#{canvas_path}/steps", params: { id: "adrift", type: "question" }
 
