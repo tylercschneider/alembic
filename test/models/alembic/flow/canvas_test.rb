@@ -12,7 +12,7 @@ module Alembic
             setting(:options, type: :list) { setting :value, type: :string; setting :weight, type: :integer }
             names_by :text
           end)
-          built.register(StepType.define(:branch) { step_name "Branch"; setting :step, type: :previous_step; setting :answer, from: :step; outputs :yes, :no })
+          built.register(StepType.define(:branch) { step_name "Branch"; setting :step, type: :previous_step; setting :answer, from: :step; ports :yes, :no })
         end
       end
 

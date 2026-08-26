@@ -8,7 +8,7 @@ module Alembic
           built.register(StepType.define(:ask) { setting :text, type: :string; awaits_input })
           built.register(StepType.define(:branch) do
             setting :answer, type: :string
-            outputs :yes, :no
+            ports :yes, :no
             requires { |node| [ node.config["answer"] ].compact }
             route { |node, state| state[node.config["answer"]] == "yes" ? :yes : :no }
           end)

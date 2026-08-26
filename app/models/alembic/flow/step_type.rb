@@ -150,7 +150,7 @@ module Alembic
           @naming_field = field
         end
 
-        def outputs(*names)
+        def ports(*names)
           @ports = names
         end
 
