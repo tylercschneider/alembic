@@ -83,3 +83,12 @@ test("saves a field that was changed when it is left", () => {
 
   assert.deepEqual(saved, [ { title: "A better name" } ])
 })
+
+test("saves nothing when a field is left as it was stored", () => {
+  const saved = []
+  const tree = panel({ flow: { title: "A flow", slug: "a-flow" }, onSaveDetails: (given) => saved.push(given) })
+
+  shown(tree, "data-flow-title")[0].props.onBlur({ target: { value: "A flow" } })
+
+  assert.deepEqual(saved, [])
+})
