@@ -7,7 +7,7 @@ const waiting = {
 }
 
 const Placeholder = ({ node, onFill }) => (
-  <div data-placeholder={node.id} title={`Choose the step “${node.label}” should lead to`} onClick={onFill} style={waiting}>
+  <div ref={node.ref} data-placeholder={node.id} title={`Choose the step “${node.label}” should lead to`} onClick={onFill} style={waiting}>
     <div style={{ fontWeight: 600 }}>{node.label}</div>
     <div style={{ fontSize: 11 }}>leads nowhere yet — click to choose</div>
   </div>

@@ -83,7 +83,7 @@ module Alembic
     test "draws a connector for every edge" do
       canvas_for(flow)
 
-      assert_selector "svg path[marker-end]", count: 3
+      assert_selector "svg path[marker-end]", count: 4
     end
 
     test "labels a step by the field its type names it with" do
@@ -117,7 +117,7 @@ module Alembic
       find("[data-connector='first-gate']").hover
       find("[data-connector='first-gate']").click_button("×")
 
-      assert_selector "svg path[marker-end]", count: 2
+      assert_selector "svg path[marker-end]", count: 3
     end
 
     test "inserting a step on a connector puts it between the two" do
@@ -226,7 +226,7 @@ module Alembic
       find("[data-inspector]").click_button("×")
 
       assert_no_selector "[data-inspector]"
-      assert_selector "svg path[marker-end]", count: 3
+      assert_selector "svg path[marker-end]", count: 4
     end
 
     test "editing a field saves when the field is left" do
@@ -252,11 +252,11 @@ module Alembic
       canvas_for(flow)
       find("[data-connector='first-gate']").hover
       find("[data-connector='first-gate']").click_button("×")
-      assert_selector "svg path[marker-end]", count: 2
+      assert_selector "svg path[marker-end]", count: 3
 
       click_button("↶ Undo")
 
-      assert_selector "svg path[marker-end]", count: 3
+      assert_selector "svg path[marker-end]", count: 4
     end
 
     test "redoing puts back what was undone" do
@@ -264,11 +264,11 @@ module Alembic
       find("[data-connector='first-gate']").hover
       find("[data-connector='first-gate']").click_button("×")
       click_button("↶ Undo")
-      assert_selector "svg path[marker-end]", count: 3
+      assert_selector "svg path[marker-end]", count: 4
 
       click_button("↷ Redo")
 
-      assert_selector "svg path[marker-end]", count: 2
+      assert_selector "svg path[marker-end]", count: 3
     end
 
     test "the flow's panel stays out of the way until it is opened" do

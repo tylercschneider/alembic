@@ -21,7 +21,7 @@ const ConnectorLayer = ({ links, extent, dragging, onInsert, onRemove, onDrop })
                     fontSize: 11, color: "#6b7280", background: "#fafafa", padding: "0 3px" }}>{link.label}</div>
     ))}
 
-    {links.map((link) => (
+    {links.filter((link) => !link.placeholder).map((link) => (
       <Connector key={link.id} link={link} dragging={Boolean(dragging)}
                  onInsert={() => onInsert(link)} onRemove={() => onRemove(link)} onDrop={() => onDrop(link)} />
     ))}

@@ -124,7 +124,7 @@ const Canvas = ({ base, token, initial }) => {
           {attached.map((node) => (
             <div key={node.id} style={{ gridRow: node.row + 1, gridColumn: `${node.column + 1} / span 2`, zIndex: 2 }}>
               {node.placeholder && (
-                <Placeholder node={node}
+                <Placeholder node={{ ...node, ref: (element) => { cards.current[node.id] = element } }}
                              onFill={() => setAdding({ from: node.from, on: node.on, at: { x: 16, y: 52 } })} />
               )}
               {!node.placeholder && <StepCard
