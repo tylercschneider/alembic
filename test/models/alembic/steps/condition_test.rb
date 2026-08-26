@@ -25,22 +25,22 @@ module Alembic
         assert_equal :condition, registry.fetch("condition").id
       end
 
-      test "leaves by the yes port when the step gave the answer it tests for" do
+      test "decides true when the step gave the answer it tests for" do
         node = branch({ "step" => "budget", "answer" => "high" })
 
-        assert_equal :yes, Condition.step_type.route(node, { "budget" => "high" })
+        assert_equal true, Condition.step_type.route(node, { "budget" => "high" })
       end
 
-      test "leaves by the no port when the step gave a different answer" do
+      test "decides false when the step gave a different answer" do
         node = branch({ "step" => "budget", "answer" => "high" })
 
-        assert_equal :no, Condition.step_type.route(node, { "budget" => "low" })
+        assert_equal false, Condition.step_type.route(node, { "budget" => "low" })
       end
 
-      test "leaves by the no port when the step has not been answered yet" do
+      test "decides false when the step has not been answered yet" do
         node = branch({ "step" => "budget", "answer" => "high" })
 
-        assert_equal :no, Condition.step_type.route(node, {})
+        assert_equal false, Condition.step_type.route(node, {})
       end
 
       test "does not await external input" do
@@ -51,12 +51,42 @@ module Alembic
         assert_equal :previous_step, Condition.step_type.fields[:step]
       end
 
-      test "draws the answer it tests from the step it names" do
-        assert_equal :step, Condition.step_type.drawn_from[:answer]
+      test "draws the answer it tests from the output it names" do
+        assert_equal :output, Condition.step_type.drawn_from[:answer]
       end
 
-      test "declares two named output ports" do
-        assert_equal [ :yes, :no ], Condition.step_type.ports
+      test "declares the result it decides as an output" do
+        assert_equal [ :result ], Condition.step_type.outputs.map(&:name)
+      end
+
+      test "cannot run without the step, output, comparison and answer it tests" do
+        assert_equal [ :step, :output, :comparison, :answer ], Condition.step_type.required
+      end
+
+      test "offers a comparison deciding which way the test falls" do
+        assert_equal [ "is", "is not" ], Condition.step_type.choices[:comparison]
+      end
+
+      test "decides false when the step gave the answer it tests for and is not" do
+        node = branch({ "step" => "budget", "comparison" => "is not", "answer" => "high" })
+
+        assert_equal false, Condition.step_type.route(node, { "budget" => "high" })
+      end
+
+      test "decides true when the step gave a different answer and is not" do
+        node = branch({ "step" => "budget", "comparison" => "is not", "answer" => "high" })
+
+        assert_equal true, Condition.step_type.route(node, { "budget" => "low" })
+      end
+
+      test "names itself by the test it makes" do
+        node = branch({ "step" => "budget", "comparison" => "is not", "answer" => "high" })
+
+        assert_equal "budget is not high", Condition.step_type.name_of(node)
+      end
+
+      test "names which output of that step it reads" do
+        assert_equal :step, Condition.step_type.outputs_of[:output]
       end
     end
   end

@@ -19,15 +19,15 @@ module Alembic
         assert_equal :string, Question.step_type.fields[:category]
       end
 
-      test "offers its answers to a later step" do
+      test "offers its answers as the values of its answer output" do
         node = Flow::Node.new(id: "q", type: "question",
           config: { "answers" => [ { "value" => "high", "label" => "Over $1k" } ] })
 
-        assert_equal [ { "value" => "high", "label" => "Over $1k" } ], Question.step_type.offerings_for(node)
+        assert_equal [ { "value" => "high", "label" => "Over $1k" } ], Question.step_type.values_of(:answer, node)
       end
 
-      test "has a single unnamed output" do
-        assert_predicate Question.step_type, :single_output?
+      test "declares the answer it captures as an output" do
+        assert_equal [ :answer ], Question.step_type.outputs.map(&:name)
       end
 
       test "registers through the public step-type API" do

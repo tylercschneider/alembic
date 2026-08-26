@@ -5,20 +5,22 @@ module Alembic
         Declaration.new(id).tap { |decl| decl.instance_eval(&declaration) }.to_step_type
       end
 
-      attr_reader :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :ports, :naming_field, :drawn_from
+      attr_reader :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :naming_field, :naming, :drawn_from, :outputs_of, :outputs, :required
 
-      def initialize(id:, step_name:, fields:, ports:, awaits_input:, requirements:, offerings:, behaviour:, routing:, naming_field: nil, drawn_from: {}, record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
+      def initialize(id:, step_name:, fields:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil, naming: nil, drawn_from: {}, outputs_of: {}, outputs: [], required: [], record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
         @id = id
         @step_name = step_name
         @fields = fields
-        @ports = ports
         @awaits_input = awaits_input
         @requirements = requirements
-        @offerings = offerings
         @behaviour = behaviour
         @routing = routing
         @naming_field = naming_field
+        @naming = naming
         @drawn_from = drawn_from
+        @outputs_of = outputs_of
+        @outputs = outputs
+        @required = required
         @record_fields = record_fields
         @labels = labels
         @record_labels = record_labels
@@ -35,12 +37,20 @@ module Alembic
         @routing&.call(node, state)
       end
 
+      def name_of(node)
+        @naming&.call(node).presence || node.config[naming_field.to_s].presence
+      end
+
+      def routes?
+        @routing.present?
+      end
+
       def requirements_for(node)
         Array(@requirements&.call(node))
       end
 
-      def offerings_for(node)
-        Array(@offerings&.call(node))
+      def values_of(name, node)
+        outputs.find { |output| output.name.to_s == name.to_s }&.values_for(node).to_a
       end
 
       def awaits_input?
@@ -53,10 +63,6 @@ module Alembic
 
       def objections(config)
         config.to_h.flat_map { |name, value| objections_to(name.to_sym, value) }.compact
-      end
-
-      def single_output?
-        ports.empty?
       end
 
       private
@@ -111,8 +117,10 @@ module Alembic
           @choices = {}
           @limits = {}
           @checks = {}
-          @ports = []
           @drawn_from = {}
+          @outputs_of = {}
+          @declared_outputs = []
+          @required = []
           @awaits_input = false
         end
 
@@ -120,8 +128,8 @@ module Alembic
           @requirements = derivation
         end
 
-        def offers(&derivation)
-          @offerings = derivation
+        def output(name, type: :string, label: nil, values: nil, from: nil)
+          @declared_outputs += [ Output.new(name: name, type: type, label: label, values: values, from: from) ]
         end
 
         def process(&behaviour)
@@ -140,19 +148,19 @@ module Alembic
           @awaits_input = true
         end
 
-        def names_by(field)
+        def names_by(field = nil, &naming)
           @naming_field = field
+          @naming = naming
         end
 
-        def outputs(*names)
-          @ports = names
-        end
-
-        def setting(name, type: nil, from: nil, label: nil, options: nil, limit: nil, check: nil, &entries)
+        def setting(name, type: nil, from: nil, outputs_of: nil, label: nil, options: nil, limit: nil, check: nil, required: false, &entries)
           type ||= :from_step if from
+          type ||= :from_step if outputs_of
           raise UnknownFieldType, "#{type} is not one of #{FIELD_TYPES.join(', ')}" unless FIELD_TYPES.include?(type)
 
           @drawn_from[name] = from if from
+          @outputs_of[name] = outputs_of if outputs_of
+          @required += [ name ] if required
 
           declare_entries(name, entries) if type == :list
           declare_choices(name, type, options)
@@ -184,7 +192,7 @@ module Alembic
         public
 
         def to_step_type
-          StepType.new(id: @id, step_name: @step_name, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, offerings: @offerings, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, drawn_from: @drawn_from, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
+          StepType.new(id: @id, step_name: @step_name, fields: @fields, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, naming: @naming, drawn_from: @drawn_from, outputs_of: @outputs_of, outputs: @declared_outputs, required: @required, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
         end
       end
     end

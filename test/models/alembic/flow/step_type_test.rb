@@ -21,7 +21,6 @@ module Alembic
 
       test "carries the routing it declares separately from its behaviour" do
         step_type = StepType.define(:branch) do
-          outputs :yes, :no
           route { |node, state| state["ok"] ? :yes : :no }
         end
 
@@ -58,24 +57,6 @@ module Alembic
         assert_not_predicate step_type, :awaits_input?
       end
 
-      test "declares named output ports" do
-        step_type = StepType.define(:branch) { outputs :yes, :no }
-
-        assert_equal [ :yes, :no ], step_type.ports
-      end
-
-      test "has a single unnamed output when it declares no ports" do
-        step_type = StepType.define(:agent) { }
-
-        assert_predicate step_type, :single_output?
-      end
-
-      test "does not have a single unnamed output once it names ports" do
-        step_type = StepType.define(:branch) { outputs :yes, :no }
-
-        assert_not_predicate step_type, :single_output?
-      end
-
       test "declares a setting naming a step that comes before it" do
         step_type = StepType.define(:branch) { setting :step, type: :previous_step }
 
@@ -91,11 +72,59 @@ module Alembic
         assert_equal :step, step_type.drawn_from[:answer]
       end
 
-      test "declares what a later step may choose from it" do
-        step_type = StepType.define(:ask) { offers { |node| node.config["answers"] } }
+      test "declares a named output a later step may read" do
+        step_type = StepType.define(:ask) { output :answer, label: "Answer" }
+
+        assert_equal [ :answer ], step_type.outputs.map(&:name)
+      end
+
+      test "declares the values an output may take for a given step" do
+        step_type = StepType.define(:ask) { output :answer, values: ->(node) { node.config["answers"] } }
         node = Node.new(id: "q", type: "ask", config: { "answers" => [ { "value" => "high" } ] })
 
-        assert_equal [ { "value" => "high" } ], step_type.offerings_for(node)
+        assert_equal [ { "value" => "high" } ], step_type.values_of(:answer, node)
+      end
+
+      test "declares the type an output's value takes" do
+        step_type = StepType.define(:ask) { output :weight, type: :integer }
+
+        assert_equal :integer, step_type.outputs.first.type
+      end
+
+      test "reads a plain output value as a value labelled by itself" do
+        step_type = StepType.define(:check) { output :result, type: :boolean, values: [ true, false ] }
+        node = Node.new(id: "g", type: "check", config: {})
+
+        assert_equal [ { "value" => true, "label" => "true" }, { "value" => false, "label" => "false" } ],
+          step_type.values_of(:result, node)
+      end
+
+      test "declares an output drawing its values from the step a setting names" do
+        step_type = StepType.define(:switch) { setting :step, type: :previous_step; output :choice, from: :step }
+
+        assert_equal :step, step_type.outputs.first.from
+      end
+
+      test "declares a setting it cannot run without" do
+        step_type = StepType.define(:branch) { setting :step, type: :string, required: true }
+
+        assert_equal [ :step ], step_type.required
+      end
+
+      test "can name an instance from a block over its whole config" do
+        step_type = StepType.define(:branch) { names_by { |node| "#{node.config['step']} is #{node.config['answer']}" } }
+        node = Node.new(id: "b", type: "branch", config: { "step" => "budget", "answer" => "high" })
+
+        assert_equal "budget is high", step_type.name_of(node)
+      end
+
+      test "declares a setting choosing among the outputs of the step another names" do
+        step_type = StepType.define(:reads) do
+          setting :step, type: :previous_step
+          setting :output, outputs_of: :step
+        end
+
+        assert_equal :step, step_type.outputs_of[:output]
       end
 
       test "can declare which field names an instance of it" do

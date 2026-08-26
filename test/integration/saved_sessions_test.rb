@@ -6,12 +6,12 @@ module Alembic
       { "slug" => "saved", "entry" => "budget",
         "nodes" => [ { "id" => "budget", "type" => "question", "text" => "Budget?",
                        "options" => [ { "value" => "low", "label" => "Modest" }, { "value" => "high", "label" => "Generous" } ] },
-                     { "id" => "gate", "type" => "condition", "step" => "budget", "answer" => "high" },
+                     { "id" => "gate", "type" => "condition", "step" => "budget", "output" => "answer", "comparison" => "is", "answer" => "high" },
                      { "id" => "posh", "type" => "question", "text" => "Premium tier?", "options" => [ "gold" ] },
                      { "id" => "plain", "type" => "question", "text" => "Basic tier?", "options" => [ "bronze" ] } ],
         "edges" => [ { "from" => "budget", "to" => "gate" },
-                     { "from" => "gate", "to" => "posh", "on" => "yes" },
-                     { "from" => "gate", "to" => "plain", "on" => "no" } ] }
+                     { "from" => "gate", "to" => "posh", "on" => true },
+                     { "from" => "gate", "to" => "plain", "on" => false } ] }
     end
 
     def saved

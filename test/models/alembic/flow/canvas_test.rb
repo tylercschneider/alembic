@@ -7,12 +7,25 @@ module Alembic
         Registry.new.tap do |built|
           built.register(StepType.define(:ask) do
             step_name "Ask"
-            offers { |node| Array(node.config["options"]) }
+            output :answer, values: ->(node) { Array(node.config["options"]) }
             setting :text, type: :string
             setting(:options, type: :list) { setting :value, type: :string; setting :weight, type: :integer }
             names_by :text
           end)
-          built.register(StepType.define(:branch) { step_name "Branch"; setting :step, type: :previous_step; setting :answer, from: :step; outputs :yes, :no })
+          built.register(StepType.define(:switch) do
+            step_name "Switch"
+            setting :step, type: :previous_step
+            output :choice, from: :step
+            route { |node, state| state[node.config["step"]] }
+          end)
+          built.register(StepType.define(:branch) do
+            step_name "Branch"
+            setting :step, type: :previous_step
+            setting :output, outputs_of: :step
+            setting :answer, from: :output
+            output :result, type: :boolean, values: [ true, false ]
+            route { |_node, _state| true }
+          end)
         end
       end
 
@@ -26,10 +39,17 @@ module Alembic
           "edges" => [ { "from" => "a", "to" => "b" } ] }
       end
 
+      def switching
+        { "entry" => "a",
+          "nodes" => [ { "id" => "a", "type" => "ask", "options" => [ { "value" => "high" }, { "value" => "low" } ] },
+                       { "id" => "s", "type" => "switch", "step" => "a" } ],
+          "edges" => [ { "from" => "a", "to" => "s" } ] }
+      end
+
       def picking
         { "entry" => "a",
           "nodes" => [ { "id" => "a", "type" => "ask", "text" => "Budget?", "options" => [ { "value" => "high" } ] },
-                       { "id" => "b", "type" => "branch", "step" => "a" } ],
+                       { "id" => "b", "type" => "branch", "step" => "a", "output" => "answer" } ],
           "edges" => [ { "from" => "a", "to" => "b" } ] }
       end
 
@@ -52,7 +72,7 @@ module Alembic
       end
 
       test "carries every registered step type as a palette entry" do
-        assert_equal [ "Ask", "Branch" ], canvas(flow)["palette"].map { |entry| entry["label"] }
+        assert_equal [ "Ask", "Switch", "Branch" ], canvas(flow)["palette"].map { |entry| entry["label"] }
       end
 
       test "carries what a palette entry's record field holds" do
@@ -65,8 +85,8 @@ module Alembic
         assert_equal("string", canvas(flow)["palette"].first["fields"]["text"])
       end
 
-      test "carries a palette entry's output ports" do
-        assert_equal [ "yes", "no" ], canvas(flow)["palette"].last["ports"]
+      test "gives a routing node a connection point for each value its output takes" do
+        assert_equal [ "true", "false" ], canvas(flow)["nodes"].last["ports"]
       end
 
       def routed(document, from, to)
@@ -127,15 +147,23 @@ module Alembic
       test "carries the violations the document has" do
         stranded = flow.merge("nodes" => flow["nodes"] + [ { "id" => "loose", "type" => "ask" } ])
 
-        assert_equal [ "loose" ], canvas(stranded)["violations"].map { |violation| violation["node"] }
+        assert_includes canvas(stranded)["violations"].map { |violation| violation["node"] }, "loose"
       end
 
       test "offers a step-naming setting the steps that come before that node" do
         assert_equal [ { "value" => "a", "label" => "Budget?" } ], canvas(flow)["nodes"].last["choices"]["step"]
       end
 
-      test "offers a drawing setting what the step it names offers" do
+      test "offers a drawing setting the values the step it names outputs" do
         assert_equal [ { "value" => "high" } ], canvas(picking)["nodes"].last["choices"]["answer"]
+      end
+
+      test "gives a switching node a connection point for each value the step it names outputs" do
+        assert_equal [ "high", "low" ], canvas(switching)["nodes"].last["ports"]
+      end
+
+      test "offers an output-naming setting the outputs of the step it reads" do
+        assert_equal [ { "value" => "answer", "label" => "Answer" } ], canvas(picking)["nodes"].last["choices"]["output"]
       end
     end
   end

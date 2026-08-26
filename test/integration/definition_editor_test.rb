@@ -20,14 +20,14 @@ module Alembic
         "slug" => "flow", "entry" => "path",
         "nodes" => [
           { "id" => "path", "type" => "question", "text" => "Which path?", "options" => [ "left", "right" ] },
-          { "id" => "gate", "type" => "condition", "step" => "path", "answer" => "right" },
+          { "id" => "gate", "type" => "condition", "step" => "path", "output" => "answer", "comparison" => "is", "answer" => "right" },
           { "id" => "left_q", "type" => "question", "text" => "Left question", "options" => [ "x" ] },
           { "id" => "right_q", "type" => "question", "text" => "Right question", "options" => [ "y" ] }
         ],
         "edges" => [
           { "from" => "path", "to" => "gate" },
-          { "from" => "gate", "to" => "right_q", "on" => "yes" },
-          { "from" => "gate", "to" => "left_q", "on" => "no" }
+          { "from" => "gate", "to" => "right_q", "on" => true },
+          { "from" => "gate", "to" => "left_q", "on" => false }
         ]
       }.to_json }
 

@@ -6,13 +6,26 @@ module Alembic
       def registry
         @registry ||= Registry.new.tap do |built|
           built.register(StepType.define(:ask) { setting :text, type: :string; awaits_input })
+          built.register(StepType.define(:pick) { output :answer, values: ->(node) { Array(node.config["options"]) } })
+          built.register(StepType.define(:check) do
+            output :result, type: :boolean, values: [ true, false ]
+            route { |_node, state| state["a"] == "yes" }
+          end)
           built.register(StepType.define(:branch) do
             setting :answer, type: :string
-            outputs :yes, :no
             requires { |node| [ node.config["answer"] ].compact }
             route { |node, state| state[node.config["answer"]] == "yes" ? :yes : :no }
           end)
         end
+      end
+
+      def deciding
+        { "entry" => "gate",
+          "nodes" => [ { "id" => "gate", "type" => "check" },
+                       { "id" => "yes_step", "type" => "ask" },
+                       { "id" => "no_step", "type" => "ask" } ],
+          "edges" => [ { "from" => "gate", "to" => "yes_step", "on" => true },
+                       { "from" => "gate", "to" => "no_step", "on" => false } ] }
       end
 
       def digest(document)
@@ -89,6 +102,40 @@ module Alembic
 
       test "reports nothing before a step the entry cannot reach" do
         assert_empty digest(branching.merge("edges" => [])).preceding("last")
+      end
+
+      test "takes the edge marked false when a step routes to false" do
+        assert_equal "no_step", digest(deciding).next_step({ "a" => "no" }).id
+      end
+
+      test "reports the values a step offers a later one" do
+        document = { "entry" => "a",
+                     "nodes" => [ { "id" => "a", "type" => "pick", "options" => [ { "value" => "high" } ] } ],
+                     "edges" => [] }
+
+        assert_equal [ { "value" => "high" } ], digest(document).values_out_of("a")
+      end
+
+      test "reports the values a step directs on" do
+        assert_equal [ "true", "false" ], digest(deciding).routing_values("gate")
+      end
+
+      test "reports no directing values for a step that does not route" do
+        assert_empty digest(branching).routing_values("first")
+      end
+
+      test "reports the outputs a step names for a later one to read" do
+        document = { "entry" => "a", "nodes" => [ { "id" => "a", "type" => "pick" } ], "edges" => [] }
+
+        assert_equal [ { "value" => "answer", "label" => "Answer" } ], digest(document).outputs_of("a")
+      end
+
+      test "reports the values one named output of a step can take" do
+        document = { "entry" => "a",
+                     "nodes" => [ { "id" => "a", "type" => "pick", "options" => [ { "value" => "high" } ] } ],
+                     "edges" => [] }
+
+        assert_equal [ { "value" => "high" } ], digest(document).values_of("a", "answer")
       end
     end
   end

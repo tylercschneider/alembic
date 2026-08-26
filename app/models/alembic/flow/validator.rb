@@ -7,7 +7,7 @@ module Alembic
       end
 
       def violations
-        structural_violations + unmet_requirements
+        structural_violations + unmet_requirements + missing_settings + missing_values + unrouted_values
       end
 
       def structural_violations
@@ -46,6 +46,60 @@ module Alembic
           requirements_for(node).reject { |required| precedes_every_path?(required, node.id) }
             .map { |required| Violation.new(node: node.id, problem: :unmet_requirement, detail: required) }
         end
+      end
+
+      def unrouted_values
+        @document.nodes.flat_map { |node| unrouted_values_in(node) }
+      end
+
+      def unrouted_values_in(node)
+        wired = @document.edges_from(node.id).map { |edge| edge.on.to_s }
+
+        digest.routing_values(node.id).reject { |value| wired.include?(value) }
+          .map { |value| Violation.new(node: node.id, problem: :unrouted_value, detail: value) }
+      end
+
+      def digest
+        Digest.new(@document, registry: @registry)
+      end
+
+      def missing_values
+        @document.nodes.flat_map { |node| missing_values_in(node) }
+      end
+
+      def missing_values_in(node)
+        drawn_of(node).filter_map do |name, source|
+          chosen = node.config[name.to_s]
+          next if chosen.blank? || node.config[source.to_s].blank?
+          next if offered_to(node, source).include?(chosen.to_s)
+
+          Violation.new(node: node.id, problem: :missing_value, detail: chosen.to_s)
+        end
+      end
+
+      def offered_to(node, source)
+        naming = @registry.fetch(node.type).outputs_of[source]
+
+        digest.values_of(node.config[naming.to_s], node.config[source.to_s]).map { |value| value["value"].to_s }
+      end
+
+      def drawn_of(node)
+        return {} unless @registry.registered?(node.type)
+
+        @registry.fetch(node.type).drawn_from
+      end
+
+      def missing_settings
+        @document.nodes.flat_map do |node|
+          required_of(node).reject { |name| node.config[name.to_s].present? }
+            .map { |name| Violation.new(node: node.id, problem: :missing_setting, detail: name.to_s) }
+        end
+      end
+
+      def required_of(node)
+        return [] unless @registry.registered?(node.type)
+
+        @registry.fetch(node.type).required
       end
 
       def requirements_for(node)

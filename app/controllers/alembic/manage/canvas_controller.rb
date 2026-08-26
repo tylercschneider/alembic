@@ -7,6 +7,9 @@ module Alembic
       end
 
       def create
+        objections = Flow::Validator.new(document).violations
+        return render json: { error: refusal(objections) }, status: :unprocessable_entity if objections.any?
+
         stood_at = diagnostic.current_definition_version&.number
         diagnostic.create_version
 
@@ -108,15 +111,20 @@ module Alembic
       end
 
       def first_port
-        port_for_type(params[:type])
+        first_value_of(Flow::Node.new(id: nil, type: params[:type], config: {}))
       end
 
       def port_for(id)
-        port_for_type(document.node(id)&.type)
+        first_value_of(document.node(id))
       end
 
-      def port_for_type(type)
-        Flow.registry.fetch(type).ports.first&.to_s if Flow.registry.registered?(type)
+      def first_value_of(node)
+        return unless node && Flow.registry.registered?(node.type)
+
+        step_type = Flow.registry.fetch(node.type)
+        return unless step_type.routes?
+
+        step_type.outputs.flat_map { |output| output.values_for(node) }.first&.fetch("value", nil)&.to_s
       end
 
       def placed_on_edge?

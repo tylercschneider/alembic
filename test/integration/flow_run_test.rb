@@ -9,14 +9,14 @@ module Alembic
           "nodes" => [ { "id" => "budget", "type" => "question", "text" => "What is your budget?", "tag" => "money",
                          "options" => [ { "value" => "low", "label" => "Modest", "weight" => 1 },
                                         { "value" => "high", "label" => "Generous", "weight" => 5 } ] },
-                       { "id" => "gate", "type" => "condition", "step" => "budget", "answer" => "high" },
+                       { "id" => "gate", "type" => "condition", "step" => "budget", "output" => "answer", "comparison" => "is", "answer" => "high" },
                        { "id" => "posh", "type" => "question", "text" => "Which premium tier?",
                          "options" => [ { "value" => "a", "weight" => 3 } ] },
                        { "id" => "plain", "type" => "question", "text" => "Which basic tier?",
                          "options" => [ { "value" => "b", "weight" => 1 } ] } ],
           "edges" => [ { "from" => "budget", "to" => "gate" },
-                       { "from" => "gate", "to" => "posh", "on" => "yes" },
-                       { "from" => "gate", "to" => "plain", "on" => "no" } ]
+                       { "from" => "gate", "to" => "posh", "on" => true },
+                       { "from" => "gate", "to" => "plain", "on" => false } ]
         )
         diagnostic.publish
       end

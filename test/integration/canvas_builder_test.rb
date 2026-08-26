@@ -194,7 +194,7 @@ module Alembic
     end
 
     test "creating a version records the document being edited" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b" }
 
       assert_difference -> { diagnostic.definition_versions.count } do
         post "#{canvas_path}/versions"
@@ -264,7 +264,7 @@ module Alembic
     end
 
     test "the change list empties when a version is created" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b" }
       post "#{canvas_path}/versions"
 
       get canvas_path, headers: { "Accept" => "application/json" }
@@ -349,7 +349,7 @@ module Alembic
     end
 
     test "creating a version says which one it created" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b" }
 
       post "#{canvas_path}/versions"
 
@@ -380,7 +380,7 @@ module Alembic
     end
 
     test "the versions page lists a flow's versions newest first" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b" }
       post "#{canvas_path}/versions"
 
       get alembic.manage_diagnostic_versions_path(diagnostic)
@@ -397,7 +397,7 @@ module Alembic
     end
 
     test "the versions page shows what a version captured" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b" }
       post "#{canvas_path}/versions"
 
       get alembic.manage_diagnostic_versions_path(diagnostic)
@@ -412,7 +412,7 @@ module Alembic
     end
 
     test "the history offers a way back to an earlier version" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b" }
       post "#{canvas_path}/versions"
 
       get alembic.manage_diagnostic_versions_path(diagnostic)
@@ -421,13 +421,21 @@ module Alembic
     end
 
     test "returning from the history makes that version the live document" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b" }
       post "#{canvas_path}/versions"
       first = diagnostic.definition_versions.order(:number).first
 
       post alembic.return_manage_diagnostic_version_path(diagnostic, first)
 
       assert_equal first.definition, diagnostic.reload.document
+    end
+
+    test "cutting a version is refused while the flow has a problem" do
+      post "#{canvas_path}/steps", params: { id: "adrift", type: "question" }
+
+      post "#{canvas_path}/versions"
+
+      assert_response :unprocessable_entity
     end
   end
 end

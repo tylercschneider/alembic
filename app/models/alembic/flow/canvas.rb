@@ -66,7 +66,7 @@ module Alembic
             "choices" => step_type.choices.transform_keys(&:to_s),
             "records" => holdings_of(step_type),
             "record_labels" => step_type.record_labels.to_h { |name, held| [ name.to_s, held.transform_keys(&:to_s) ] },
-            "ports" => step_type.ports.map(&:to_s), "awaits_input" => step_type.awaits_input? }
+            "awaits_input" => step_type.awaits_input? }
         end
       end
 
@@ -87,19 +87,27 @@ module Alembic
       end
 
       def choices_for(node)
-        naming_steps(node).index_with { earlier_than(node) }.merge(drawn_by(node))
+        naming_steps(node).index_with { earlier_than(node) }.merge(drawn_by(node)).merge(named_outputs_by(node))
+      end
+
+      def named_outputs_by(node)
+        step_type_for(node)&.outputs_of.to_h.to_h do |name, source|
+          [ name.to_s, digest.outputs_of(node.config[source.to_s]) ]
+        end
       end
 
       def drawn_by(node)
         step_type_for(node)&.drawn_from.to_h.to_h do |name, source|
-          [ name.to_s, offerings_of(node.config[source.to_s]) ]
+          [ name.to_s, digest.values_of(step_named_by(node, source), node.config[source.to_s]) ]
         end
       end
 
-      def offerings_of(id)
-        named = @document.node(id)
+      def step_named_by(node, source)
+        node.config[step_type_for(node).outputs_of[source].to_s]
+      end
 
-        named ? step_type_for(named)&.offerings_for(named).to_a : []
+      def digest
+        Digest.new(@document, registry: @registry)
       end
 
       def naming_steps(node)
@@ -107,13 +115,13 @@ module Alembic
       end
 
       def earlier_than(node)
-        Digest.new(@document, registry: @registry).preceding(node.id).map do |id|
+        digest.preceding(node.id).map do |id|
           { "value" => id, "label" => label_for(@document.node(id)) }
         end
       end
 
       def ports_for(node)
-        step_type_for(node)&.ports.to_a.map(&:to_s)
+        digest.routing_values(node.id)
       end
 
       def step_type_for(node)

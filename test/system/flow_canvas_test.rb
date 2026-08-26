@@ -8,10 +8,25 @@ module Alembic
           "slug" => "canvas-system", "entry" => "start",
           "nodes" => [ { "id" => "start", "type" => "question", "question" => "First",
                          "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
-                       { "id" => "gate", "type" => "condition", "step" => "start", "answer" => "yes" },
+                       { "id" => "gate", "type" => "condition", "step" => "start", "output" => "answer", "comparison" => "is", "answer" => "yes" },
                        { "id" => "yes_step", "type" => "question", "question" => "Yes path" } ],
           "edges" => [ { "from" => "start", "to" => "gate" },
-                       { "from" => "gate", "to" => "yes_step", "on" => "yes" } ]
+                       { "from" => "gate", "to" => "yes_step", "on" => true } ]
+        )
+      end
+    end
+
+    def wired
+      @wired ||= Diagnostic.create!(slug: "canvas-wired").tap do |diagnostic|
+        diagnostic.record_definition(
+          "slug" => "canvas-wired", "entry" => "start",
+          "nodes" => [ { "id" => "start", "type" => "question", "question" => "First",
+                         "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
+                       { "id" => "gate", "type" => "condition", "step" => "start", "output" => "answer", "comparison" => "is", "answer" => "yes" },
+                       { "id" => "yes_step", "type" => "question", "question" => "Yes path" } ],
+          "edges" => [ { "from" => "start", "to" => "gate" },
+                       { "from" => "gate", "to" => "yes_step", "on" => true },
+                       { "from" => "gate", "to" => "yes_step", "on" => false } ]
         )
       end
     end
@@ -85,7 +100,7 @@ module Alembic
     test "adding a step from an unconnected branch wires it to that branch" do
       canvas_for(flow)
 
-      step_card("gate").click_button("no")
+      step_card("gate").click_button("false")
       add_step_named("Question")
 
       assert_selector "[data-step]", count: 4
@@ -135,6 +150,12 @@ module Alembic
       step_card("gate").click
 
       assert_selector "[data-inspector] select option", text: "Yes please"
+    end
+
+    test "a connector says which result it leaves on" do
+      canvas_for(flow)
+
+      assert_selector "[data-connector-label]", text: "true"
     end
 
     test "closing the panel leaves the flow drawn" do
@@ -263,7 +284,7 @@ module Alembic
     end
 
     test "creating a version empties the change list" do
-      canvas_for(flow)
+      canvas_for(wired)
       step_card("start").click
       fill_in_first_field_with("Changed by hand")
       find("[data-open-panel]").click
@@ -282,7 +303,7 @@ module Alembic
     end
 
     test "the flow's panel says when there was nothing to capture" do
-      canvas_for(flow)
+      canvas_for(wired)
       find("[data-open-panel]").click
 
       find("[data-create-version]").click
@@ -291,7 +312,7 @@ module Alembic
     end
 
     test "the flow's panel says which version it created" do
-      canvas_for(flow)
+      canvas_for(wired)
       step_card("start").click
       fill_in_first_field_with("Changed by hand")
       find("[data-open-panel]").click

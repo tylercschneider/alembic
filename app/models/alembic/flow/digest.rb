@@ -25,6 +25,40 @@ module Alembic
           .reject { |other| other == id || @document.reachable(without: other).include?(id) }
       end
 
+      def routing_values(id)
+        named = step(id)
+        return [] unless named && step_type(named)&.routes?
+
+        step_type(named).outputs.flat_map { |output| values_taken(output, named) }.map { |value| value["value"].to_s }
+      end
+
+      def values_taken(output, node)
+        return output.values_for(node) unless output.from
+
+        values_out_of(node.config[output.from.to_s])
+      end
+
+      def values_of(id, output_name)
+        named = step(id)
+        return [] unless named && output_name.present?
+
+        step_type(named)&.values_of(output_name, named).to_a
+      end
+
+      def outputs_of(id)
+        named = step(id)
+        return [] unless named
+
+        step_type(named)&.outputs.to_a.map { |output| { "value" => output.name.to_s, "label" => output.label } }
+      end
+
+      def values_out_of(id)
+        named = step(id)
+        return [] unless named
+
+        step_type(named)&.outputs.to_a.flat_map { |output| output.values_for(named) }
+      end
+
       def requirements(id)
         node = step(id)
         step_type(node)&.requirements_for(node).to_a
@@ -63,7 +97,7 @@ module Alembic
       def successor(node, state)
         leaving = @document.edges_from(node.id)
         port = step_type(node)&.route(node, state)
-        taken = port ? leaving.find { |edge| edge.on.to_s == port.to_s } : leaving.first
+        taken = port.nil? ? leaving.first : leaving.find { |edge| edge.on.to_s == port.to_s }
 
         taken && @document.node(taken.to)
       end
