@@ -1,13 +1,16 @@
 module Alembic
   module Flow
     class Validator
-      def initialize(document, registry: Flow.registry)
+      OPTIONAL = { unrouted_value: :unrouted_values, unfollowed_path: :unfollowed_paths }.freeze
+
+      def initialize(document, registry: Flow.registry, checks: Flow.checks)
         @document = document
         @registry = registry
+        @checks = checks
       end
 
       def violations
-        structural_violations + unmet_requirements + missing_settings + missing_values + unrouted_values + unfollowed_paths
+        structural_violations + unmet_requirements + missing_settings + missing_values + asked_for
       end
 
       def structural_violations
@@ -19,6 +22,10 @@ module Alembic
       end
 
       private
+
+      def asked_for
+        @checks.flat_map { |name| send(OPTIONAL.fetch(name)) }
+      end
 
       def missing_edge_targets
         @document.edges.reject { |edge| known?(edge.to) }
