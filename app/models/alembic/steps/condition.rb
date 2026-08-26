@@ -15,7 +15,7 @@ module Alembic
       requires { |node| [ node.config["step"] ].compact }
 
       def route(node, state)
-        state[node.config["step"]] == node.config["answer"] ? :yes : :no
+        state[node.config["step"]] == node.config["answer"]
       end
     end
   end

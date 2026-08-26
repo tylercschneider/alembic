@@ -15,8 +15,8 @@ module Alembic
                        { "id" => "plain", "type" => "question", "text" => "Which basic tier?",
                          "options" => [ { "value" => "b", "weight" => 1 } ] } ],
           "edges" => [ { "from" => "budget", "to" => "gate" },
-                       { "from" => "gate", "to" => "posh", "on" => "yes" },
-                       { "from" => "gate", "to" => "plain", "on" => "no" } ]
+                       { "from" => "gate", "to" => "posh", "on" => true },
+                       { "from" => "gate", "to" => "plain", "on" => false } ]
         )
         diagnostic.publish
       end

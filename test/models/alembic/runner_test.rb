@@ -9,8 +9,8 @@ module Alembic
                      { "id" => "posh", "type" => "question", "text" => "Which premium tier?" },
                      { "id" => "plain", "type" => "question", "text" => "Which basic tier?" } ],
         "edges" => [ { "from" => "first", "to" => "gate" },
-                     { "from" => "gate", "to" => "posh", "on" => "yes" },
-                     { "from" => "gate", "to" => "plain", "on" => "no" } ] }
+                     { "from" => "gate", "to" => "posh", "on" => true },
+                     { "from" => "gate", "to" => "plain", "on" => false } ] }
     end
 
     def runner(definition = branching)

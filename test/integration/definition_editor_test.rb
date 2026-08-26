@@ -26,8 +26,8 @@ module Alembic
         ],
         "edges" => [
           { "from" => "path", "to" => "gate" },
-          { "from" => "gate", "to" => "right_q", "on" => "yes" },
-          { "from" => "gate", "to" => "left_q", "on" => "no" }
+          { "from" => "gate", "to" => "right_q", "on" => true },
+          { "from" => "gate", "to" => "left_q", "on" => false }
         ]
       }.to_json }
 

@@ -25,22 +25,22 @@ module Alembic
         assert_equal :condition, registry.fetch("condition").id
       end
 
-      test "leaves by the yes port when the step gave the answer it tests for" do
+      test "decides true when the step gave the answer it tests for" do
         node = branch({ "step" => "budget", "answer" => "high" })
 
-        assert_equal :yes, Condition.step_type.route(node, { "budget" => "high" })
+        assert_equal true, Condition.step_type.route(node, { "budget" => "high" })
       end
 
-      test "leaves by the no port when the step gave a different answer" do
+      test "decides false when the step gave a different answer" do
         node = branch({ "step" => "budget", "answer" => "high" })
 
-        assert_equal :no, Condition.step_type.route(node, { "budget" => "low" })
+        assert_equal false, Condition.step_type.route(node, { "budget" => "low" })
       end
 
-      test "leaves by the no port when the step has not been answered yet" do
+      test "decides false when the step has not been answered yet" do
         node = branch({ "step" => "budget", "answer" => "high" })
 
-        assert_equal :no, Condition.step_type.route(node, {})
+        assert_equal false, Condition.step_type.route(node, {})
       end
 
       test "does not await external input" do

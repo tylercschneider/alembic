@@ -10,8 +10,8 @@ module Alembic
                      { "id" => "posh", "type" => "question", "text" => "Premium tier?", "options" => [ "gold" ] },
                      { "id" => "plain", "type" => "question", "text" => "Basic tier?", "options" => [ "bronze" ] } ],
         "edges" => [ { "from" => "budget", "to" => "gate" },
-                     { "from" => "gate", "to" => "posh", "on" => "yes" },
-                     { "from" => "gate", "to" => "plain", "on" => "no" } ] }
+                     { "from" => "gate", "to" => "posh", "on" => true },
+                     { "from" => "gate", "to" => "plain", "on" => false } ] }
     end
 
     def saved
