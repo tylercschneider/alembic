@@ -388,7 +388,67 @@ Each result is a `Summary::Result` — `id`, `label`, `value`. `label` falls bac
 to the output type's own label when the document doesn't override it. An
 unknown type raises `Summary::UnknownOutputType`.
 
-## 7. What ships built in
+## 7. Deciding who may see a flow
+
+A flow is closed until the host says otherwise. Publishing a version decides
+*what* a visitor would run; it does not decide *whether* anyone may run it.
+
+Name a method on your base controller and the engine asks it before every
+visitor request:
+
+```ruby
+# config/initializers/alembic.rb
+Alembic.base_controller = "ApplicationController"
+Alembic.visitor_authorization_method = :alembic_visitor_permitted?
+```
+
+```ruby
+class ApplicationController < ActionController::Base
+  def alembic_visitor_permitted?(diagnostic)
+    current_user&.entitled_to?(diagnostic.slug)
+  end
+end
+```
+
+The engine only wants the yes or no. Whatever decides it — a passphrase, an
+account entitlement, a purchase record — stays yours.
+
+**Configure nothing and every flow is closed.** There is no open default and no
+setting that opens everything at once.
+
+### The two refusals
+
+The gate raises one of two errors, so you can tell the cases apart:
+
+| Error | Meaning |
+|---|---|
+| `Alembic::NotPublished` | The flow has no published version. |
+| `Alembic::NotPermitted` | It is published, but not for this visitor. |
+
+Rescue nothing and both render a plain `404`. That is deliberate: a closed flow
+is indistinguishable from one that does not exist, so a slug cannot be probed
+to learn what is there. Rescue either one to render something of your own:
+
+```ruby
+class ApplicationController < ActionController::Base
+  rescue_from Alembic::NotPermitted, with: :offer_the_passphrase
+end
+```
+
+### Previewing what visitors cannot reach
+
+An admin reaches a preview through the builder, never through the visitor
+route:
+
+```
+/alembic/manage/diagnostics/:id/preview
+```
+
+It runs the published flow the way a visitor would and is authenticated as the
+rest of the builder is, so the visitor gate has no bypass in it. A flow with
+nothing published has nothing to preview.
+
+## 8. What ships built in
 
 Two step types, both registered by the engine:
 
@@ -413,7 +473,7 @@ Six output types:
 None of these are privileged — they register through the same public call a
 host would use, and a host can add its own or ignore them entirely.
 
-## 8. Known gaps
+## 9. Known gaps
 
 Documented so nobody builds against something that isn't there:
 
@@ -427,7 +487,7 @@ Documented so nobody builds against something that isn't there:
   this interface, not part of it — a host orchestrating agents should use
   `Digest` directly.
 
-## 9. A non-diagnostic example
+## 10. A non-diagnostic example
 
 Nothing above is question-shaped. The same engine orchestrating agent work:
 
