@@ -5,9 +5,9 @@ module Alembic
         Declaration.new(id).tap { |decl| decl.instance_eval(&declaration) }.to_step_type
       end
 
-      attr_reader :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :ports, :naming_field, :drawn_from
+      attr_reader :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :ports, :naming_field, :drawn_from, :outputs
 
-      def initialize(id:, step_name:, fields:, ports:, awaits_input:, requirements:, offerings:, behaviour:, routing:, naming_field: nil, drawn_from: {}, record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
+      def initialize(id:, step_name:, fields:, ports:, awaits_input:, requirements:, offerings:, behaviour:, routing:, naming_field: nil, drawn_from: {}, outputs: [], record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
         @id = id
         @step_name = step_name
         @fields = fields
@@ -19,6 +19,7 @@ module Alembic
         @routing = routing
         @naming_field = naming_field
         @drawn_from = drawn_from
+        @outputs = outputs
         @record_fields = record_fields
         @labels = labels
         @record_labels = record_labels
@@ -113,11 +114,16 @@ module Alembic
           @checks = {}
           @ports = []
           @drawn_from = {}
+          @declared_outputs = []
           @awaits_input = false
         end
 
         def requires(&derivation)
           @requirements = derivation
+        end
+
+        def output(name, label: nil)
+          @declared_outputs += [ Output.new(name: name, label: label) ]
         end
 
         def offers(&derivation)
@@ -184,7 +190,7 @@ module Alembic
         public
 
         def to_step_type
-          StepType.new(id: @id, step_name: @step_name, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, offerings: @offerings, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, drawn_from: @drawn_from, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
+          StepType.new(id: @id, step_name: @step_name, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, offerings: @offerings, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, drawn_from: @drawn_from, outputs: @declared_outputs, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
         end
       end
     end

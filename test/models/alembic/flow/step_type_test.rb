@@ -98,6 +98,12 @@ module Alembic
         assert_equal [ { "value" => "high" } ], step_type.offerings_for(node)
       end
 
+      test "declares a named output a later step may read" do
+        step_type = StepType.define(:ask) { output :answer, label: "Answer" }
+
+        assert_equal [ :answer ], step_type.outputs.map(&:name)
+      end
+
       test "can declare which field names an instance of it" do
         step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 
