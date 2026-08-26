@@ -178,7 +178,7 @@ module Alembic
       canvas_for(flow)
 
       find("[title='Add a step']").click
-      add_step_named("Start")
+      add_step_named("Question")
 
       assert_selector "[data-step]", count: 5
     end
