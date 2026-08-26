@@ -4,7 +4,7 @@ module Alembic
       MENTION = /\{\{\s*(\w+)\s*\}\}/
 
       def self.of(config)
-        mentioned(config.to_h.values)
+        mentioned(config.to_h.values).uniq
       end
 
       def self.mentioned(value)

@@ -14,6 +14,10 @@ module Alembic
       test "finds a step named inside a nested configuration value" do
         assert_equal [ "ask" ], References.of("answers" => [ { "label" => "Echo {{ask}}" } ])
       end
+
+      test "names a step referenced more than once only once" do
+        assert_equal [ "ask" ], References.of("prompt" => "{{ask}} and {{ask}}")
+      end
     end
   end
 end
