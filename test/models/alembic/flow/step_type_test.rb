@@ -82,6 +82,15 @@ module Alembic
         assert_equal :previous_step, step_type.fields[:step]
       end
 
+      test "declares a setting whose choices come from the step another setting names" do
+        step_type = StepType.define(:branch) do
+          setting :step, type: :previous_step
+          setting :answer, from: :step
+        end
+
+        assert_equal :step, step_type.drawn_from[:answer]
+      end
+
       test "can declare which field names an instance of it" do
         step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 
