@@ -12,7 +12,7 @@ const link = { ...action, textAlign: "center", textDecoration: "none", color: "#
 const Panel = ({ flow, changes, problems, refusal, notice, onCreate, onPublish, onClose }) => (
   <aside style={sheet} data-builder-panel>
     <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", gap: 8 }}>
-      <h2 style={{ fontWeight: 600 }}>{flow.title}</h2>
+      <h2 style={{ fontWeight: 600 }} data-flow-name>{flow.title || flow.slug}</h2>
       <button title="Close" onClick={onClose}
               style={{ border: "none", background: "none", cursor: "pointer", fontSize: 18, lineHeight: 1, color: "#6b7280" }}>×</button>
     </div>

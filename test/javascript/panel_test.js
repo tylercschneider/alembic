@@ -56,3 +56,9 @@ test("offers the way to the definition and the details", () => {
   assert.equal(shown(tree, "data-definition").length, 1)
   assert.equal(shown(tree, "data-details").length, 1)
 })
+
+test("names a flow that has no title by its slug", () => {
+  const tree = panel({ flow: { title: null, slug: "a-flow", version: 1, published: 1 } })
+
+  assert.equal(shown(tree, "data-flow-name")[0].props.children, "a-flow")
+})
