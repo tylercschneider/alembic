@@ -162,6 +162,18 @@ module Alembic
       assert_selector "[data-connector-label]", text: "true"
     end
 
+    test "the step a flow ends at offers nowhere to connect on from" do
+      canvas_for(wired)
+
+      assert_no_selector "[data-step='end'] button"
+    end
+
+    test "the step a flow ends at simply says it ends" do
+      canvas_for(wired)
+
+      assert_selector "[data-step='end']", text: "End"
+    end
+
     test "closing the panel leaves the flow drawn" do
       canvas_for(flow)
       step_card("gate").click

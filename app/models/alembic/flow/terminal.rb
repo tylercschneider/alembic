@@ -6,6 +6,8 @@ module Alembic
       step_name "End"
 
       ends_here
+
+      names_by { |_node| "End" }
     end
   end
 end
