@@ -102,6 +102,7 @@ module Alembic
     end
 
     def publish_version(version)
+      raise OutOfService if version.out_of_service?
       return if live_version == version
 
       live_version&.update!(status: :superseded)

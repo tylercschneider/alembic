@@ -7,6 +7,10 @@ module Alembic
 
     validates :number, uniqueness: { scope: :diagnostic_id }
 
+    def out_of_service?
+      retired? || withdrawn?
+    end
+
     def changes
       changes_captured.to_a
     end
