@@ -19,5 +19,26 @@ module Alembic
     test "it returns the diagnostic when it is published and permitted" do
       assert_equal published, Admission.of(published, permitted: true)
     end
+
+    test "it stops a run whose version was withdrawn" do
+      run = Response.start(published)
+      run.definition_version.update!(status: :withdrawn)
+
+      assert_raises(Withdrawn) { Admission.of_run(run) }
+    end
+
+    test "it lets a run on a superseded version carry on" do
+      run = Response.start(published)
+      run.definition_version.update!(status: :superseded)
+
+      assert_equal run, Admission.of_run(run)
+    end
+
+    test "it lets a run on a retired version carry on" do
+      run = Response.start(published)
+      run.definition_version.update!(status: :retired)
+
+      assert_equal run, Admission.of_run(run)
+    end
   end
 end

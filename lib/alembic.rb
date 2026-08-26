@@ -6,6 +6,7 @@ module Alembic
   class NotPublished < StandardError; end
   class NotPermitted < StandardError; end
   class OutOfService < StandardError; end
+  class Withdrawn < StandardError; end
 
   class << self
     attr_writer :layout, :base_controller, :admin_layout
