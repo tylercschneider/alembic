@@ -1,7 +1,7 @@
 module Alembic
   class DiagnosticsController < ApplicationController
     def show
-      @diagnostic = Diagnostic.find_by!(slug: params[:slug])
+      @diagnostic = admit(Diagnostic.find_by(slug: params[:slug]))
     end
 
     def step
