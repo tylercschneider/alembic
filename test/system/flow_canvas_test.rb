@@ -183,6 +183,18 @@ module Alembic
       assert_selector "[data-step]", count: 5
     end
 
+    test "the step a flow begins at simply says it begins" do
+      canvas_for(wired)
+
+      assert_selector "[data-step='start']", text: "Start"
+    end
+
+    test "the step a flow begins at is not a place to drop another step" do
+      canvas_for(wired)
+
+      assert_no_selector "[data-step='start'][draggable='true']"
+    end
+
     test "closing the panel leaves the flow drawn" do
       canvas_for(flow)
       step_card("gate").click
