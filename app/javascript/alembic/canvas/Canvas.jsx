@@ -129,7 +129,8 @@ const Canvas = ({ base, token, initial }) => {
         <Panel flow={flow.flow || {}} changes={flow.changes || []} problems={flow.violations} refusal={error} notice={notice}
                onClose={() => setShowing(false)}
                onCreate={() => send("/versions", "POST")}
-               onPublish={() => send("/publish", "POST")} />
+               onPublish={() => send("/publish", "POST")}
+               onSaveDetails={(details) => send("/details", "PATCH", { diagnostic: details })} />
       )}
 
       {selectedNode && (

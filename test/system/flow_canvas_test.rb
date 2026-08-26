@@ -302,7 +302,21 @@ module Alembic
       assert_selector "[data-version]", text: "Version 1"
     end
 
+    test "the flow is renamed from its panel" do
+      canvas_for(flow)
+      find("[data-open-panel]").click
+
+      rename_to("A better name")
+
+      assert_selector "[data-flow-name]", text: "A better name"
+    end
+
     private
+
+    def rename_to(name)
+      find("[data-flow-title]").set(name)
+      find("[data-builder-panel] h2", match: :first).click
+    end
 
     def fill_in_first_field_with(text)
       field = find("[data-inspector] input[type='text']", match: :first)
