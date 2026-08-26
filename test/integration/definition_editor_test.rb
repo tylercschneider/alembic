@@ -46,5 +46,13 @@ module Alembic
 
       assert_select "textarea", text: /"id": "need"/
     end
+
+    test "the editor shows the flow being edited, not the last version cut" do
+      fresh = Diagnostic.create!(slug: "fresh")
+
+      get alembic.edit_manage_diagnostic_definition_path(fresh)
+
+      assert_select "textarea", text: /"type": "start"/
+    end
   end
 end
