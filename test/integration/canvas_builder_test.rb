@@ -334,6 +334,12 @@ module Alembic
       assert_equal "canvas", response.parsed_body["flow"]["slug"]
     end
 
+    test "the canvas carries the title of a flow that has none as nothing" do
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_nil response.parsed_body["flow"]["title"]
+    end
+
     test "a refused publish says it could not publish and why" do
       post "#{canvas_path}/steps", params: { id: "adrift", type: "question" }
 

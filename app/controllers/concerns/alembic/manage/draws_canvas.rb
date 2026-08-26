@@ -20,7 +20,7 @@ module Alembic
       end
 
       def flow_details(diagnostic)
-        { "title" => diagnostic.title.presence || diagnostic.slug,
+        { "title" => diagnostic.title,
           "slug" => diagnostic.slug,
           "summary" => diagnostic.summary,
           "start_label" => diagnostic.start_label,
