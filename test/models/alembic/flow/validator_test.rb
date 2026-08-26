@@ -108,7 +108,7 @@ module Alembic
       test "reports a flow with nowhere it begins" do
         document = { "nodes" => [ { "id" => "a", "type" => "question" } ], "edges" => [] }
 
-        assert_includes Validator.new(Document.new(document)).violations.map(&:problem), :missing_entry
+        assert_includes Validator.new(Document.new(document)).violations.map(&:problem), :no_beginning
       end
 
       test "reports two nodes sharing an id" do

@@ -18,7 +18,7 @@ module Alembic
       end
 
       def malformations
-        missing_edge_targets + missing_edge_sources + duplicate_ids + missing_entry
+        missing_edge_targets + missing_edge_sources + duplicate_ids + no_beginning
       end
 
       private
@@ -42,10 +42,10 @@ module Alembic
           .map { |id, _count| Violation.new(node: id, problem: :duplicate_id) }
       end
 
-      def missing_entry
+      def no_beginning
         return [] if known?(@document.entry)
 
-        [ Violation.new(node: @document.entry, problem: :missing_entry) ]
+        [ Violation.new(node: nil, problem: :no_beginning) ]
       end
 
       def unmet_requirements
