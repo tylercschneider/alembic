@@ -5,9 +5,10 @@ db_guide_v1:
   definition:
     slug: db-guide
     headline: A flow defined in the database
-    entry: pick
     nodes:
+      - { id: start, type: start }
       - { id: pick, type: question, text: Pick one option, options: [ { value: a, label: Option A }, { value: b, label: Option B } ] }
       - { id: why, type: question, text: Why that one?, options: [ { value: cost, label: Cost } ] }
     edges:
+      - { from: start, to: pick }
       - { from: pick, to: why }

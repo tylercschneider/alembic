@@ -31,7 +31,7 @@ module Alembic
       end
 
       def canvas(document)
-        Canvas.new(Document.new(document), registry: registry).to_h
+        Canvas.new(Document.new(flowing(document)), registry: registry).to_h
       end
 
       def flow
@@ -65,7 +65,7 @@ module Alembic
       end
 
       test "labels a node from the field its type says names it" do
-        assert_equal "Budget?", canvas(flow)["nodes"].first["label"]
+        assert_equal "Budget?", canvas(flow)["nodes"].find { |node| node["id"] == "a" }["label"]
       end
 
       test "falls back to the node id when its type names no field" do
@@ -142,7 +142,8 @@ module Alembic
       end
 
       test "carries the document's edges" do
-        assert_equal [ [ "a", "b" ] ], canvas(flow)["edges"].map { |edge| [ edge["source"], edge["target"] ] }
+        assert_equal [ [ "start", "a" ], [ "a", "b" ] ],
+          canvas(flow)["edges"].map { |edge| [ edge["source"], edge["target"] ] }
       end
 
       test "carries the violations the document has" do
@@ -152,7 +153,7 @@ module Alembic
       end
 
       test "offers a step-naming setting the steps that come before that node" do
-        assert_equal [ { "value" => "a", "label" => "Budget?" } ], canvas(flow)["nodes"].last["choices"]["step"]
+        assert_includes canvas(flow)["nodes"].last["choices"]["step"], { "value" => "a", "label" => "Budget?" }
       end
 
       test "offers a drawing setting the values the step it names outputs" do

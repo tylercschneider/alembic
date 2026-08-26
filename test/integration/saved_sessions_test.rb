@@ -15,7 +15,7 @@ module Alembic
     end
 
     def saved
-      @saved ||= Diagnostic.create!(slug: "saved").tap { |diagnostic| diagnostic.record_definition(branching); diagnostic.publish }
+      @saved ||= Diagnostic.create!(slug: "saved").tap { |diagnostic| diagnostic.record_definition(flowing(branching)); diagnostic.publish }
     end
 
     test "starting a saved session sends the visitor to its durable URL" do
@@ -87,7 +87,7 @@ module Alembic
 
     test "a session started before an edit still serves the version it began on" do
       run = Response.start(saved)
-      saved.record_definition(branching.merge(
+      saved.record_definition(flowing(branching).merge(
         "nodes" => branching["nodes"].map { |node| node["id"] == "budget" ? node.merge("text" => "Changed") : node }))
 
       get alembic.response_path(run)

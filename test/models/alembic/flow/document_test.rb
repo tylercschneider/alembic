@@ -4,11 +4,11 @@ module Alembic
   module Flow
     class DocumentTest < ActiveSupport::TestCase
       test "reports what stays reachable from the entry when a step is left out" do
-        document = Document.new({ "entry" => "a",
-                                  "nodes" => [ { "id" => "a" }, { "id" => "b" }, { "id" => "c" } ],
-                                  "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "c" } ] })
+        document = Document.new(flowing({ "entry" => "a",
+                                          "nodes" => [ { "id" => "a" }, { "id" => "b" }, { "id" => "c" } ],
+                                          "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "c" } ] }))
 
-        assert_equal [ "a" ], document.reachable(without: "b")
+        assert_equal [ "start", "a" ], document.reachable(without: "b")
       end
 
       test "has no nodes when the document declares none" do
@@ -29,10 +29,15 @@ module Alembic
         assert_equal [ "b" ], document.edges_from("a").map(&:to)
       end
 
-      test "exposes the entry node id" do
-        document = Document.new({ "entry" => "a" })
+      test "begins at the step whose type says a flow begins there" do
+        document = Document.new({ "nodes" => [ { "id" => "a", "type" => "question" },
+                                               { "id" => "go", "type" => "start" } ] })
 
-        assert_equal "a", document.entry
+        assert_equal "go", document.entry
+      end
+
+      test "begins nowhere when no step says a flow begins there" do
+        assert_nil Document.new({ "nodes" => [ { "id" => "a", "type" => "question" } ] }).entry
       end
 
       test "finds a node by its id" do

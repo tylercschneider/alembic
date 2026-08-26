@@ -16,7 +16,7 @@ module Alembic
       diagnostic = Diagnostic.create!(slug: "flow")
       diagnostic.record_definition("slug" => "flow")
 
-      patch alembic.manage_diagnostic_definition_path(diagnostic), params: { definition: {
+      patch alembic.manage_diagnostic_definition_path(diagnostic), params: { definition: flowing({
         "slug" => "flow", "entry" => "path",
         "nodes" => [
           { "id" => "path", "type" => "question", "text" => "Which path?", "options" => [ "left", "right" ] },
@@ -29,7 +29,7 @@ module Alembic
           { "from" => "gate", "to" => "right_q", "on" => true },
           { "from" => "gate", "to" => "left_q", "on" => false }
         ]
-      }.to_json }
+      }).to_json }
 
       diagnostic.reload.publish
 

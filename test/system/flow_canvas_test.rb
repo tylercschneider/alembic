@@ -4,34 +4,34 @@ module Alembic
   class FlowCanvasTest < ApplicationSystemTestCase
     def flow
       @flow ||= Diagnostic.create!(slug: "canvas-system").tap do |diagnostic|
-        diagnostic.record_definition(
-          "slug" => "canvas-system", "entry" => "start",
-          "nodes" => [ { "id" => "start", "type" => "question", "question" => "First",
+        diagnostic.record_definition(flowing(
+          "slug" => "canvas-system", "entry" => "first",
+          "nodes" => [ { "id" => "first", "type" => "question", "question" => "First",
                          "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
-                       { "id" => "gate", "type" => "condition", "step" => "start", "output" => "answer", "comparison" => "is", "answer" => "yes" },
+                       { "id" => "gate", "type" => "condition", "step" => "first", "output" => "answer", "comparison" => "is", "answer" => "yes" },
                        { "id" => "yes_step", "type" => "question", "question" => "Yes path",
                          "answers" => [ { "value" => "on" } ] } ],
-          "edges" => [ { "from" => "start", "to" => "gate" },
+          "edges" => [ { "from" => "first", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => true } ]
-        )
+        ))
       end
     end
 
     def wired
       @wired ||= Diagnostic.create!(slug: "canvas-wired").tap do |diagnostic|
-        diagnostic.record_definition(
-          "slug" => "canvas-wired", "entry" => "start",
-          "nodes" => [ { "id" => "start", "type" => "question", "question" => "First",
+        diagnostic.record_definition(flowing(
+          "slug" => "canvas-wired", "entry" => "first",
+          "nodes" => [ { "id" => "first", "type" => "question", "question" => "First",
                          "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
-                       { "id" => "gate", "type" => "condition", "step" => "start", "output" => "answer", "comparison" => "is", "answer" => "yes" },
+                       { "id" => "gate", "type" => "condition", "step" => "first", "output" => "answer", "comparison" => "is", "answer" => "yes" },
                        { "id" => "yes_step", "type" => "question", "question" => "Yes path",
                          "answers" => [ { "value" => "on" } ] },
                        { "id" => "end", "type" => "terminal" } ],
-          "edges" => [ { "from" => "start", "to" => "gate" },
+          "edges" => [ { "from" => "first", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => true },
                        { "from" => "gate", "to" => "yes_step", "on" => false },
                        { "from" => "yes_step", "to" => "end" } ]
-        )
+        ))
       end
     end
 
@@ -55,7 +55,7 @@ module Alembic
       links = (1...12).map { |n| { "from" => "s#{n}", "to" => "s#{n + 1}" } }
 
       Diagnostic.create!(slug: "long-flow").tap do |diagnostic|
-        diagnostic.record_definition("slug" => "long-flow", "entry" => "s1", "nodes" => steps, "edges" => links)
+        diagnostic.record_definition(flowing("slug" => "long-flow", "entry" => "s1", "nodes" => steps, "edges" => links))
       end
     end
 
@@ -186,7 +186,7 @@ module Alembic
 
     test "editing a field saves when the field is left" do
       canvas_for(flow)
-      step_card("start").click
+      step_card("first").click
 
       fill_in_first_field_with("Changed by hand")
 
@@ -259,7 +259,7 @@ module Alembic
 
     test "a version is created from the flow's panel" do
       canvas_for(flow)
-      step_card("start").click
+      step_card("first").click
       fill_in_first_field_with("Changed by hand")
       find("[data-open-panel]").click
 
@@ -284,7 +284,7 @@ module Alembic
 
     test "the panel lists a change once a step is edited" do
       canvas_for(flow)
-      step_card("start").click
+      step_card("first").click
       fill_in_first_field_with("Changed by hand")
       find("[data-open-panel]").click
 
@@ -301,7 +301,7 @@ module Alembic
 
     test "creating a version empties the change list" do
       canvas_for(wired)
-      step_card("start").click
+      step_card("first").click
       fill_in_first_field_with("Changed by hand")
       find("[data-open-panel]").click
       find("[data-create-version]").click
@@ -329,7 +329,7 @@ module Alembic
 
     test "the flow's panel says which version it created" do
       canvas_for(wired)
-      step_card("start").click
+      step_card("first").click
       fill_in_first_field_with("Changed by hand")
       find("[data-open-panel]").click
 

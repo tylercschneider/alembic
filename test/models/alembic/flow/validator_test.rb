@@ -4,7 +4,7 @@ module Alembic
   module Flow
     class ValidatorTest < ActiveSupport::TestCase
       def violations(document, registry = Flow.registry, checks: [])
-        Validator.new(Document.new(document), registry: registry, checks: checks).violations
+        Validator.new(Document.new(flowing(document)), registry: registry, checks: checks).violations
       end
 
       def needy_registry
@@ -105,10 +105,10 @@ module Alembic
         assert_empty violations(document)
       end
 
-      test "reports an entry naming a node that does not exist" do
-        document = { "entry" => "ghost", "nodes" => [ { "id" => "a" } ] }
+      test "reports a flow with nowhere it begins" do
+        document = { "nodes" => [ { "id" => "a", "type" => "question" } ], "edges" => [] }
 
-        assert_includes violations(document).map(&:problem), :missing_entry
+        assert_includes Validator.new(Document.new(document)).violations.map(&:problem), :missing_entry
       end
 
       test "reports two nodes sharing an id" do
@@ -198,7 +198,7 @@ module Alembic
 
       test "reports a deciding step left without an edge for one of its results" do
         document = deciding_document([ { "from" => "gate", "to" => "yes_step", "on" => true } ])
-        found = Validator.new(Document.new(document), registry: deciding_registry, checks: [ :unrouted_value ]).violations
+        found = Validator.new(Document.new(flowing(document)), registry: deciding_registry, checks: [ :unrouted_value ]).violations
 
         assert_includes found.map(&:problem), :unrouted_value
       end
@@ -239,7 +239,7 @@ module Alembic
 
       test "reports a step that cannot follow the second connection leaving it" do
         document = leading_document([ { "from" => "a", "to" => "b" }, { "from" => "a", "to" => "c" } ])
-        found = Validator.new(Document.new(document), registry: deciding_registry, checks: [ :unfollowed_path ]).violations
+        found = Validator.new(Document.new(flowing(document)), registry: deciding_registry, checks: [ :unfollowed_path ]).violations
 
         assert_includes found.map(&:problem), :unfollowed_path
       end
@@ -262,7 +262,7 @@ module Alembic
 
       test "leaves a branching step's unwired result alone unless that check is asked for" do
         document = deciding_document([ { "from" => "gate", "to" => "yes_step", "on" => true } ])
-        found = Validator.new(Document.new(document), registry: deciding_registry, checks: []).violations
+        found = Validator.new(Document.new(flowing(document)), registry: deciding_registry, checks: []).violations
 
         assert_empty found.map(&:problem).select { |problem| problem == :unrouted_value }
       end
@@ -295,7 +295,7 @@ module Alembic
       end
 
       def endings(document)
-        Validator.new(Document.new(document), registry: ending_registry, checks: [ :dead_end ]).violations
+        Validator.new(Document.new(flowing(document)), registry: ending_registry, checks: [ :dead_end ]).violations
       end
 
       test "reports a step with nothing leading away from it that does not end the flow" do

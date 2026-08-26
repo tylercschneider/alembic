@@ -4,13 +4,13 @@ module Alembic
   class CanvasBuilderTest < ActionDispatch::IntegrationTest
     def diagnostic
       @diagnostic ||= Diagnostic.create!(slug: "canvas").tap do |built|
-        built.record_definition(
+        built.record_definition(flowing(
           "slug" => "canvas", "entry" => "a",
           "nodes" => [ { "id" => "a", "type" => "question", "text" => "A", "answers" => [ { "value" => "yes" } ] },
                        { "id" => "b", "type" => "question", "answers" => [ { "value" => "yes" } ] },
                        { "id" => "end", "type" => "terminal" } ],
           "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "end" } ]
-        )
+        ))
       end
     end
 
@@ -42,7 +42,7 @@ module Alembic
     test "the canvas screen carries the flow as JSON" do
       get "#{canvas_path}.json"
 
-      assert_equal [ "a", "b", "end" ], response.parsed_body["nodes"].map { |node| node["id"] }
+      assert_equal [ "start", "a", "b", "end" ], response.parsed_body["nodes"].map { |node| node["id"] }
     end
 
     test "the canvas screen carries the registered step types as a palette" do
@@ -54,7 +54,7 @@ module Alembic
     test "adding a step records a new version carrying it" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
 
-      assert_equal [ "a", "b", "end", "c" ], nodes
+      assert_equal [ "start", "a", "b", "end", "c" ], nodes
     end
 
     test "undoing an edit restores what the flow was before it" do
@@ -62,7 +62,7 @@ module Alembic
 
       post "#{canvas_path}/undo"
 
-      assert_equal [ "a", "b", "end" ], nodes
+      assert_equal [ "start", "a", "b", "end" ], nodes
     end
 
     test "redoing puts back what was undone" do
@@ -71,7 +71,7 @@ module Alembic
 
       post "#{canvas_path}/redo"
 
-      assert_equal [ "a", "b", "end", "c" ], nodes
+      assert_equal [ "start", "a", "b", "end", "c" ], nodes
     end
 
     test "the canvas says whether there is anything to redo" do
@@ -86,7 +86,7 @@ module Alembic
     test "undoing with nothing behind it leaves the flow alone" do
       post "#{canvas_path}/undo"
 
-      assert_equal [ "a", "b", "end" ], nodes
+      assert_equal [ "start", "a", "b", "end" ], nodes
     end
 
     test "the canvas says whether there is anything to undo" do
@@ -118,20 +118,20 @@ module Alembic
     test "adding a step on an edge puts it between the two steps" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "a", to: "b" }
 
-      assert_equal [ [ "b", "end" ], [ "a", "c" ], [ "c", "b" ] ],
+      assert_equal [ [ "start", "a" ], [ "b", "end" ], [ "a", "c" ], [ "c", "b" ] ],
         diagnostic.reload.document["edges"].map { |edge| [ edge["from"], edge["to"] ] }
     end
 
     test "configuring a step records the new configuration" do
       patch "#{canvas_path}/steps/a", params: { config: { text: "Changed" } }
 
-      assert_equal "Changed", diagnostic.reload.document["nodes"].first["text"]
+      assert_equal "Changed", diagnostic.reload.document["nodes"].find { |node| node["id"] == "a" }["text"]
     end
 
     test "removing a step records a version without it" do
       delete "#{canvas_path}/steps/b"
 
-      assert_equal [ "a", "end" ], nodes
+      assert_equal [ "start", "a", "end" ], nodes
     end
 
     test "connecting two steps records the new edge" do
@@ -144,7 +144,8 @@ module Alembic
     test "disconnecting two steps records a version without the edge" do
       delete "#{canvas_path}/edges", params: { from: "a", to: "b" }
 
-      assert_equal [ [ "b", "end" ] ], diagnostic.reload.document["edges"].map { |edge| [ edge["from"], edge["to"] ] }
+      assert_equal [ [ "start", "a" ], [ "b", "end" ] ],
+        diagnostic.reload.document["edges"].map { |edge| [ edge["from"], edge["to"] ] }
     end
 
     test "editing records no new version" do
@@ -159,7 +160,7 @@ module Alembic
     test "a refused edit leaves the definition untouched" do
       post "#{canvas_path}/steps", params: { id: "a", type: "question" }
 
-      assert_equal [ "a", "b", "end" ], nodes
+      assert_equal [ "start", "a", "b", "end" ], nodes
     end
 
     test "a refused edit reports why" do
@@ -171,7 +172,7 @@ module Alembic
     test "configuring a step stores a number for a setting declared as one" do
       patch "#{canvas_path}/steps/a", params: { config: { answers: [ { value: "low", weight: "4" } ] } }
 
-      stored = diagnostic.reload.document["nodes"].first
+      stored = diagnostic.reload.document["nodes"].find { |node| node["id"] == "a" }
 
       assert_equal 4, stored["answers"].first["weight"]
     end

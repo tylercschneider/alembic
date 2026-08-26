@@ -1,8 +1,9 @@
 module Alembic
   module Flow
     class Document
-      def initialize(document)
+      def initialize(document, registry: Flow.registry)
         @document = document
+        @registry = registry
       end
 
       def nodes
@@ -14,7 +15,15 @@ module Alembic
       end
 
       def entry
-        @document["entry"]
+        beginnings.first
+      end
+
+      def beginnings
+        nodes.select { |node| begins_here?(node) }.map(&:id)
+      end
+
+      def begins_here?(node)
+        @registry.registered?(node.type) && @registry.fetch(node.type).begins_here?
       end
 
       def node(id)

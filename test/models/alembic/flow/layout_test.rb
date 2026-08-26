@@ -4,7 +4,7 @@ module Alembic
   module Flow
     class LayoutTest < ActiveSupport::TestCase
       def positions_for(document)
-        Layout.new(Document.new(document)).positions
+        Layout.new(Document.new(flowing(document))).positions
       end
 
       def branching
@@ -52,7 +52,7 @@ module Alembic
         document = { "entry" => "a", "nodes" => [ { "id" => "a" }, { "id" => "b" } ],
                      "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "a" } ] }
 
-        assert_equal [ "a", "b" ], positions_for(document).keys
+        assert_equal [ "start", "a", "b" ], positions_for(document).keys
       end
 
       test "still places a step no edge reaches" do
@@ -62,7 +62,7 @@ module Alembic
       end
 
       test "places nothing for an empty document" do
-        assert_empty positions_for({})
+        assert_empty Layout.new(Document.new({})).positions
       end
 
       test "leaves the document it read untouched" do
@@ -77,7 +77,13 @@ module Alembic
         document = { "entry" => "a", "nodes" => [ { "id" => "a" }, { "id" => "b" } ],
                      "edges" => [ { "from" => "a", "to" => "b" } ] }
 
-        assert_equal [ "a", "b" ], positions_for(document).keys
+        assert_equal [ "start", "a", "b" ], positions_for(document).keys
+      end
+
+      test "lays out a flow with no beginning from the steps nothing leads into" do
+        document = { "nodes" => [ { "id" => "a" }, { "id" => "b" } ], "edges" => [ { "from" => "a", "to" => "b" } ] }
+
+        assert_equal [ 0, 1 ], Layout.new(Document.new(document)).positions.values.map { |at| at["row"] }
       end
     end
   end

@@ -4,7 +4,7 @@ module Alembic
   class FlowRunTest < ActionDispatch::IntegrationTest
     def flowed
       @flowed ||= Diagnostic.create!(slug: "flowed").tap do |diagnostic|
-        diagnostic.record_definition(
+        diagnostic.record_definition(flowing(
           "slug" => "flowed", "entry" => "budget",
           "nodes" => [ { "id" => "budget", "type" => "question", "text" => "What is your budget?", "tag" => "money",
                          "options" => [ { "value" => "low", "label" => "Modest", "weight" => 1 },
@@ -17,7 +17,7 @@ module Alembic
           "edges" => [ { "from" => "budget", "to" => "gate" },
                        { "from" => "gate", "to" => "posh", "on" => true },
                        { "from" => "gate", "to" => "plain", "on" => false } ]
-        )
+        ))
         diagnostic.publish
       end
     end

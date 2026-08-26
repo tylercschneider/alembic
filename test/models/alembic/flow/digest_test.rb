@@ -29,7 +29,7 @@ module Alembic
       end
 
       def digest(document)
-        Digest.new(Document.new(document), registry: registry)
+        Digest.new(Document.new(flowing(document)), registry: registry)
       end
 
       def branching
@@ -47,7 +47,7 @@ module Alembic
       end
 
       test "reports the step a flow begins at" do
-        assert_equal "first", digest(branching).entry.id
+        assert_equal "start", digest(branching).entry.id
       end
 
       test "finds a step by its id" do
@@ -97,7 +97,7 @@ module Alembic
       end
 
       test "reports the steps that come before a step on every path to it" do
-        assert_equal [ "first", "gate" ], digest(branching).preceding("last")
+        assert_equal [ "start", "first", "gate" ], digest(branching).preceding("last")
       end
 
       test "reports nothing before a step the entry cannot reach" do
