@@ -104,7 +104,7 @@ module Alembic
     test "adding a step from an unconnected branch wires it to that branch" do
       canvas_for(flow)
 
-      step_card("gate").click_button("false")
+      find("[data-placeholder='gate--false']").click
       add_step_named("Question")
 
       assert_selector "[data-step]", count: 4
@@ -201,10 +201,10 @@ module Alembic
       assert_no_selector "[data-step='yes_step'] button"
     end
 
-    test "a step that branches still offers each of its results" do
-      canvas_for(wired)
+    test "a result with nowhere to go waits as a placeholder" do
+      canvas_for(flow)
 
-      assert_selector "[data-step='gate'] button", count: 2
+      assert_selector "[data-placeholder='gate--false']", text: "false"
     end
 
     test "a step nothing leads to waits beside the flow" do

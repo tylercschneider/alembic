@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import StepCard from "./StepCard"
 import Inspector from "./Inspector"
+import Placeholder from "./Placeholder"
 import { offeredTo } from "./choices"
 import TypePicker from "./TypePicker"
 import Toolbar from "./Toolbar"
@@ -122,7 +123,11 @@ const Canvas = ({ base, token, initial }) => {
         <div style={{ ...grid, gridTemplateColumns: `repeat(${columns + 1}, ${(CARD + GAP_X) / 2}px)`, gridTemplateRows: `repeat(${rows}, auto)` }}>
           {attached.map((node) => (
             <div key={node.id} style={{ gridRow: node.row + 1, gridColumn: `${node.column + 1} / span 2`, zIndex: 2 }}>
-              <StepCard
+              {node.placeholder && (
+                <Placeholder node={node}
+                             onFill={() => setAdding({ from: node.from, on: node.on, at: { x: 16, y: 52 } })} />
+              )}
+              {!node.placeholder && <StepCard
                 node={{
                   ...node,
                   ref: (element) => { cards.current[node.id] = element },
@@ -143,7 +148,7 @@ const Canvas = ({ base, token, initial }) => {
                 }}
                 onDragEnd={() => setDragging(null)}
                 onDragStart={() => setDragging(node.id)}
-              />
+              />}
             </div>
           ))}
         </div>

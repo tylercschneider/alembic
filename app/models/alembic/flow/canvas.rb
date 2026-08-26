@@ -13,22 +13,48 @@ module Alembic
       private
 
       def nodes
-        placed = Layout.new(@document).positions
+        @document.nodes.map { |node| drawn_step(node) } + waiting.map { |gap| drawn_placeholder(gap) }
+      end
 
-        @document.nodes.map do |node|
-          { "id" => node.id, "type" => node.type, "label" => label_for(node),
-            "config" => node.config, "ports" => ports_for(node), "ends_here" => ends_here?(node), "begins_here" => begins_here?(node), "loose" => loose?(node),
-            "choices" => choices_for(node), **placed[node.id] }
-        end
+      def drawn_step(node)
+        { "id" => node.id, "type" => node.type, "label" => label_for(node),
+          "config" => node.config, "ports" => [], "ends_here" => ends_here?(node), "begins_here" => begins_here?(node),
+          "loose" => loose?(node), "choices" => choices_for(node), "placeholder" => false, **placed[node.id] }
+      end
+
+      def drawn_placeholder(gap)
+        { "id" => gap[:id], "type" => "placeholder", "label" => gap[:on], "config" => {}, "ports" => [],
+          "ends_here" => false, "begins_here" => false, "loose" => false, "choices" => {},
+          "placeholder" => true, "from" => gap[:from], "on" => gap[:on], **placed[gap[:id]] }
       end
 
       def edges
-        placed = Layout.new(@document).positions
-
-        @document.edges.each_with_index.map do |edge, index|
-          { "id" => "#{edge.from}-#{edge.to}-#{index}", "source" => edge.from, "target" => edge.to, "label" => edge.on }
-            .merge(routing(edge, placed))
+        drawn.edges.each_with_index.map do |edge, index|
+          { "id" => "#{edge.from}-#{edge.to}-#{index}", "source" => edge.from, "target" => edge.to, "label" => edge.on,
+            "placeholder" => waiting.any? { |gap| gap[:id] == edge.to } }.merge(routing(edge, placed))
         end
+      end
+
+      def placed
+        @placed ||= Layout.new(drawn).positions
+      end
+
+      def drawn
+        @drawn ||= Document.new(@document.to_h.merge(
+          "nodes" => Array(@document.to_h["nodes"]) + waiting.map { |gap| { "id" => gap[:id], "type" => "placeholder" } },
+          "edges" => Array(@document.to_h["edges"]) + waiting.map { |gap| { "from" => gap[:from], "to" => gap[:id], "on" => gap[:on] } }
+        ), registry: @registry)
+      end
+
+      def waiting
+        @waiting ||= @document.nodes.flat_map { |node| gaps_after(node) }
+      end
+
+      def gaps_after(node)
+        wired = @document.edges_from(node.id).map { |edge| edge.on.to_s }
+
+        digest.routing_values(node.id).reject { |value| wired.include?(value) }
+          .map { |value| { id: "#{node.id}--#{value}", from: node.id, on: value } }
       end
 
       def routing(edge, placed)
