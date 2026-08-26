@@ -34,6 +34,14 @@ module Alembic
         assert_equal [ :unmet_requirement ], violations(document, needy_registry).map(&:problem)
       end
 
+      test "reports a reference naming a step the document does not carry" do
+        document = { "entry" => "a",
+                     "nodes" => [ { "id" => "a", "type" => "plain" }, { "id" => "x", "type" => "plain", "prompt" => "Echo {{ghost}}" } ],
+                     "edges" => [ { "from" => "a", "to" => "x" } ] }
+
+        assert_equal [ :unmet_requirement ], violations(document, needy_registry).map(&:problem)
+      end
+
       test "accepts a requirement that lies on the only path to the step" do
         document = needy_document([ { "from" => "a", "to" => "r" }, { "from" => "r", "to" => "x" } ])
 
