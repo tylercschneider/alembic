@@ -129,6 +129,14 @@ module Alembic
 
         assert_equal [ { "value" => "answer", "label" => "Answer" } ], digest(document).outputs_of("a")
       end
+
+      test "reports the values one named output of a step can take" do
+        document = { "entry" => "a",
+                     "nodes" => [ { "id" => "a", "type" => "pick", "options" => [ { "value" => "high" } ] } ],
+                     "edges" => [] }
+
+        assert_equal [ { "value" => "high" } ], digest(document).values_of("a", "answer")
+      end
     end
   end
 end

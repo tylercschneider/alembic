@@ -38,6 +38,13 @@ module Alembic
         values_out_of(node.config[output.from.to_s])
       end
 
+      def values_of(id, output_name)
+        named = step(id)
+        return [] unless named && output_name.present?
+
+        step_type(named)&.values_of(output_name, named).to_a
+      end
+
       def outputs_of(id)
         named = step(id)
         return [] unless named
