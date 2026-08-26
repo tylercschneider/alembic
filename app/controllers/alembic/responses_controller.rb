@@ -5,7 +5,7 @@ module Alembic
     end
 
     def show
-      @response = Response.find(params[:id])
+      @response = saved_session
       @guide = @response.guide
       @answers = @response.answers
       @question = @guide.next_question(@answers)
@@ -15,7 +15,7 @@ module Alembic
     end
 
     def update
-      response = Response.find(params[:id])
+      response = saved_session
       params[:back] ? response.discard_last_answer : record_submitted_answer(response)
       redirect_to response_path(response)
     end
@@ -33,8 +33,12 @@ module Alembic
       response.record_answer(question_id.to_sym, value)
     end
 
+    def saved_session
+      Response.find(params[:id]).tap { |session| admit(session.diagnostic) }
+    end
+
     def diagnostic
-      Diagnostic.find_by!(slug: params[:slug])
+      admit(Diagnostic.find_by(slug: params[:slug]))
     end
   end
 end

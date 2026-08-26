@@ -51,5 +51,33 @@ module Alembic
         assert_response :not_found
       end
     end
+
+    test "a visitor cannot start a saved session on a diagnostic the host has not authorized" do
+      without_host_configuration do
+        post alembic.diagnostic_responses_path(published.slug)
+
+        assert_response :not_found
+      end
+    end
+
+    test "a visitor cannot resume a saved session on a diagnostic the host has not authorized" do
+      response = Response.start(published)
+
+      without_host_configuration do
+        get alembic.response_path(response)
+
+        assert_response :not_found
+      end
+    end
+
+    test "a visitor cannot answer into a saved session on a diagnostic the host has not authorized" do
+      response = Response.start(published)
+
+      without_host_configuration do
+        patch alembic.response_path(response), params: { answers: { ask: "yes" } }
+
+        assert_response :not_found
+      end
+    end
   end
 end
