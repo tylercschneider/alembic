@@ -134,5 +134,24 @@ module Alembic
 
       assert_equal({ budget: "low" }, response.reload.answers)
     end
+
+    test "a run carries on after its version is superseded" do
+      response = Response.start(saved)
+      saved.update!(document: branching.merge("entry" => "gate"))
+      saved.publish
+
+      get alembic.response_path(response)
+
+      assert_response :success
+    end
+
+    test "a run carries on after its version is retired" do
+      response = Response.start(saved)
+      saved.retire_version(response.definition_version)
+
+      get alembic.response_path(response)
+
+      assert_response :success
+    end
   end
 end
