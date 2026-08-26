@@ -21,6 +21,7 @@ module Alembic
           built.register(StepType.define(:branch) do
             step_name "Branch"
             setting :step, type: :previous_step
+            setting :output, outputs_of: :step
             setting :answer, from: :step
             output :result, type: :boolean, values: [ true, false ]
             route { |_node, _state| true }
@@ -159,6 +160,10 @@ module Alembic
 
       test "gives a switching node a connection point for each value the step it names outputs" do
         assert_equal [ "high", "low" ], canvas(switching)["nodes"].last["ports"]
+      end
+
+      test "offers an output-naming setting the outputs of the step it reads" do
+        assert_equal [ { "value" => "answer", "label" => "Answer" } ], canvas(picking)["nodes"].last["choices"]["output"]
       end
     end
   end

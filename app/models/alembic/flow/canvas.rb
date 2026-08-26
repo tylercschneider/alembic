@@ -87,7 +87,13 @@ module Alembic
       end
 
       def choices_for(node)
-        naming_steps(node).index_with { earlier_than(node) }.merge(drawn_by(node))
+        naming_steps(node).index_with { earlier_than(node) }.merge(drawn_by(node)).merge(named_outputs_by(node))
+      end
+
+      def named_outputs_by(node)
+        step_type_for(node)&.outputs_of.to_h.to_h do |name, source|
+          [ name.to_s, digest.outputs_of(node.config[source.to_s]) ]
+        end
       end
 
       def drawn_by(node)
@@ -97,7 +103,11 @@ module Alembic
       end
 
       def values_out_of(id)
-        Digest.new(@document, registry: @registry).values_out_of(id)
+        digest.values_out_of(id)
+      end
+
+      def digest
+        Digest.new(@document, registry: @registry)
       end
 
       def naming_steps(node)
@@ -105,13 +115,13 @@ module Alembic
       end
 
       def earlier_than(node)
-        Digest.new(@document, registry: @registry).preceding(node.id).map do |id|
+        digest.preceding(node.id).map do |id|
           { "value" => id, "label" => label_for(@document.node(id)) }
         end
       end
 
       def ports_for(node)
-        Digest.new(@document, registry: @registry).routing_values(node.id)
+        digest.routing_values(node.id)
       end
 
       def step_type_for(node)
