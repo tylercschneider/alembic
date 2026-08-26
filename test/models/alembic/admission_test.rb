@@ -40,5 +40,18 @@ module Alembic
 
       assert_equal run, Admission.of_run(run)
     end
+
+    test "it refuses a visitor when the diagnostic is inactive" do
+      published.update!(status: :inactive)
+
+      assert_raises(NotPermitted) { Admission.of(published, permitted: true) }
+    end
+
+    test "it stops a run under way when the diagnostic is inactive" do
+      run = Response.start(published)
+      published.update!(status: :inactive)
+
+      assert_raises(NotPermitted) { Admission.of_run(run) }
+    end
   end
 end

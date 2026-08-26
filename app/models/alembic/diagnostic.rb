@@ -110,6 +110,14 @@ module Alembic
       version.update!(status: :live)
     end
 
+    def available?
+      active?
+    end
+
+    def resumable?
+      !inactive?
+    end
+
     def retire_version(version)
       version.update!(status: :retired)
     end
