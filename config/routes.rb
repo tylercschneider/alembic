@@ -2,7 +2,9 @@ Alembic::Engine.routes.draw do
   namespace :manage do
     resources :diagnostics, only: [ :index, :create, :show, :edit, :update, :destroy ] do
       resource :definition, only: [ :edit, :update ]
-      resources :versions, only: :index
+      resources :versions, only: :index do
+        post :return, on: :member
+      end
 
       resource :canvas, only: :show, controller: "canvas" do
         post   "steps",       action: :add_step
