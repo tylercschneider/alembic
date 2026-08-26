@@ -5,6 +5,8 @@ module Alembic
 
     validates :slug, presence: true
 
+    scope :listable, -> { active }
+
     # Declared before :definition_versions so responses clear first, otherwise
     # destroying a diagnostic trips the responses -> definition_versions FK.
     has_many :responses, dependent: :destroy

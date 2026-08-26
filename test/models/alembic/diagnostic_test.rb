@@ -403,5 +403,17 @@ module Alembic
 
       assert_predicate diagnostic, :active?
     end
+
+    test "a hidden diagnostic is left out of the listable ones" do
+      diagnostic = Diagnostic.create!(slug: "demo", status: :hidden)
+
+      assert_not_includes Diagnostic.listable, diagnostic
+    end
+
+    test "an active diagnostic is among the listable ones" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      assert_includes Diagnostic.listable, diagnostic
+    end
   end
 end
