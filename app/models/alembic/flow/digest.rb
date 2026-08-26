@@ -19,6 +19,8 @@ module Alembic
       end
 
       def preceding(id)
+        return [] unless @document.reachable.include?(id)
+
         @document.nodes.map(&:id).uniq
           .reject { |other| other == id || @document.reachable(without: other).include?(id) }
       end
