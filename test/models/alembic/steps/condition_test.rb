@@ -78,6 +78,12 @@ module Alembic
 
         assert_equal true, Condition.step_type.route(node, { "budget" => "low" })
       end
+
+      test "names itself by the test it makes" do
+        node = branch({ "step" => "budget", "comparison" => "is not", "answer" => "high" })
+
+        assert_equal "budget is not high", Condition.step_type.name_of(node)
+      end
     end
   end
 end

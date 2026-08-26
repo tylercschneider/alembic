@@ -11,6 +11,8 @@ module Alembic
 
       output :result, type: :boolean, values: [ true, false ]
 
+      names_by { |node| node.config.values_at("step", "comparison", "answer").compact_blank.join(" ").presence }
+
       requires { |node| [ node.config["step"] ].compact }
 
       def route(node, state)
