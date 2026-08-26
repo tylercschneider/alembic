@@ -107,16 +107,14 @@ module Alembic
         assert_equal [ "bottom", "top", "straight" ], edge.values_at("leaves", "enters", "route")
       end
 
-      test "a branch leaves the side its target lies on" do
-        assert_equal "left", routed(branching_flow, "a", "l")["leaves"]
+      test "a branch leaves the bottom for each of its targets" do
+        leaving = [ routed(branching_flow, "a", "l"), routed(branching_flow, "a", "r") ]
+
+        assert_equal [ "bottom", "bottom" ], leaving.map { |edge| edge["leaves"] }
       end
 
-      test "a branch leaves the other side for its other target" do
-        assert_equal "right", routed(branching_flow, "a", "r")["leaves"]
-      end
-
-      test "a branch turns once into the top of its target" do
-        assert_equal [ "top", "turn" ], routed(branching_flow, "a", "l").values_at("enters", "route")
+      test "a branch lanes across into the top of its target" do
+        assert_equal [ "top", "lane" ], routed(branching_flow, "a", "l").values_at("enters", "route")
       end
 
       test "a step merging across into a shared step takes the lane between rows" do

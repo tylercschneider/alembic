@@ -63,14 +63,9 @@ module Alembic
         return { "leaves" => "bottom", "enters" => "top", "route" => "straight" } unless from && to
 
         return alongside_routing(from, to) unless to["row"] > from["row"]
-        return branch_routing(from, to) if branching?(edge, from, to)
 
         { "leaves" => "bottom", "enters" => "top",
           "route" => to["column"] == from["column"] ? "straight" : "lane" }
-      end
-
-      def branch_routing(from, to)
-        { "leaves" => to["column"] < from["column"] ? "left" : "right", "enters" => "top", "route" => "turn" }
       end
 
       def alongside_routing(from, to)
@@ -78,10 +73,6 @@ module Alembic
 
         { "leaves" => leftward ? "left" : "right", "enters" => leftward ? "right" : "left",
           "route" => to["row"] == from["row"] ? "straight" : "detour" }
-      end
-
-      def branching?(edge, from, to)
-        to["column"] != from["column"] && @document.edges_from(edge.from).size > 1
       end
 
       def palette
