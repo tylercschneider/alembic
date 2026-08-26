@@ -51,6 +51,10 @@ module Alembic
         assert_equal [ "first" ], digest(referring).references("recap")
       end
 
+      test "reports no references for a step whose configuration names none" do
+        assert_empty digest(branching).references("first")
+      end
+
       test "reports nothing required by a step that declares none" do
         assert_empty digest(branching).requirements("first")
       end
