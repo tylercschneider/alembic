@@ -127,6 +127,14 @@ module Alembic
         assert_equal :step, step_type.outputs_of[:output]
       end
 
+      test "declares itself a step a flow ends at" do
+        assert_predicate StepType.define(:stop) { ends_here }, :ends_here?
+      end
+
+      test "does not end a flow unless it says so" do
+        assert_not_predicate StepType.define(:ask) { }, :ends_here?
+      end
+
       test "can declare which field names an instance of it" do
         step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 
