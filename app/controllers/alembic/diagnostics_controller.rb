@@ -42,7 +42,11 @@ module Alembic
 
     def runner
       @stored_diagnostic = admit(Diagnostic.find_by(slug: params[:slug]))
-      @stored_diagnostic.runner
+      Runner.new(flowing_definition(@stored_diagnostic))
+    end
+
+    def flowing_definition(diagnostic)
+      diagnostic.live_definition
     end
 
     def submitted_answers

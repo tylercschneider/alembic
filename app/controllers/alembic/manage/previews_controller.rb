@@ -22,6 +22,10 @@ module Alembic
         true
       end
 
+      def flowing_definition(diagnostic)
+        diagnostic.document
+      end
+
       def previewed
         @previewed ||= Diagnostic.find(params[:diagnostic_id])
       end

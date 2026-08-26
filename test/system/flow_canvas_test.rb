@@ -291,7 +291,7 @@ module Alembic
 
       click_button("↶ Undo")
 
-      assert_selector "svg path[marker-end]", count: 4
+      assert_selector "svg path[marker-end]", count: 5
     end
 
     test "redoing puts back what was undone" do
