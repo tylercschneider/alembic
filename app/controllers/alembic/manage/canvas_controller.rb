@@ -23,6 +23,11 @@ module Alembic
         render json: { notice: published(ran) }
       end
 
+      def details
+        diagnostic.update!(details_params)
+        head :no_content
+      end
+
       def undo
         diagnostic.undo_change
         head :no_content
@@ -80,6 +85,10 @@ module Alembic
 
       def document
         Flow::Document.new(diagnostic.document || diagnostic.definition || {})
+      end
+
+      def details_params
+        params.require(:diagnostic).permit(:title, :summary, :start_label)
       end
 
       def recorded(action, edited, steps, before)

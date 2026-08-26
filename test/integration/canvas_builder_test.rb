@@ -300,6 +300,12 @@ module Alembic
       assert_equal alembic.edit_manage_diagnostic_path(diagnostic), response.parsed_body["flow"]["details_url"]
     end
 
+    test "saving the details stores the flow's title" do
+      patch "#{canvas_path}/details", params: { diagnostic: { title: "A better name" } }
+
+      assert_equal "A better name", diagnostic.reload.title
+    end
+
     test "a refused publish says it could not publish and why" do
       post "#{canvas_path}/steps", params: { id: "adrift", type: "question" }
 
