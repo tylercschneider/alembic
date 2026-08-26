@@ -10,7 +10,7 @@ module Alembic
       end
 
       def violations
-        structural_violations + unmet_requirements + missing_settings + missing_values + asked_for
+        structural_violations + unmet_requirements + missing_settings + missing_values + beginnings + asked_for
       end
 
       def structural_violations
@@ -97,6 +97,15 @@ module Alembic
 
       def digest
         Digest.new(@document, registry: @registry)
+      end
+
+      def beginnings
+        @document.beginnings.drop(1).map { |id| Violation.new(node: id, problem: :many_beginnings) } + led_into
+      end
+
+      def led_into
+        @document.beginnings.select { |id| @document.edges.any? { |edge| edge.to == id } }
+          .map { |id| Violation.new(node: id, problem: :before_the_beginning) }
       end
 
       def missing_values

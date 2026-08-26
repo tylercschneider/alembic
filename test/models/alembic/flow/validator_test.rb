@@ -323,6 +323,33 @@ module Alembic
 
         assert_includes violations(document, Flow.registry, checks: Flow.checks).map(&:problem), :dead_end
       end
+
+      def beginning_registry
+        Registry.new.tap do |registry|
+          registry.register(StepType.define(:plain) { })
+          registry.register(StepType.define(:go) { begins_here })
+        end
+      end
+
+      def beginnings(document)
+        built = Document.new(document, registry: beginning_registry)
+
+        Validator.new(built, registry: beginning_registry, checks: []).violations
+      end
+
+      test "reports a flow with more than one beginning" do
+        document = { "nodes" => [ { "id" => "g", "type" => "go" }, { "id" => "h", "type" => "go" } ],
+                     "edges" => [ { "from" => "g", "to" => "h" } ] }
+
+        assert_includes beginnings(document).map(&:problem), :many_beginnings
+      end
+
+      test "reports a step leading into where the flow begins" do
+        document = { "nodes" => [ { "id" => "g", "type" => "go" }, { "id" => "a", "type" => "plain" } ],
+                     "edges" => [ { "from" => "g", "to" => "a" }, { "from" => "a", "to" => "g" } ] }
+
+        assert_includes beginnings(document).map(&:problem), :before_the_beginning
+      end
     end
   end
 end
