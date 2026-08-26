@@ -1,5 +1,7 @@
 module Alembic
   class DiagnosticsController < ApplicationController
+    helper_method :flow_start_path, :flow_step_path, :previewing?
+
     def show
       @diagnostic = admit(Diagnostic.find_by(slug: params[:slug]))
     end
@@ -15,6 +17,18 @@ module Alembic
     end
 
     private
+
+    def flow_start_path(slug)
+      alembic.diagnostic_path(slug)
+    end
+
+    def flow_step_path(slug)
+      alembic.diagnostic_step_path(slug)
+    end
+
+    def previewing?
+      false
+    end
 
     def render_completion
       @answered = @guide.answers_on_path(@answers)

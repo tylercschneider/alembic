@@ -95,5 +95,13 @@ module Alembic
         assert_response :success
       end
     end
+
+    test "a preview starts into the preview rather than the visitor path" do
+      without_host_configuration do
+        get alembic.manage_diagnostic_preview_path(published)
+
+        assert_select "a[href=?]", alembic.step_manage_diagnostic_preview_path(published)
+      end
+    end
   end
 end

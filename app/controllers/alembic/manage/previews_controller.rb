@@ -10,6 +10,18 @@ module Alembic
 
       private
 
+      def flow_start_path(_slug)
+        alembic.manage_diagnostic_preview_path(previewed)
+      end
+
+      def flow_step_path(_slug)
+        alembic.step_manage_diagnostic_preview_path(previewed)
+      end
+
+      def previewing?
+        true
+      end
+
       def previewed
         @previewed ||= Diagnostic.find(params[:diagnostic_id])
       end
