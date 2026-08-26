@@ -23,6 +23,10 @@ module Alembic
         step_type(node)&.requirements_for(node).to_a
       end
 
+      def references(id)
+        References.of(step(id)&.config)
+      end
+
       def next_step(state)
         walk(state).last
       end

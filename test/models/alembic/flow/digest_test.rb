@@ -45,6 +45,12 @@ module Alembic
         assert_equal [ "first" ], digest(branching).requirements("gate")
       end
 
+      test "reports the steps a step's configuration refers to" do
+        referring = branching.merge("nodes" => branching["nodes"] + [ { "id" => "recap", "type" => "ask", "text" => "You said {{first}}" } ])
+
+        assert_equal [ "first" ], digest(referring).references("recap")
+      end
+
       test "reports nothing required by a step that declares none" do
         assert_empty digest(branching).requirements("first")
       end
