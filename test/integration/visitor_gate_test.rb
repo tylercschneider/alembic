@@ -103,5 +103,29 @@ module Alembic
         assert_select "a[href=?]", alembic.step_manage_diagnostic_preview_path(published)
       end
     end
+
+    test "a host can answer a refusal its own way instead of the plain not found" do
+      Alembic.refusal_method = :send_a_refused_visitor_to_login
+
+      without_host_configuration do
+        get alembic.diagnostic_path(published.slug)
+
+        assert_redirected_to "/host-login"
+      end
+    ensure
+      Alembic.refusal_method = nil
+    end
+
+    test "a host is told which refusal it is answering" do
+      Alembic.refusal_method = :note_the_refusal
+
+      without_host_configuration do
+        get alembic.diagnostic_path(published.slug)
+
+        assert_equal "Alembic::NotPermitted", response.headers["X-Refusal"]
+      end
+    ensure
+      Alembic.refusal_method = nil
+    end
   end
 end

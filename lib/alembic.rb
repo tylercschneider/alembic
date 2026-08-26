@@ -8,7 +8,7 @@ module Alembic
 
   class << self
     attr_writer :layout, :base_controller, :admin_layout
-    attr_accessor :lead_partial, :admin_authentication_method, :visitor_authorization_method
+    attr_accessor :lead_partial, :admin_authentication_method, :visitor_authorization_method, :refusal_method
 
     # The host app sets this to render the engine inside its own layout
     # (e.g. "marketing"). Defaults to the engine's own layout.

@@ -17,8 +17,10 @@ module Alembic
       send(Alembic.visitor_authorization_method, diagnostic)
     end
 
-    def refuse
-      head :not_found
+    def refuse(refusal)
+      return head :not_found unless Alembic.refusal_method
+
+      send(Alembic.refusal_method, refusal)
     end
   end
 end

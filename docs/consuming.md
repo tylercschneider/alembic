@@ -425,15 +425,32 @@ The gate raises one of two errors, so you can tell the cases apart:
 | `Alembic::NotPublished` | The flow has no published version. |
 | `Alembic::NotPermitted` | It is published, but not for this visitor. |
 
-Rescue nothing and both render a plain `404`. That is deliberate: a closed flow
-is indistinguishable from one that does not exist, so a slug cannot be probed
-to learn what is there. Rescue either one to render something of your own:
+Configure nothing and both render a plain `404`. That is deliberate: a closed
+flow is indistinguishable from one that does not exist, so a slug cannot be
+probed to learn what is there, and the engine has nowhere sensible to send
+someone it knows nothing about.
+
+To answer a refusal your own way — a redirect to a login, a paywall, a
+passphrase prompt — name a method and the engine hands it the refusal:
+
+```ruby
+# config/initializers/alembic.rb
+Alembic.refusal_method = :alembic_refused
+```
 
 ```ruby
 class ApplicationController < ActionController::Base
-  rescue_from Alembic::NotPermitted, with: :offer_the_passphrase
+  def alembic_refused(refusal)
+    return head :not_found if refusal.is_a?(Alembic::NotPublished)
+
+    redirect_to login_path
+  end
 end
 ```
+
+**Do not reach for `rescue_from` here.** The engine's controllers inherit from
+your base controller, so a handler you register there is registered first and
+the engine's own handler shadows it. The named method is the seam that works.
 
 ### Previewing what visitors cannot reach
 
