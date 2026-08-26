@@ -13,22 +13,54 @@ module Alembic
       private
 
       def nodes
-        placed = Layout.new(@document).positions
+        @document.nodes.map { |node| drawn_step(node) } + waiting.map { |gap| drawn_placeholder(gap) }
+      end
 
-        @document.nodes.map do |node|
-          { "id" => node.id, "type" => node.type, "label" => label_for(node),
-            "config" => node.config, "ports" => ports_for(node), "ends_here" => ends_here?(node), "begins_here" => begins_here?(node),
-            "choices" => choices_for(node), **placed[node.id] }
-        end
+      def drawn_step(node)
+        { "id" => node.id, "type" => node.type, "label" => label_for(node),
+          "config" => node.config, "ports" => [], "ends_here" => ends_here?(node), "begins_here" => begins_here?(node),
+          "loose" => loose?(node), "choices" => choices_for(node), "placeholder" => false, **placed[node.id] }
+      end
+
+      def drawn_placeholder(gap)
+        { "id" => gap[:id], "type" => "placeholder", "label" => gap[:on], "config" => {}, "ports" => [],
+          "ends_here" => false, "begins_here" => false, "loose" => false, "choices" => {},
+          "placeholder" => true, "from" => gap[:from], "on" => gap[:on], **placed[gap[:id]] }
       end
 
       def edges
-        placed = Layout.new(@document).positions
-
-        @document.edges.each_with_index.map do |edge, index|
-          { "id" => "#{edge.from}-#{edge.to}-#{index}", "source" => edge.from, "target" => edge.to, "label" => edge.on }
-            .merge(routing(edge, placed))
+        drawn.edges.each_with_index.map do |edge, index|
+          { "id" => "#{edge.from}-#{edge.to}-#{index}", "source" => edge.from, "target" => edge.to, "label" => edge.on&.to_s,
+            "placeholder" => waiting.any? { |gap| gap[:id] == edge.to } }.merge(routing(edge, placed))
         end
+      end
+
+      def placed
+        @placed ||= Layout.new(drawn).positions
+      end
+
+      def drawn
+        @drawn ||= Document.new(@document.to_h.merge(
+          "nodes" => Array(@document.to_h["nodes"]) + waiting.map { |gap| { "id" => gap[:id], "type" => "placeholder" } },
+          "edges" => Array(@document.to_h["edges"]) + waiting.map { |gap| { "from" => gap[:from], "to" => gap[:id], "on" => gap[:on] } }
+        ), registry: @registry)
+      end
+
+      def waiting
+        @waiting ||= @document.nodes.flat_map { |node| gaps_after(node) }
+      end
+
+      def gaps_after(node)
+        wired = @document.edges_from(node.id).map { |edge| edge.on.to_s }
+        results = digest.routing_values(node.id)
+        return [ { id: "#{node.id}--", from: node.id, on: nil } ] if results.empty? && leads_nowhere?(node)
+
+        results.reject { |value| wired.include?(value) }
+          .map { |value| { id: "#{node.id}--#{value}", from: node.id, on: value } }
+      end
+
+      def leads_nowhere?(node)
+        !ends_here?(node) && !loose?(node) && @document.edges_from(node.id).none?
       end
 
       def routing(edge, placed)
@@ -37,14 +69,9 @@ module Alembic
         return { "leaves" => "bottom", "enters" => "top", "route" => "straight" } unless from && to
 
         return alongside_routing(from, to) unless to["row"] > from["row"]
-        return branch_routing(from, to) if branching?(edge, from, to)
 
         { "leaves" => "bottom", "enters" => "top",
           "route" => to["column"] == from["column"] ? "straight" : "lane" }
-      end
-
-      def branch_routing(from, to)
-        { "leaves" => to["column"] < from["column"] ? "left" : "right", "enters" => "top", "route" => "turn" }
       end
 
       def alongside_routing(from, to)
@@ -54,12 +81,8 @@ module Alembic
           "route" => to["row"] == from["row"] ? "straight" : "detour" }
       end
 
-      def branching?(edge, from, to)
-        to["column"] != from["column"] && @document.edges_from(edge.from).size > 1
-      end
-
       def palette
-        @registry.step_types.reject { |step_type| step_type.begins_here? || step_type.ends_here? }.map do |step_type|
+        @registry.step_types.reject(&:begins_here?).map do |step_type|
           { "type" => step_type.id.to_s, "label" => step_type.step_name,
             "fields" => step_type.fields.transform_keys(&:to_s).transform_values(&:to_s),
             "labels" => step_type.labels.transform_keys(&:to_s),
@@ -122,6 +145,10 @@ module Alembic
 
       def ends_here?(node)
         step_type_for(node)&.ends_here? || false
+      end
+
+      def loose?(node)
+        @document.entry.present? && @document.reachable.exclude?(node.id)
       end
 
       def begins_here?(node)

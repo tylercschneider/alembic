@@ -5,7 +5,13 @@ module Alembic
 
     rescue_from NotPublished, NotPermitted, Withdrawn, with: :refuse
 
+    helper_method :flow_start_path
+
     private
+
+    def flow_start_path(slug)
+      alembic.diagnostic_path(slug)
+    end
 
     def admit(diagnostic)
       Admission.of(diagnostic, permitted: permitted?(diagnostic))

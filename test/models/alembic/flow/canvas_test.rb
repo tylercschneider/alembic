@@ -62,7 +62,9 @@ module Alembic
       end
 
       test "gives every node a row and a column" do
-        assert_equal [ 0, 0 ], canvas(flow)["nodes"].first.values_at("row", "column")
+        placed = canvas(flow)["nodes"].map { |node| node.values_at("row", "column") }
+
+        assert(placed.all? { |row, column| row.is_a?(Integer) && column.is_a?(Integer) })
       end
 
       test "labels a node from the field its type says names it" do
@@ -70,11 +72,11 @@ module Alembic
       end
 
       test "falls back to the node id when its type names no field" do
-        assert_equal "b", canvas(flow)["nodes"].last["label"]
+        assert_equal "b", canvas(flow)["nodes"].find { |node| node["id"] == "b" }["label"]
       end
 
       test "carries every registered step type as a palette entry" do
-        assert_equal [ "Ask", "Switch", "Branch" ], canvas(flow)["palette"].map { |entry| entry["label"] }
+        assert_equal [ "Ask", "Switch", "End", "Branch" ], canvas(flow)["palette"].map { |entry| entry["label"] }
       end
 
       test "carries what a palette entry's record field holds" do
@@ -87,10 +89,6 @@ module Alembic
         assert_equal("string", canvas(flow)["palette"].first["fields"]["text"])
       end
 
-      test "gives a routing node a connection point for each value its output takes" do
-        assert_equal [ "true", "false" ], canvas(flow)["nodes"].last["ports"]
-      end
-
       def routed(document, from, to)
         canvas(document)["edges"].find { |edge| edge["source"] == from && edge["target"] == to }
       end
@@ -99,7 +97,7 @@ module Alembic
         { "entry" => "a",
           "nodes" => [ { "id" => "a", "type" => "branch" }, { "id" => "l", "type" => "ask" },
                        { "id" => "r", "type" => "ask" }, { "id" => "end", "type" => "ask" } ],
-          "edges" => [ { "from" => "a", "to" => "l", "on" => "yes" }, { "from" => "a", "to" => "r", "on" => "no" },
+          "edges" => [ { "from" => "a", "to" => "l", "on" => true }, { "from" => "a", "to" => "r", "on" => false },
                        { "from" => "l", "to" => "end" }, { "from" => "r", "to" => "end" } ] }
       end
 
@@ -109,16 +107,14 @@ module Alembic
         assert_equal [ "bottom", "top", "straight" ], edge.values_at("leaves", "enters", "route")
       end
 
-      test "a branch leaves the side its target lies on" do
-        assert_equal "left", routed(branching_flow, "a", "l")["leaves"]
+      test "a branch leaves the bottom for each of its targets" do
+        leaving = [ routed(branching_flow, "a", "l"), routed(branching_flow, "a", "r") ]
+
+        assert_equal [ "bottom", "bottom" ], leaving.map { |edge| edge["leaves"] }
       end
 
-      test "a branch leaves the other side for its other target" do
-        assert_equal "right", routed(branching_flow, "a", "r")["leaves"]
-      end
-
-      test "a branch turns once into the top of its target" do
-        assert_equal [ "top", "turn" ], routed(branching_flow, "a", "l").values_at("enters", "route")
+      test "a branch lanes across into the top of its target" do
+        assert_equal [ "top", "lane" ], routed(branching_flow, "a", "l").values_at("enters", "route")
       end
 
       test "a step merging across into a shared step takes the lane between rows" do
@@ -144,7 +140,7 @@ module Alembic
 
       test "carries the document's edges" do
         assert_equal [ [ "start", "a" ], [ "a", "b" ] ],
-          canvas(flow)["edges"].map { |edge| [ edge["source"], edge["target"] ] }
+          canvas(flow)["edges"].reject { |edge| edge["placeholder"] }.map { |edge| [ edge["source"], edge["target"] ] }
       end
 
       test "carries the violations the document has" do
@@ -154,19 +150,22 @@ module Alembic
       end
 
       test "offers a step-naming setting the steps that come before that node" do
-        assert_includes canvas(flow)["nodes"].last["choices"]["step"], { "value" => "a", "label" => "Budget?" }
+        assert_includes canvas(flow)["nodes"].find { |node| node["id"] == "b" }["choices"]["step"], { "value" => "a", "label" => "Budget?" }
       end
 
       test "offers a drawing setting the values the step it names outputs" do
-        assert_equal [ { "value" => "high" } ], canvas(picking)["nodes"].last["choices"]["answer"]
+        assert_equal [ { "value" => "high" } ], canvas(picking)["nodes"].find { |node| node["id"] == "b" }["choices"]["answer"]
       end
 
-      test "gives a switching node a connection point for each value the step it names outputs" do
-        assert_equal [ "high", "low" ], canvas(switching)["nodes"].last["ports"]
+      test "gives a switching node a placeholder for each value the step it names outputs" do
+        gaps = canvas(switching)["nodes"].select { |node| node["placeholder"] }
+
+        assert_equal [ "high", "low" ], gaps.map { |node| node["label"] }
       end
 
       test "offers an output-naming setting the outputs of the step it reads" do
-        assert_equal [ { "value" => "answer", "label" => "Answer" } ], canvas(picking)["nodes"].last["choices"]["output"]
+        assert_equal [ { "value" => "answer", "label" => "Answer" } ],
+          canvas(picking)["nodes"].find { |node| node["id"] == "b" }["choices"]["output"]
       end
 
       test "says of a node that the flow ends there" do
@@ -177,11 +176,11 @@ module Alembic
         assert canvas(document)["nodes"].last["ends_here"]
       end
 
-      test "offers no way to add a second beginning or ending" do
+      test "offers no way to add a second beginning" do
         document = { "nodes" => [ { "id" => "a", "type" => "ask" }, { "id" => "z", "type" => "stop" } ],
                      "edges" => [ { "from" => "a", "to" => "z" } ] }
 
-        assert_equal [ "Ask", "Switch", "Branch" ], canvas(document)["palette"].map { |entry| entry["label"] }
+        assert_equal [ "Ask", "Switch", "End", "Branch" ], canvas(document)["palette"].map { |entry| entry["label"] }
       end
 
       test "says of a node that the flow begins there" do
@@ -189,6 +188,72 @@ module Alembic
                      "edges" => [ { "from" => "g", "to" => "a" } ] }
 
         assert canvas(document)["nodes"].find { |node| node["id"] == "g" }["begins_here"]
+      end
+
+      test "says of a node that nothing in the flow leads to it" do
+        document = { "nodes" => [ { "id" => "g", "type" => "go" }, { "id" => "a", "type" => "ask" },
+                                  { "id" => "adrift", "type" => "ask" } ],
+                     "edges" => [ { "from" => "g", "to" => "a" } ] }
+        built = Document.new(document, registry: registry)
+
+        drawn = Canvas.new(built, registry: registry).to_h["nodes"].reject { |node| node["placeholder"] }
+
+        assert_equal [ false, false, true ], drawn.map { |node| node["loose"] }
+      end
+
+      test "draws a placeholder where a result has nowhere to go" do
+        document = { "nodes" => [ { "id" => "a", "type" => "ask" }, { "id" => "b", "type" => "branch", "step" => "a" } ],
+                     "edges" => [ { "from" => "a", "to" => "b" } ] }
+        built = Document.new(document, registry: registry)
+        drawn = Canvas.new(built, registry: registry).to_h
+
+        assert_equal [ "true", "false" ], drawn["nodes"].select { |node| node["placeholder"] }.map { |node| node["label"] }
+      end
+
+      test "leads to each placeholder from the step whose result it is" do
+        document = { "nodes" => [ { "id" => "a", "type" => "ask" }, { "id" => "b", "type" => "branch", "step" => "a" } ],
+                     "edges" => [ { "from" => "a", "to" => "b" } ] }
+        built = Document.new(document, registry: registry)
+        drawn = Canvas.new(built, registry: registry).to_h
+
+        assert_equal [ "b", "b" ], drawn["edges"].select { |edge| edge["placeholder"] }.map { |edge| edge["source"] }
+      end
+
+      test "draws a placeholder where a step leads nowhere at all" do
+        document = { "nodes" => [ { "id" => "a", "type" => "ask" } ], "edges" => [] }
+        built = Document.new(document, registry: registry)
+        drawn = Canvas.new(built, registry: registry).to_h
+
+        assert_equal [ "a--" ], drawn["nodes"].select { |node| node["placeholder"] }.map { |node| node["id"] }
+      end
+
+      test "draws no placeholder after a step the flow ends at" do
+        document = { "nodes" => [ { "id" => "z", "type" => "stop" } ], "edges" => [] }
+        built = Document.new(document, registry: registry)
+        drawn = Canvas.new(built, registry: registry).to_h
+
+        assert_empty drawn["nodes"].select { |node| node["placeholder"] }
+      end
+
+      test "draws no placeholder after a step waiting outside the flow" do
+        document = { "nodes" => [ { "id" => "g", "type" => "go" }, { "id" => "adrift", "type" => "ask" } ],
+                     "edges" => [] }
+        built = Document.new(document, registry: registry)
+        gaps = Canvas.new(built, registry: registry).to_h["nodes"].select { |node| node["placeholder"] }
+
+        assert_equal [ "g" ], gaps.map { |node| node["from"] }
+      end
+
+      test "labels a connection with the result it leaves on, as words" do
+        document = { "nodes" => [ { "id" => "a", "type" => "branch" }, { "id" => "l", "type" => "ask" },
+                                  { "id" => "r", "type" => "ask" } ],
+                     "edges" => [ { "from" => "a", "to" => "l", "on" => true },
+                                  { "from" => "a", "to" => "r", "on" => false } ] }
+        built = Document.new(document, registry: registry)
+
+        labelled = Canvas.new(built, registry: registry).to_h["edges"].filter_map { |edge| edge["label"] }
+
+        assert_equal [ "true", "false" ], labelled
       end
     end
   end

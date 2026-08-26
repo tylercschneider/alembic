@@ -453,10 +453,16 @@ module Alembic
       assert_response :unprocessable_entity
     end
 
-    test "removing the step a flow ends at is refused" do
+    test "removing a step a flow ends at is allowed, since a flow may end in several places" do
       delete "#{canvas_path}/steps/end"
 
-      assert_response :unprocessable_entity
+      assert_response :no_content
+    end
+
+    test "the builder page offers a way to try the flow as a visitor" do
+      get alembic.manage_diagnostic_path(diagnostic)
+
+      assert_select "a[href=?]", alembic.manage_diagnostic_preview_path(diagnostic)
     end
   end
 end

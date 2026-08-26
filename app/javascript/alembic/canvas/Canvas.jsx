@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import StepCard from "./StepCard"
 import Inspector from "./Inspector"
+import Placeholder from "./Placeholder"
 import { offeredTo } from "./choices"
 import TypePicker from "./TypePicker"
 import Toolbar from "./Toolbar"
@@ -13,6 +14,9 @@ import { nextId } from "./ids"
 
 const page = { display: "flex", height: "100%", minHeight: 0, fontSize: 13, color: "#111827" }
 const scroll = { flex: 1, overflow: "auto", position: "relative", background: "#fafafa" }
+const waiting = { position: "absolute", top: 56, left: 16, zIndex: 5, width: CARD + 24, padding: 12,
+                  background: "#f9fafb", border: "1px dashed #d1d5db", borderRadius: 8 }
+
 const grid = { display: "grid", rowGap: GAP_Y, columnGap: 0, padding: 40, justifyContent: "center", position: "relative" }
 const notice = { position: "sticky", zIndex: 8, top: 8, margin: "8px auto 0", width: "fit-content", padding: "6px 12px", borderRadius: 6, fontSize: 12 }
 
@@ -55,8 +59,10 @@ const Canvas = ({ base, token, initial }) => {
     return grouped
   }, [ flow.violations ])
 
-  const rows = Math.max(0, ...flow.nodes.map((node) => node.row)) + 1
-  const columns = Math.max(0, ...flow.nodes.map((node) => node.column)) + 1
+  const attached = flow.nodes.filter((node) => !node.loose)
+  const loose = flow.nodes.filter((node) => node.loose)
+  const rows = Math.max(0, ...attached.map((node) => node.row)) + 1
+  const columns = Math.max(0, ...attached.map((node) => node.column)) + 1
 
   const connectTo = (target) => {
     if (!armed) return
@@ -90,10 +96,44 @@ const Canvas = ({ base, token, initial }) => {
                         onRemove={(link) => { setSelected(null); send("/edges", "DELETE", { from: link.source, to: link.target }) }}
                         onDrop={(link) => { const held = dragging; setDragging(null); send("/steps/" + held + "/move", "PATCH", { from: link.source, to: link.target }) }} />
 
+        {loose.length > 0 && (
+          <div data-loose style={waiting}>
+            <div style={{ fontSize: 11, color: "#6b7280", marginBottom: 6 }}>Not in the flow yet — drag one onto a connection</div>
+            {loose.map((node) => (
+              <div key={node.id} style={{ marginBottom: 8 }}>
+                <StepCard
+                  node={{
+                    ...node,
+                    ref: (element) => { cards.current[node.id] = element },
+                    violations: violationsFor[node.id] || [],
+                    connected: []
+                  }}
+                  selected={selected === node.id}
+                  armed={armed && armed[0] === node.id ? armed[1] : null}
+                  connecting={Boolean(armed)}
+                  onSelect={() => (armed ? connectTo(node.id) : setSelected(node.id))}
+                  onArm={(port, event) => { event.stopPropagation(); setArmed([ node.id, port ]) }}
+                  onDragStart={() => setDragging(node.id)}
+                  onDragEnd={() => setDragging(null)} />
+              </div>
+            ))}
+          </div>
+        )}
+
         <div style={{ ...grid, gridTemplateColumns: `repeat(${columns + 1}, ${(CARD + GAP_X) / 2}px)`, gridTemplateRows: `repeat(${rows}, auto)` }}>
-          {flow.nodes.map((node) => (
+          {attached.map((node) => (
             <div key={node.id} style={{ gridRow: node.row + 1, gridColumn: `${node.column + 1} / span 2`, zIndex: 2 }}>
-              <StepCard
+              {node.placeholder && (
+                <Placeholder node={{ ...node, ref: (element) => { cards.current[node.id] = element } }}
+                             dragging={Boolean(dragging)}
+                             onFill={() => setAdding({ from: node.from, on: node.on, at: { x: 16, y: 52 } })}
+                             onDrop={() => {
+                               const held = dragging
+                               setDragging(null)
+                               if (held) send("/edges", "POST", { from: node.from, to: held, on: node.on })
+                             }} />
+              )}
+              {!node.placeholder && <StepCard
                 node={{
                   ...node,
                   ref: (element) => { cards.current[node.id] = element },
@@ -114,7 +154,7 @@ const Canvas = ({ base, token, initial }) => {
                 }}
                 onDragEnd={() => setDragging(null)}
                 onDragStart={() => setDragging(node.id)}
-              />
+              />}
             </div>
           ))}
         </div>

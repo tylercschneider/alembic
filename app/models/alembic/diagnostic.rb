@@ -100,6 +100,11 @@ module Alembic
       document == definition
     end
 
+    def edit_document(payload)
+      update!(document: payload, undone_changes: [],
+        changes_since_version: changes_since_version.to_a + [ edited_by_hand ])
+    end
+
     def record_definition(payload, captured = [])
       definition_versions.create!(number: next_definition_number, definition: payload,
         changes_captured: captured.map { |change| change.except("before") })
@@ -147,6 +152,11 @@ module Alembic
     end
 
     private
+
+    def edited_by_hand
+      { "action" => "edited", "steps" => [], "named" => [ "the definition" ], "before" => document }
+    end
+
 
     def begin_the_flow
       self.document ||= { "nodes" => [ { "id" => "start", "type" => "start" }, { "id" => "end", "type" => "terminal" } ],
