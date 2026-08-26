@@ -311,6 +311,15 @@ module Alembic
       assert_selector "[data-flow-name]", text: "A better name"
     end
 
+    test "the flow's panel says the details were saved" do
+      canvas_for(flow)
+      find("[data-open-panel]").click
+
+      rename_to("A better name")
+
+      assert_selector "[data-notice]", text: "Saved the flow's details."
+    end
+
     private
 
     def rename_to(name)
