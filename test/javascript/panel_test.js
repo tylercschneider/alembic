@@ -62,3 +62,7 @@ test("names a flow that has no title by its slug", () => {
 
   assert.equal(shown(tree, "data-flow-name")[0].props.children, "a-flow")
 })
+
+test("offers the flow's title for editing", () => {
+  assert.equal(shown(panel({}), "data-flow-title").length, 1)
+})
