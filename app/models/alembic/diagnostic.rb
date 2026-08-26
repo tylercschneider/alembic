@@ -71,6 +71,7 @@ module Alembic
 
     def return_to(version)
       raise ActiveRecord::RecordNotFound unless definition_versions.exists?(version.id)
+      raise OutOfService if version.out_of_service?
 
       update!(document: version.definition, undone_changes: [],
         changes_since_version: changes_since_version.to_a + [ returning_to(version) ])

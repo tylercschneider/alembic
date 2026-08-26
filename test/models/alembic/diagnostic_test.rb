@@ -388,5 +388,14 @@ module Alembic
 
       assert_raises(OutOfService) { diagnostic.publish_version(retired) }
     end
+
+    test "a retired version cannot be returned to" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+      retired = diagnostic.live_version
+      diagnostic.retire_version(retired)
+
+      assert_raises(OutOfService) { diagnostic.return_to(retired) }
+    end
   end
 end
