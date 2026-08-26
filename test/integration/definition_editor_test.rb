@@ -20,7 +20,7 @@ module Alembic
         "slug" => "flow", "entry" => "path",
         "nodes" => [
           { "id" => "path", "type" => "question", "text" => "Which path?", "options" => [ "left", "right" ] },
-          { "id" => "gate", "type" => "condition", "step" => "path", "comparison" => "is", "answer" => "right" },
+          { "id" => "gate", "type" => "condition", "step" => "path", "output" => "answer", "comparison" => "is", "answer" => "right" },
           { "id" => "left_q", "type" => "question", "text" => "Left question", "options" => [ "x" ] },
           { "id" => "right_q", "type" => "question", "text" => "Right question", "options" => [ "y" ] }
         ],

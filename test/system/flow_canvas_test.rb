@@ -8,7 +8,7 @@ module Alembic
           "slug" => "canvas-system", "entry" => "start",
           "nodes" => [ { "id" => "start", "type" => "question", "question" => "First",
                          "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
-                       { "id" => "gate", "type" => "condition", "step" => "start", "comparison" => "is", "answer" => "yes" },
+                       { "id" => "gate", "type" => "condition", "step" => "start", "output" => "answer", "comparison" => "is", "answer" => "yes" },
                        { "id" => "yes_step", "type" => "question", "question" => "Yes path" } ],
           "edges" => [ { "from" => "start", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => true } ]
@@ -22,7 +22,7 @@ module Alembic
           "slug" => "canvas-wired", "entry" => "start",
           "nodes" => [ { "id" => "start", "type" => "question", "question" => "First",
                          "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
-                       { "id" => "gate", "type" => "condition", "step" => "start", "comparison" => "is", "answer" => "yes" },
+                       { "id" => "gate", "type" => "condition", "step" => "start", "output" => "answer", "comparison" => "is", "answer" => "yes" },
                        { "id" => "yes_step", "type" => "question", "question" => "Yes path" } ],
           "edges" => [ { "from" => "start", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => true },
