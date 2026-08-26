@@ -104,6 +104,13 @@ module Alembic
         assert_equal [ :answer ], step_type.outputs.map(&:name)
       end
 
+      test "declares the values an output may take for a given step" do
+        step_type = StepType.define(:ask) { output :answer, values: ->(node) { node.config["answers"] } }
+        node = Node.new(id: "q", type: "ask", config: { "answers" => [ { "value" => "high" } ] })
+
+        assert_equal [ { "value" => "high" } ], step_type.values_of(:answer, node)
+      end
+
       test "can declare which field names an instance of it" do
         step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 

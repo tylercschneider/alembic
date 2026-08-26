@@ -40,6 +40,10 @@ module Alembic
         Array(@requirements&.call(node))
       end
 
+      def values_of(name, node)
+        outputs.find { |output| output.name.to_s == name.to_s }&.values_for(node).to_a
+      end
+
       def offerings_for(node)
         Array(@offerings&.call(node))
       end
@@ -122,8 +126,8 @@ module Alembic
           @requirements = derivation
         end
 
-        def output(name, label: nil)
-          @declared_outputs += [ Output.new(name: name, label: label) ]
+        def output(name, label: nil, values: nil)
+          @declared_outputs += [ Output.new(name: name, label: label, values: values) ]
         end
 
         def offers(&derivation)
