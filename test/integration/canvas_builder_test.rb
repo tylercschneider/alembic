@@ -328,6 +328,12 @@ module Alembic
       assert_equal "Begin", response.parsed_body["flow"]["start_label"]
     end
 
+    test "the canvas carries the flow's slug" do
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal "canvas", response.parsed_body["flow"]["slug"]
+    end
+
     test "a refused publish says it could not publish and why" do
       post "#{canvas_path}/steps", params: { id: "adrift", type: "question" }
 
