@@ -34,6 +34,10 @@ module Alembic
       test "is registered for the application to use" do
         assert_equal :switch, Flow.registry.fetch("switch").id
       end
+
+      test "cannot run without the step it directs on" do
+        assert_equal [ :step ], Switch.step_type.required
+      end
     end
   end
 end

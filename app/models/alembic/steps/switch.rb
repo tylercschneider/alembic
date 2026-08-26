@@ -5,7 +5,7 @@ module Alembic
 
       step_name "Switch"
 
-      setting :step, type: :previous_step
+      setting :step, type: :previous_step, required: true
 
       output :choice, type: :string, label: "Choice", from: :step
 
