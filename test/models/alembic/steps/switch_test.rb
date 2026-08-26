@@ -10,6 +10,10 @@ module Alembic
       test "declares the step it directs on" do
         assert_equal :previous_step, Switch.step_type.fields[:step]
       end
+
+      test "directs on the values the step it names outputs" do
+        assert_equal :step, Switch.step_type.outputs.first.from
+      end
     end
   end
 end
