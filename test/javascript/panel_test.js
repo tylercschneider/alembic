@@ -70,3 +70,7 @@ test("offers the flow's title for editing", () => {
 test("offers the flow's summary for editing", () => {
   assert.equal(shown(panel({}), "data-flow-summary").length, 1)
 })
+
+test("offers the flow's start label for editing", () => {
+  assert.equal(shown(panel({}), "data-flow-start-label").length, 1)
+})

@@ -48,6 +48,11 @@ const Panel = ({ flow, changes, problems, refusal, notice, onCreate, onPublish, 
       <textarea style={control} rows={4} defaultValue={flow.summary ?? ""} onBlur={settling(flow, "summary", onSaveDetails)} data-flow-summary />
     </label>
 
+    <label style={{ display: "block" }}>
+      <span style={{ display: "block", marginBottom: 3, color: "#374151" }}>Start label</span>
+      <input style={control} defaultValue={flow.start_label ?? ""} onBlur={settling(flow, "start_label", onSaveDetails)} data-flow-start-label />
+    </label>
+
     <div style={{ marginTop: 16 }}>
       <button style={{ ...action, textAlign: "center" }} onClick={onCreate} data-create-version>Create version</button>
       <button style={{ ...action, textAlign: "center" }} onClick={onPublish} data-publish>Publish</button>
