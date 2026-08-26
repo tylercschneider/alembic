@@ -56,8 +56,15 @@ module Alembic
       end
 
       def dead_ends
-        @document.nodes.reject { |node| ends_here?(node) || @document.edges_from(node.id).any? }
-          .map { |node| Violation.new(node: node.id, problem: :dead_end) }
+        @document.nodes.filter_map { |node| ending_problem(node) }
+      end
+
+      def ending_problem(node)
+        leaving = @document.edges_from(node.id).any?
+        return Violation.new(node: node.id, problem: :past_the_end) if ends_here?(node) && leaving
+        return if ends_here?(node) || leaving
+
+        Violation.new(node: node.id, problem: :dead_end)
       end
 
       def ends_here?(node)

@@ -305,6 +305,15 @@ module Alembic
       test "accepts a flow whose last step ends it" do
         assert_empty endings(ending_document("stop"))
       end
+
+      test "reports a step leading on from where the flow ends" do
+        document = { "entry" => "a",
+                     "nodes" => [ { "id" => "a", "type" => "plain" }, { "id" => "b", "type" => "stop" },
+                                  { "id" => "c", "type" => "stop" } ],
+                     "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "c" } ] }
+
+        assert_equal [ :past_the_end ], endings(document).map(&:problem)
+      end
     end
   end
 end
