@@ -51,16 +51,16 @@ module Alembic
         assert_equal :previous_step, Condition.step_type.fields[:step]
       end
 
-      test "draws the answer it tests from the step it names" do
-        assert_equal :step, Condition.step_type.drawn_from[:answer]
+      test "draws the answer it tests from the output it names" do
+        assert_equal :output, Condition.step_type.drawn_from[:answer]
       end
 
       test "declares the result it decides as an output" do
         assert_equal [ :result ], Condition.step_type.outputs.map(&:name)
       end
 
-      test "cannot run without the step, comparison and answer it tests" do
-        assert_equal [ :step, :comparison, :answer ], Condition.step_type.required
+      test "cannot run without the step, output, comparison and answer it tests" do
+        assert_equal [ :step, :output, :comparison, :answer ], Condition.step_type.required
       end
 
       test "offers a comparison deciding which way the test falls" do
@@ -83,6 +83,10 @@ module Alembic
         node = branch({ "step" => "budget", "comparison" => "is not", "answer" => "high" })
 
         assert_equal "budget is not high", Condition.step_type.name_of(node)
+      end
+
+      test "names which output of that step it reads" do
+        assert_equal :step, Condition.step_type.outputs_of[:output]
       end
     end
   end
