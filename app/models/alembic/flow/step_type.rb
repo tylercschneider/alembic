@@ -5,9 +5,9 @@ module Alembic
         Declaration.new(id).tap { |decl| decl.instance_eval(&declaration) }.to_step_type
       end
 
-      attr_reader :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :naming_field, :drawn_from, :outputs
+      attr_reader :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :naming_field, :drawn_from, :outputs, :required
 
-      def initialize(id:, step_name:, fields:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil, drawn_from: {}, outputs: [], record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
+      def initialize(id:, step_name:, fields:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil, drawn_from: {}, outputs: [], required: [], record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
         @id = id
         @step_name = step_name
         @fields = fields
@@ -18,6 +18,7 @@ module Alembic
         @naming_field = naming_field
         @drawn_from = drawn_from
         @outputs = outputs
+        @required = required
         @record_fields = record_fields
         @labels = labels
         @record_labels = record_labels
@@ -112,6 +113,7 @@ module Alembic
           @checks = {}
           @drawn_from = {}
           @declared_outputs = []
+          @required = []
           @awaits_input = false
         end
 
@@ -143,11 +145,12 @@ module Alembic
           @naming_field = field
         end
 
-        def setting(name, type: nil, from: nil, label: nil, options: nil, limit: nil, check: nil, &entries)
+        def setting(name, type: nil, from: nil, label: nil, options: nil, limit: nil, check: nil, required: false, &entries)
           type ||= :from_step if from
           raise UnknownFieldType, "#{type} is not one of #{FIELD_TYPES.join(', ')}" unless FIELD_TYPES.include?(type)
 
           @drawn_from[name] = from if from
+          @required += [ name ] if required
 
           declare_entries(name, entries) if type == :list
           declare_choices(name, type, options)
@@ -179,7 +182,7 @@ module Alembic
         public
 
         def to_step_type
-          StepType.new(id: @id, step_name: @step_name, fields: @fields, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, drawn_from: @drawn_from, outputs: @declared_outputs, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
+          StepType.new(id: @id, step_name: @step_name, fields: @fields, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, drawn_from: @drawn_from, outputs: @declared_outputs, required: @required, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
         end
       end
     end

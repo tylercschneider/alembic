@@ -105,6 +105,12 @@ module Alembic
         assert_equal :step, step_type.outputs.first.from
       end
 
+      test "declares a setting it cannot run without" do
+        step_type = StepType.define(:branch) { setting :step, type: :string, required: true }
+
+        assert_equal [ :step ], step_type.required
+      end
+
       test "can declare which field names an instance of it" do
         step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 
