@@ -62,6 +62,10 @@ module Alembic
       test "cannot run without the step and answer it tests" do
         assert_equal [ :step, :answer ], Condition.step_type.required
       end
+
+      test "offers a comparison deciding which way the test falls" do
+        assert_equal [ "is", "is not" ], Condition.step_type.choices[:comparison]
+      end
     end
   end
 end
