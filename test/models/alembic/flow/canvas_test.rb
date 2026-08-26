@@ -11,7 +11,7 @@ module Alembic
             setting(:options, type: :list) { setting :value, type: :string; setting :weight, type: :integer }
             names_by :text
           end)
-          built.register(StepType.define(:branch) { step_name "Branch"; outputs :yes, :no })
+          built.register(StepType.define(:branch) { step_name "Branch"; setting :step, type: :previous_step; outputs :yes, :no })
         end
       end
 
@@ -120,6 +120,10 @@ module Alembic
         stranded = flow.merge("nodes" => flow["nodes"] + [ { "id" => "loose", "type" => "ask" } ])
 
         assert_equal [ "loose" ], canvas(stranded)["violations"].map { |violation| violation["node"] }
+      end
+
+      test "offers a step-naming setting the steps that come before that node" do
+        assert_equal [ { "value" => "a", "label" => "Budget?" } ], canvas(flow)["nodes"].last["choices"]["step"]
       end
     end
   end

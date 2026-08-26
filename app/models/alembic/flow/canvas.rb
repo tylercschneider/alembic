@@ -17,7 +17,8 @@ module Alembic
 
         @document.nodes.map do |node|
           { "id" => node.id, "type" => node.type, "label" => label_for(node),
-            "config" => node.config, "ports" => ports_for(node), **placed[node.id] }
+            "config" => node.config, "ports" => ports_for(node),
+            "choices" => choices_for(node), **placed[node.id] }
         end
       end
 
@@ -83,6 +84,20 @@ module Alembic
 
       def label_for(node)
         Name.of(node, @registry)
+      end
+
+      def choices_for(node)
+        naming_steps(node).index_with { earlier_than(node) }
+      end
+
+      def naming_steps(node)
+        step_type_for(node)&.fields.to_h.select { |_name, type| type == :previous_step }.keys.map(&:to_s)
+      end
+
+      def earlier_than(node)
+        Digest.new(@document, registry: @registry).preceding(node.id).map do |id|
+          { "value" => id, "label" => label_for(@document.node(id)) }
+        end
       end
 
       def ports_for(node)
