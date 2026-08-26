@@ -9,6 +9,8 @@ const heading = { fontWeight: 600, marginBottom: 6, marginTop: 14 }
 const quiet = { color: "#6b7280", fontSize: 12 }
 const item = { fontSize: 12, marginBottom: 4, lineHeight: 1.4 }
 const link = { ...action, textAlign: "center", textDecoration: "none", color: "#111827" }
+const field = { display: "block" }
+const caption = { display: "block", marginBottom: 3, color: "#374151" }
 
 const settling = (flow, name, onSaveDetails) => (event) => {
   if (event.target.value !== (flow[name] ?? "")) onSaveDetails({ [name]: event.target.value })
@@ -38,18 +40,18 @@ const Panel = ({ flow, changes, problems, refusal, notice, onCreate, onPublish, 
       : changes.map((change, at) => <p key={at} style={item} data-change>{change}</p>)}
 
     <h2 style={heading}>Details</h2>
-    <label style={{ display: "block" }}>
-      <span style={{ display: "block", marginBottom: 3, color: "#374151" }}>Title</span>
+    <label style={field}>
+      <span style={caption}>Title</span>
       <input style={control} defaultValue={flow.title ?? ""} onBlur={settling(flow, "title", onSaveDetails)} data-flow-title />
     </label>
 
-    <label style={{ display: "block" }}>
-      <span style={{ display: "block", marginBottom: 3, color: "#374151" }}>Summary</span>
+    <label style={field}>
+      <span style={caption}>Summary</span>
       <textarea style={control} rows={4} defaultValue={flow.summary ?? ""} onBlur={settling(flow, "summary", onSaveDetails)} data-flow-summary />
     </label>
 
-    <label style={{ display: "block" }}>
-      <span style={{ display: "block", marginBottom: 3, color: "#374151" }}>Start label</span>
+    <label style={field}>
+      <span style={caption}>Start label</span>
       <input style={control} defaultValue={flow.start_label ?? ""} onBlur={settling(flow, "start_label", onSaveDetails)} data-flow-start-label />
     </label>
 
