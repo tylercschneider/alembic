@@ -14,6 +14,10 @@ module Alembic
       test "directs on the values the step it names outputs" do
         assert_equal :step, Switch.step_type.outputs.first.from
       end
+
+      test "directs by the answer the step it names gave" do
+        assert_equal "high", Switch.step_type.route(switch({ "step" => "budget" }), { "budget" => "high" })
+      end
     end
   end
 end
