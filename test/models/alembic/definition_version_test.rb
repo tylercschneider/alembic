@@ -34,5 +34,13 @@ module Alembic
 
       assert_raises(ActiveRecord::ReadOnlyRecord) { version.update!(definition: { "slug" => "rewritten" }) }
     end
+
+    test "a version that has been cut but never published is a draft" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
+
+      assert_predicate version, :draft?
+    end
   end
 end

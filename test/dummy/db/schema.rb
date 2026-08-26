@@ -17,8 +17,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_230500) do
     t.json "definition"
     t.integer "diagnostic_id", null: false
     t.integer "number", null: false
+    t.string "status", default: "draft", null: false
     t.index ["diagnostic_id", "number"], name: "index_alembic_definition_versions_on_diagnostic_and_number", unique: true
     t.index ["diagnostic_id"], name: "index_alembic_definition_versions_on_diagnostic_id"
+    t.index ["diagnostic_id"], name: "index_alembic_definition_versions_on_one_live_per_diagnostic", unique: true, where: "status = 'live'"
   end
 
   create_table "alembic_diagnostics", force: :cascade do |t|
