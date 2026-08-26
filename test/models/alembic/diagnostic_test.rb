@@ -415,5 +415,41 @@ module Alembic
 
       assert_includes Diagnostic.listable, diagnostic
     end
+
+    test "only one version of a diagnostic can be live" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+      other = diagnostic.definition_versions.create!(number: 2, definition: { "slug" => "demo" })
+
+      assert_raises(ActiveRecord::RecordNotUnique) { other.update!(status: :live) }
+    end
+
+    test "a withdrawn version cannot be published" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+      withdrawn = diagnostic.live_version
+      withdrawn.update!(status: :withdrawn)
+
+      assert_raises(OutOfService) { diagnostic.publish_version(withdrawn) }
+    end
+
+    test "a withdrawn version cannot be returned to" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+      withdrawn = diagnostic.live_version
+      withdrawn.update!(status: :withdrawn)
+
+      assert_raises(OutOfService) { diagnostic.return_to(withdrawn) }
+    end
+
+    test "a version survives being withdrawn so a finished run stays readable" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+      version = diagnostic.live_version
+
+      version.update!(status: :withdrawn)
+
+      assert_equal({ "slug" => "demo" }, version.reload.definition)
+    end
   end
 end

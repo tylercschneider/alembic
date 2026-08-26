@@ -152,5 +152,14 @@ module Alembic
 
       assert_select "legend", text: /What is your budget\?/
     end
+
+    test "a visitor cannot start on a version that has been retired" do
+      diagnostic = flowed
+      diagnostic.retire_version(diagnostic.live_version)
+
+      get alembic.diagnostic_step_path(diagnostic.slug)
+
+      assert_response :not_found
+    end
   end
 end
