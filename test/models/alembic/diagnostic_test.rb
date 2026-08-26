@@ -370,5 +370,14 @@ module Alembic
 
       assert_predicate diagnostic.current_definition_version.reload, :live?
     end
+
+    test "a retired version is no longer the live one" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+
+      diagnostic.retire_version(diagnostic.live_version)
+
+      assert_nil diagnostic.reload.live_version
+    end
   end
 end
