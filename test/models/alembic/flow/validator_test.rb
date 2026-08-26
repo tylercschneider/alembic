@@ -151,7 +151,8 @@ module Alembic
           registry.register(StepType.define(:pick) { output :answer, values: ->(node) { Array(node.config["options"]) } })
           registry.register(StepType.define(:reads) do
             setting :step, type: :previous_step
-            setting :answer, from: :step
+            setting :output, outputs_of: :step
+            setting :answer, from: :output
           end)
         end
       end
@@ -159,7 +160,7 @@ module Alembic
       def reading_document(chosen)
         { "entry" => "a",
           "nodes" => [ { "id" => "a", "type" => "pick", "options" => [ { "value" => "high" } ] },
-                       { "id" => "b", "type" => "reads", "step" => "a", "answer" => chosen } ],
+                       { "id" => "b", "type" => "reads", "step" => "a", "output" => "answer", "answer" => chosen } ],
           "edges" => [ { "from" => "a", "to" => "b" } ] }
       end
 

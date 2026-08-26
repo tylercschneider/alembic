@@ -70,20 +70,23 @@ module Alembic
       def missing_values_in(node)
         drawn_of(node).filter_map do |name, source|
           chosen = node.config[name.to_s]
-          next if chosen.blank? || offered_by(node.config[source.to_s]).include?(chosen.to_s)
+          next if chosen.blank? || node.config[source.to_s].blank?
+          next if offered_to(node, source).include?(chosen.to_s)
 
           Violation.new(node: node.id, problem: :missing_value, detail: chosen.to_s)
         end
+      end
+
+      def offered_to(node, source)
+        naming = @registry.fetch(node.type).outputs_of[source]
+
+        digest.values_of(node.config[naming.to_s], node.config[source.to_s]).map { |value| value["value"].to_s }
       end
 
       def drawn_of(node)
         return {} unless @registry.registered?(node.type)
 
         @registry.fetch(node.type).drawn_from
-      end
-
-      def offered_by(id)
-        digest.values_out_of(id).map { |value| value["value"].to_s }
       end
 
       def missing_settings
