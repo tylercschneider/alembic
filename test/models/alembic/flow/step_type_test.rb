@@ -91,6 +91,13 @@ module Alembic
         assert_equal :step, step_type.drawn_from[:answer]
       end
 
+      test "declares what a later step may choose from it" do
+        step_type = StepType.define(:ask) { offers { |node| node.config["answers"] } }
+        node = Node.new(id: "q", type: "ask", config: { "answers" => [ { "value" => "high" } ] })
+
+        assert_equal [ { "value" => "high" } ], step_type.offerings_for(node)
+      end
+
       test "can declare which field names an instance of it" do
         step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 

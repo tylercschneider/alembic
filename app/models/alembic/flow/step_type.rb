@@ -7,13 +7,14 @@ module Alembic
 
       attr_reader :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :ports, :naming_field, :drawn_from
 
-      def initialize(id:, step_name:, fields:, ports:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil, drawn_from: {}, record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
+      def initialize(id:, step_name:, fields:, ports:, awaits_input:, requirements:, offerings:, behaviour:, routing:, naming_field: nil, drawn_from: {}, record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
         @id = id
         @step_name = step_name
         @fields = fields
         @ports = ports
         @awaits_input = awaits_input
         @requirements = requirements
+        @offerings = offerings
         @behaviour = behaviour
         @routing = routing
         @naming_field = naming_field
@@ -36,6 +37,10 @@ module Alembic
 
       def requirements_for(node)
         Array(@requirements&.call(node))
+      end
+
+      def offerings_for(node)
+        Array(@offerings&.call(node))
       end
 
       def awaits_input?
@@ -115,6 +120,10 @@ module Alembic
           @requirements = derivation
         end
 
+        def offers(&derivation)
+          @offerings = derivation
+        end
+
         def process(&behaviour)
           @behaviour = behaviour
         end
@@ -175,7 +184,7 @@ module Alembic
         public
 
         def to_step_type
-          StepType.new(id: @id, step_name: @step_name, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, drawn_from: @drawn_from, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
+          StepType.new(id: @id, step_name: @step_name, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, offerings: @offerings, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, drawn_from: @drawn_from, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
         end
       end
     end
