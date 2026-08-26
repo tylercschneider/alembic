@@ -67,6 +67,7 @@ module Alembic
     def publish
       create_version
 
+      live_version&.update!(status: :superseded)
       current_definition_version.update!(status: :live)
       update!(published_version: current_definition_version, status: :published)
     end
@@ -101,6 +102,10 @@ module Alembic
       definition_versions.create!(number: next_definition_number, definition: payload,
         changes_captured: captured.map { |change| change.except("before") })
         .tap { |version| update!(definition_cursor: version.number, document: payload) }
+    end
+
+    def live_version
+      definition_versions.find_by(status: :live)
     end
 
     def published_definition

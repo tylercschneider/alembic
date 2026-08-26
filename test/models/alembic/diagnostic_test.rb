@@ -350,5 +350,16 @@ module Alembic
 
       assert_predicate diagnostic.current_definition_version, :live?
     end
+
+    test "publishing a newer version supersedes the one that was live" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+      first = diagnostic.current_definition_version
+
+      diagnostic.update!(document: { "slug" => "demo", "entry" => "a" })
+      diagnostic.publish
+
+      assert_predicate first.reload, :superseded?
+    end
   end
 end
