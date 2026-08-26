@@ -112,5 +112,46 @@ module Alembic
 
       assert_select "[data-output=?]", "answered"
     end
+
+    test "a visitor part way through a withdrawn version is told it was withdrawn" do
+      Alembic.refusal_method = :note_the_refusal
+      response = Response.start(saved)
+      response.definition_version.update!(status: :withdrawn)
+
+      get alembic.response_path(response)
+
+      assert_equal "Alembic::Withdrawn", @response.headers["X-Refusal"]
+    ensure
+      Alembic.refusal_method = nil
+    end
+
+    test "a withdrawn version keeps the answers already recorded" do
+      response = Response.start(saved)
+      response.record_answer(:budget, "low")
+      response.definition_version.update!(status: :withdrawn)
+
+      get alembic.response_path(response)
+
+      assert_equal({ budget: "low" }, response.reload.answers)
+    end
+
+    test "a run carries on after its version is superseded" do
+      response = Response.start(saved)
+      saved.update!(document: branching.merge("entry" => "gate"))
+      saved.publish
+
+      get alembic.response_path(response)
+
+      assert_response :success
+    end
+
+    test "a run carries on after its version is retired" do
+      response = Response.start(saved)
+      saved.retire_version(response.definition_version)
+
+      get alembic.response_path(response)
+
+      assert_response :success
+    end
   end
 end

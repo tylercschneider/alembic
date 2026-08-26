@@ -3,7 +3,7 @@ module Alembic
     layout -> { Alembic.layout }
     helper KeystoneUiHelper
 
-    rescue_from NotPublished, NotPermitted, with: :refuse
+    rescue_from NotPublished, NotPermitted, Withdrawn, with: :refuse
 
     private
 

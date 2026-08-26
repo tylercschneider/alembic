@@ -14,7 +14,7 @@
             <span class="text-sm text-gray-500"><%= version.created_at.to_fs(:long) %></span>
           </div>
 
-          <% if version == @diagnostic.published_version %>
+          <% if version == @diagnostic.live_version %>
             <p data-live class="mt-1 text-sm font-medium text-green-700">Visitors run this version</p>
           <% end %>
 

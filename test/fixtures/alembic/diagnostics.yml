@@ -3,18 +3,17 @@ business_scorecard:
   title: Business Blind-Spot Scorecard
   summary: A quick diagnostic of what your business is not measuring.
   kind: scored
-  status: published
+  status: active
 
 stats_ladder:
   slug: stats-system-ladder
   title: The Stats System Ladder
   summary: A branching field guide to where your metrics system needs to be.
   kind: guide
-  status: draft
+  status: active
 
 db_guide:
   slug: db-guide
   title: Database Guide Record
   kind: guide
-  status: published
-  published_version: db_guide_v1
+  status: active

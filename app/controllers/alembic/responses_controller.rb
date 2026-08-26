@@ -34,7 +34,9 @@ module Alembic
     end
 
     def saved_session
-      Response.find(params[:id]).tap { |session| admit(session.diagnostic) }
+      run = Response.find(params[:id])
+
+      Admission.of_run(run, permitted: permitted?(run.diagnostic))
     end
 
     def diagnostic

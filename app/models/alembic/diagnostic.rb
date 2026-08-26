@@ -1,15 +1,16 @@
 module Alembic
   class Diagnostic < ApplicationRecord
-    enum :status, { draft: "draft", published: "published" }
+    enum :status, { active: "active", hidden: "hidden", inactive: "inactive" }
     enum :kind, { scored: "scored", guide: "guide" }
 
     validates :slug, presence: true
+
+    scope :listable, -> { active }
 
     # Declared before :definition_versions so responses clear first, otherwise
     # destroying a diagnostic trips the responses -> definition_versions FK.
     has_many :responses, dependent: :destroy
     has_many :definition_versions, dependent: :destroy
-    belongs_to :published_version, class_name: "DefinitionVersion", optional: true
     has_many :summary_versions, dependent: :destroy
 
     def self.upsert_definition(definition)
@@ -65,20 +66,21 @@ module Alembic
     end
 
     def publish
-      cut_version
+      create_version
 
-      update!(published_version: current_definition_version, status: :published)
+      publish_version(current_definition_version)
     end
 
     def return_to(version)
       raise ActiveRecord::RecordNotFound unless definition_versions.exists?(version.id)
+      raise OutOfService if version.out_of_service?
 
       update!(document: version.definition, undone_changes: [],
         changes_since_version: changes_since_version.to_a + [ returning_to(version) ])
     end
 
-    def cut_version
-      record_definition(document, changes_since_version.to_a) unless cut?
+    def create_version
+      record_definition(document, changes_since_version.to_a) unless versioned?
 
       update!(undo_history: undoable, changes_since_version: [], undone_changes: [])
     end
@@ -92,7 +94,7 @@ module Alembic
         "detail" => "version #{version.number}", "before" => document }
     end
 
-    def cut?
+    def versioned?
       document == definition
     end
 
@@ -102,12 +104,36 @@ module Alembic
         .tap { |version| update!(definition_cursor: version.number, document: payload) }
     end
 
-    def published_definition
-      published_version&.definition
+    def publish_version(version)
+      raise OutOfService if version.out_of_service?
+      return if live_version == version
+
+      live_version&.update!(status: :superseded)
+      version.update!(status: :live)
+    end
+
+    def available?
+      !inactive?
+    end
+
+    def retire_version(version)
+      version.update!(status: :retired)
+    end
+
+    def withdraw_version(version)
+      version.update!(status: :withdrawn)
+    end
+
+    def live_version
+      definition_versions.find_by(status: :live)
+    end
+
+    def live_definition
+      live_version&.definition
     end
 
     def runner
-      Runner.new(published_definition)
+      Runner.new(live_definition)
     end
 
     def summarises?

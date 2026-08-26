@@ -193,7 +193,7 @@ module Alembic
       assert_includes drawn["nodes"].map { |node| node["id"] }, "c"
     end
 
-    test "cutting a version records the document being edited" do
+    test "creating a version records the document being edited" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
 
       assert_difference -> { diagnostic.definition_versions.count } do
@@ -238,13 +238,13 @@ module Alembic
       post "#{canvas_path}/publish"
 
       assert_response :unprocessable_entity
-      assert_nil diagnostic.reload.published_version
+      assert_nil diagnostic.reload.live_version
     end
 
     test "publishing a sound document marks it for visitors" do
       post "#{canvas_path}/publish"
 
-      assert_equal diagnostic.reload.definition_versions.last, diagnostic.published_version
+      assert_equal diagnostic.reload.definition_versions.last, diagnostic.live_version
     end
 
     test "the canvas carries what has changed since the last version" do
@@ -263,7 +263,7 @@ module Alembic
       assert_kind_of String, response.parsed_body["changes"].first
     end
 
-    test "the change list empties when a version is cut" do
+    test "the change list empties when a version is created" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
       post "#{canvas_path}/versions"
 
@@ -285,7 +285,7 @@ module Alembic
 
       get canvas_path, headers: { "Accept" => "application/json" }
 
-      assert_equal diagnostic.reload.published_version.number, response.parsed_body["flow"]["published"]
+      assert_equal diagnostic.reload.live_version.number, response.parsed_body["flow"]["published"]
     end
 
     test "the canvas carries where the definition is edited" do

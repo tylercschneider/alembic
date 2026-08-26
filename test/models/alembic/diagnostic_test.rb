@@ -2,8 +2,8 @@ require "test_helper"
 
 module Alembic
   class DiagnosticTest < ActiveSupport::TestCase
-    test "reports when it is published" do
-      assert Diagnostic.new(status: :published).published?
+    test "reports when it is hidden" do
+      assert Diagnostic.new(status: :hidden).hidden?
     end
 
     test "reports its kind" do
@@ -94,21 +94,21 @@ module Alembic
       assert_equal({ "entry" => "one" }, diagnostic.reload.document)
     end
 
-    test "cutting a version leaves nothing to redo but keeps what can be undone" do
+    test "creating a version leaves nothing to redo but keeps what can be undone" do
       diagnostic = Diagnostic.create!(slug: "undo", document: { "entry" => "one" })
       edited(diagnostic, "two", { "entry" => "one" })
       diagnostic.undo_change
 
-      diagnostic.cut_version
+      diagnostic.create_version
 
       assert_not diagnostic.redoable?
     end
 
-    test "cutting a version leaves the author able to undo past it" do
+    test "creating a version leaves the author able to undo past it" do
       diagnostic = Diagnostic.create!(slug: "undo", document: { "entry" => "one" })
       edited(diagnostic, "two", { "entry" => "one" })
 
-      diagnostic.cut_version
+      diagnostic.create_version
 
       assert_predicate diagnostic, :undoable?
     end
@@ -223,50 +223,50 @@ module Alembic
       assert_equal "a", diagnostic.reload.document["entry"]
     end
 
-    test "cutting a version records the live document" do
+    test "creating a version records the live document" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
       diagnostic.update!(document: { "entry" => "b", "nodes" => [], "edges" => [] })
 
-      diagnostic.cut_version
+      diagnostic.create_version
 
       assert_equal "b", diagnostic.definition_versions.order(:number).last.definition["entry"]
     end
 
-    test "cutting a version clears what had changed since the last one" do
+    test "creating a version clears what had changed since the last one" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
       diagnostic.update!(document: { "entry" => "b" }, changes_since_version: [ { "action" => "moved", "steps" => [ "a" ], "named" => [ "A" ] } ])
 
-      diagnostic.cut_version
+      diagnostic.create_version
 
       assert_empty diagnostic.reload.changes_since_version
     end
 
-    test "cutting a version twice over records only one" do
+    test "creating a version twice over records only one" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
 
       assert_no_difference -> { diagnostic.definition_versions.count } do
-        diagnostic.cut_version
+        diagnostic.create_version
       end
     end
 
-    test "publishing marks the cut version as the one visitors run" do
+    test "publishing marks the created version as the one visitors run" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
       diagnostic.update!(document: { "entry" => "b", "nodes" => [], "edges" => [] })
 
       diagnostic.publish
 
-      assert_equal "b", diagnostic.reload.published_version.definition["entry"]
+      assert_equal "b", diagnostic.reload.live_version.definition["entry"]
     end
 
     test "a version carries the changes that produced it" do
       diagnostic = Diagnostic.create!(slug: "demo", document: { "entry" => "a" })
       diagnostic.update!(changes_since_version: [ { "action" => "added", "steps" => [ "a" ], "named" => [ "A" ] } ])
 
-      diagnostic.cut_version
+      diagnostic.create_version
 
       assert_equal [ "added" ], diagnostic.definition_versions.last.changes.map { |change| change["action"] }
     end
@@ -320,11 +320,11 @@ module Alembic
     test "returning leaves visitors on the version they were running" do
       diagnostic = returnable
       diagnostic.publish
-      running = diagnostic.published_version
+      running = diagnostic.live_version
 
       diagnostic.return_to(diagnostic.definition_versions.order(:number).first)
 
-      assert_equal running, diagnostic.reload.published_version
+      assert_equal running, diagnostic.reload.live_version
     end
 
     test "undoing a return puts the document back" do
@@ -341,6 +341,124 @@ module Alembic
         diagnostic.record_definition("entry" => "first")
         diagnostic.record_definition("entry" => "second")
       end
+    end
+
+    test "publishing makes the version live" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+
+      diagnostic.publish
+
+      assert_predicate diagnostic.current_definition_version, :live?
+    end
+
+    test "publishing a newer version supersedes the one that was live" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+      first = diagnostic.current_definition_version
+
+      diagnostic.update!(document: { "slug" => "demo", "entry" => "a" })
+      diagnostic.publish
+
+      assert_predicate first.reload, :superseded?
+    end
+
+    test "publishing the version that is already live leaves it live" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+
+      diagnostic.publish
+
+      assert_predicate diagnostic.current_definition_version.reload, :live?
+    end
+
+    test "a retired version is no longer the live one" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+
+      diagnostic.retire_version(diagnostic.live_version)
+
+      assert_nil diagnostic.reload.live_version
+    end
+
+    test "a retired version cannot be published" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+      retired = diagnostic.live_version
+      diagnostic.retire_version(retired)
+
+      assert_raises(OutOfService) { diagnostic.publish_version(retired) }
+    end
+
+    test "a retired version cannot be returned to" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+      retired = diagnostic.live_version
+      diagnostic.retire_version(retired)
+
+      assert_raises(OutOfService) { diagnostic.return_to(retired) }
+    end
+
+    test "a diagnostic is active until it is set otherwise" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      assert_predicate diagnostic, :active?
+    end
+
+    test "a hidden diagnostic is left out of the listable ones" do
+      diagnostic = Diagnostic.create!(slug: "demo", status: :hidden)
+
+      assert_not_includes Diagnostic.listable, diagnostic
+    end
+
+    test "an active diagnostic is among the listable ones" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      assert_includes Diagnostic.listable, diagnostic
+    end
+
+    test "only one version of a diagnostic can be live" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+      other = diagnostic.definition_versions.create!(number: 2, definition: { "slug" => "demo" })
+
+      assert_raises(ActiveRecord::RecordNotUnique) { other.update!(status: :live) }
+    end
+
+    test "a withdrawn version cannot be published" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+      withdrawn = diagnostic.live_version
+      withdrawn.update!(status: :withdrawn)
+
+      assert_raises(OutOfService) { diagnostic.publish_version(withdrawn) }
+    end
+
+    test "a withdrawn version cannot be returned to" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+      withdrawn = diagnostic.live_version
+      withdrawn.update!(status: :withdrawn)
+
+      assert_raises(OutOfService) { diagnostic.return_to(withdrawn) }
+    end
+
+    test "a version survives being withdrawn so a finished run stays readable" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+      version = diagnostic.live_version
+
+      version.update!(status: :withdrawn)
+
+      assert_equal({ "slug" => "demo" }, version.reload.definition)
+    end
+
+    test "withdrawing a version takes it out of service" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+
+      diagnostic.withdraw_version(diagnostic.live_version)
+
+      assert_predicate diagnostic.definition_versions.first.reload, :withdrawn?
     end
   end
 end

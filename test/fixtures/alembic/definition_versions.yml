@@ -1,6 +1,7 @@
 db_guide_v1:
   diagnostic: db_guide
   number: 1
+  status: live
   definition:
     slug: db-guide
     headline: A flow defined in the database

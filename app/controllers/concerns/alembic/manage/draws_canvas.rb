@@ -22,7 +22,7 @@ module Alembic
       def flow_details(diagnostic)
         { "title" => diagnostic.title.presence || diagnostic.slug,
           "version" => diagnostic.current_definition_version&.number,
-          "published" => diagnostic.published_version&.number,
+          "published" => diagnostic.live_version&.number,
           "definition_url" => edit_manage_diagnostic_definition_path(diagnostic),
           "details_url" => edit_manage_diagnostic_path(diagnostic),
           "history_url" => manage_diagnostic_versions_path(diagnostic) }

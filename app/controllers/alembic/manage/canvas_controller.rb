@@ -6,9 +6,9 @@ module Alembic
         render json: canvas_payload(diagnostic)
       end
 
-      def cut
+      def create
         stood_at = diagnostic.current_definition_version&.number
-        diagnostic.cut_version
+        diagnostic.create_version
 
         render json: { notice: created(stood_at) }
       end
@@ -17,7 +17,7 @@ module Alembic
         objections = Flow::Validator.new(document).violations
         return render json: { error: refusal(objections) }, status: :unprocessable_entity if objections.any?
 
-        ran = diagnostic.published_version&.number
+        ran = diagnostic.live_version&.number
         diagnostic.publish
 
         render json: { notice: published(ran) }
@@ -134,7 +134,7 @@ module Alembic
       end
 
       def published(ran)
-        now_at = diagnostic.reload.published_version&.number
+        now_at = diagnostic.reload.live_version&.number
         return "Visitors already run version #{now_at}." if now_at == ran
 
         "Published version #{now_at}. Visitors run it now."

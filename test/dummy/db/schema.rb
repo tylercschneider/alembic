@@ -17,8 +17,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_230500) do
     t.json "definition"
     t.integer "diagnostic_id", null: false
     t.integer "number", null: false
+    t.string "status", default: "draft", null: false
     t.index ["diagnostic_id", "number"], name: "index_alembic_definition_versions_on_diagnostic_and_number", unique: true
     t.index ["diagnostic_id"], name: "index_alembic_definition_versions_on_diagnostic_id"
+    t.index ["diagnostic_id"], name: "index_alembic_definition_versions_on_one_live_per_diagnostic", unique: true, where: "status = 'live'"
   end
 
   create_table "alembic_diagnostics", force: :cascade do |t|
@@ -27,17 +29,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_230500) do
     t.integer "definition_cursor"
     t.json "document"
     t.string "kind"
-    t.integer "published_version_id"
     t.string "slug"
     t.string "start_label"
-    t.string "status"
+    t.string "status", default: "active", null: false
     t.text "summary"
     t.integer "summary_cursor"
     t.string "title"
     t.json "undo_history"
     t.json "undone_changes"
     t.datetime "updated_at", null: false
-    t.index ["published_version_id"], name: "index_alembic_diagnostics_on_published_version_id"
     t.index ["slug"], name: "index_alembic_diagnostics_on_slug", unique: true
   end
 
@@ -68,7 +68,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_230500) do
   end
 
   add_foreign_key "alembic_definition_versions", "alembic_diagnostics", column: "diagnostic_id"
-  add_foreign_key "alembic_diagnostics", "alembic_definition_versions", column: "published_version_id"
   add_foreign_key "alembic_responses", "alembic_definition_versions", column: "definition_version_id"
   add_foreign_key "alembic_responses", "alembic_diagnostics", column: "diagnostic_id"
   add_foreign_key "alembic_responses", "alembic_summary_versions", column: "summary_version_id"
