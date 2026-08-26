@@ -7,6 +7,10 @@ module Alembic
         assert_equal :string, Question.step_type.fields[:question]
       end
 
+      test "declares a setting for the readable name it is shown by" do
+        assert_equal :string, Question.step_type.fields[:name]
+      end
+
       test "declares a setting for the answers it offers" do
         assert_equal :list, Question.step_type.fields[:answers]
       end

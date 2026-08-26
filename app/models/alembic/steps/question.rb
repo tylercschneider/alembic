@@ -5,6 +5,7 @@ module Alembic
 
       step_name "Question"
 
+      setting :name, type: :string
       setting :question, type: :string
       setting :category, type: :string
       setting :answers, type: :list do
