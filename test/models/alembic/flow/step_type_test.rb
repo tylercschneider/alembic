@@ -76,6 +76,12 @@ module Alembic
         assert_not_predicate step_type, :single_output?
       end
 
+      test "declares a setting naming a step that comes before it" do
+        step_type = StepType.define(:branch) { setting :step, type: :previous_step }
+
+        assert_equal :previous_step, step_type.fields[:step]
+      end
+
       test "can declare which field names an instance of it" do
         step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 
