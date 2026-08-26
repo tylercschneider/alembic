@@ -5,6 +5,8 @@ module Alembic
 
     validates :slug, presence: true
 
+    after_initialize :begin_the_flow, if: :new_record?
+
     scope :listable, -> { active }
 
     # Declared before :definition_versions so responses clear first, otherwise
@@ -145,6 +147,12 @@ module Alembic
     end
 
     private
+
+    def begin_the_flow
+      self.document ||= { "nodes" => [ { "id" => "start", "type" => "start" }, { "id" => "end", "type" => "terminal" } ],
+                          "edges" => [ { "from" => "start", "to" => "end" } ] }
+    end
+
 
     def steps_by_id
       Array(definition.to_h["nodes"]).index_by { |node| node["id"] }

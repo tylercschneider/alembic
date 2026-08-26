@@ -2,6 +2,24 @@ require "test_helper"
 
 module Alembic
   class DiagnosticTest < ActiveSupport::TestCase
+    test "begins with a step that starts the flow and one that ends it" do
+      diagnostic = Diagnostic.create!(slug: "fresh")
+
+      assert_equal [ "start", "terminal" ], diagnostic.document["nodes"].map { |node| node["type"] }
+    end
+
+    test "leads from where it begins to where it ends" do
+      diagnostic = Diagnostic.create!(slug: "fresh")
+
+      assert_equal [ { "from" => "start", "to" => "end" } ], diagnostic.document["edges"]
+    end
+
+    test "begins sound, with nothing to report" do
+      diagnostic = Diagnostic.create!(slug: "fresh")
+
+      assert_empty Flow::Validator.new(Flow::Document.new(diagnostic.document)).violations
+    end
+
     test "reports when it is hidden" do
       assert Diagnostic.new(status: :hidden).hidden?
     end

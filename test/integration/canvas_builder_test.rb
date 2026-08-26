@@ -446,5 +446,17 @@ module Alembic
 
       assert_response :unprocessable_entity
     end
+
+    test "removing the step a flow begins at is refused" do
+      delete "#{canvas_path}/steps/start"
+
+      assert_response :unprocessable_entity
+    end
+
+    test "removing the step a flow ends at is refused" do
+      delete "#{canvas_path}/steps/end"
+
+      assert_response :unprocessable_entity
+    end
   end
 end
