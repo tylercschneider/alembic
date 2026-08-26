@@ -6,6 +6,7 @@ module Alembic
       def registry
         @registry ||= Registry.new.tap do |built|
           built.register(StepType.define(:ask) { setting :text, type: :string; awaits_input })
+          built.register(StepType.define(:pick) { output :answer, values: ->(node) { Array(node.config["options"]) } })
           built.register(StepType.define(:check) { route { |_node, state| state["a"] == "yes" } })
           built.register(StepType.define(:branch) do
             setting :answer, type: :string
@@ -102,6 +103,14 @@ module Alembic
 
       test "takes the edge marked false when a step routes to false" do
         assert_equal "no_step", digest(deciding).next_step({ "a" => "no" }).id
+      end
+
+      test "reports the values a step offers a later one" do
+        document = { "entry" => "a",
+                     "nodes" => [ { "id" => "a", "type" => "pick", "options" => [ { "value" => "high" } ] } ],
+                     "edges" => [] }
+
+        assert_equal [ { "value" => "high" } ], digest(document).values_out_of("a")
       end
     end
   end

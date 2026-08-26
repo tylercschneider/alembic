@@ -97,10 +97,7 @@ module Alembic
       end
 
       def values_out_of(id)
-        named = @document.node(id)
-        return [] unless named
-
-        step_type_for(named)&.outputs.to_a.flat_map { |output| output.values_for(named) }
+        Digest.new(@document, registry: @registry).values_out_of(id)
       end
 
       def naming_steps(node)

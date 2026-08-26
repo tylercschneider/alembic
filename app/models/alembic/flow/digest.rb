@@ -25,6 +25,13 @@ module Alembic
           .reject { |other| other == id || @document.reachable(without: other).include?(id) }
       end
 
+      def values_out_of(id)
+        named = step(id)
+        return [] unless named
+
+        step_type(named)&.outputs.to_a.flat_map { |output| output.values_for(named) }
+      end
+
       def requirements(id)
         node = step(id)
         step_type(node)&.requirements_for(node).to_a
