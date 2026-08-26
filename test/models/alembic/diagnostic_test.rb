@@ -451,5 +451,14 @@ module Alembic
 
       assert_equal({ "slug" => "demo" }, version.reload.definition)
     end
+
+    test "withdrawing a version takes it out of service" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+
+      diagnostic.withdraw_version(diagnostic.live_version)
+
+      assert_predicate diagnostic.definition_versions.first.reload, :withdrawn?
+    end
   end
 end

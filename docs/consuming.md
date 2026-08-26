@@ -496,7 +496,7 @@ exactly re-derivable no matter what happened to its version afterwards.
 ```ruby
 diagnostic.publish                          # current version becomes live
 diagnostic.retire_version(some_version)     # no new runs, in-flight continue
-some_version.update!(status: :withdrawn)    # in-flight stopped too
+diagnostic.withdraw_version(some_version)   # in-flight stopped too
 ```
 
 Publishing or returning to a retired or withdrawn version raises

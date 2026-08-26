@@ -120,6 +120,10 @@ module Alembic
       version.update!(status: :retired)
     end
 
+    def withdraw_version(version)
+      version.update!(status: :withdrawn)
+    end
+
     def live_version
       definition_versions.find_by(status: :live)
     end
