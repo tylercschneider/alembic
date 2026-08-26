@@ -201,6 +201,26 @@ module Alembic
 
         assert_empty violations(document, deciding_registry)
       end
+
+      def listing_registry
+        Registry.new.tap do |registry|
+          registry.register(StepType.define(:lists) { setting(:items, type: :list, required: true) { setting :value, type: :string } })
+        end
+      end
+
+      test "reports a step whose list of things it needs holds no entries" do
+        document = { "entry" => "a", "nodes" => [ { "id" => "a", "type" => "lists", "items" => [] } ], "edges" => [] }
+
+        assert_equal [ :missing_setting ], violations(document, listing_registry).map(&:problem)
+      end
+
+      test "accepts a step whose list of things it needs holds an entry" do
+        document = { "entry" => "a",
+                     "nodes" => [ { "id" => "a", "type" => "lists", "items" => [ { "value" => "one" } ] } ],
+                     "edges" => [] }
+
+        assert_empty violations(document, listing_registry)
+      end
     end
   end
 end

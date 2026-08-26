@@ -7,7 +7,7 @@ module Alembic
 
       setting :question, type: :string
       setting :category, type: :string
-      setting :answers, type: :list do
+      setting :answers, type: :list, required: true do
         setting :value, type: :string
         setting :label, type: :string
         setting :weight, type: :integer

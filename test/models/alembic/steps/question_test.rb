@@ -49,6 +49,10 @@ module Alembic
       test "awaits external input" do
         assert_predicate Question.step_type, :awaits_input?
       end
+
+      test "cannot run without the answers it offers" do
+        assert_equal [ :answers ], Question.step_type.required
+      end
     end
   end
 end

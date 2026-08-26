@@ -9,7 +9,8 @@ module Alembic
           "nodes" => [ { "id" => "start", "type" => "question", "question" => "First",
                          "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
                        { "id" => "gate", "type" => "condition", "step" => "start", "output" => "answer", "comparison" => "is", "answer" => "yes" },
-                       { "id" => "yes_step", "type" => "question", "question" => "Yes path" } ],
+                       { "id" => "yes_step", "type" => "question", "question" => "Yes path",
+                         "answers" => [ { "value" => "on" } ] } ],
           "edges" => [ { "from" => "start", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => true } ]
         )
@@ -23,7 +24,8 @@ module Alembic
           "nodes" => [ { "id" => "start", "type" => "question", "question" => "First",
                          "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
                        { "id" => "gate", "type" => "condition", "step" => "start", "output" => "answer", "comparison" => "is", "answer" => "yes" },
-                       { "id" => "yes_step", "type" => "question", "question" => "Yes path" } ],
+                       { "id" => "yes_step", "type" => "question", "question" => "Yes path",
+                         "answers" => [ { "value" => "on" } ] } ],
           "edges" => [ { "from" => "start", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => true },
                        { "from" => "gate", "to" => "yes_step", "on" => false } ]
@@ -47,7 +49,7 @@ module Alembic
     end
 
     def long_flow
-      steps = (1..12).map { |n| { "id" => "s#{n}", "type" => "question", "question" => "Step #{n}" } }
+      steps = (1..12).map { |n| { "id" => "s#{n}", "type" => "question", "question" => "Step #{n}", "answers" => [ { "value" => "on" } ] } }
       links = (1...12).map { |n| { "from" => "s#{n}", "to" => "s#{n + 1}" } }
 
       Diagnostic.create!(slug: "long-flow").tap do |diagnostic|
