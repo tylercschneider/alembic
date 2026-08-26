@@ -21,6 +21,19 @@ module Alembic
           "edges" => edges }
       end
 
+      def referring_document(edges)
+        { "entry" => "a",
+          "nodes" => [ { "id" => "a", "type" => "plain" }, { "id" => "r", "type" => "plain" },
+                       { "id" => "x", "type" => "plain", "prompt" => "Echo {{r}}" } ],
+          "edges" => edges }
+      end
+
+      test "reports a reference to a step that lies on only one of two paths to it" do
+        document = referring_document([ { "from" => "a", "to" => "r" }, { "from" => "r", "to" => "x" }, { "from" => "a", "to" => "x" } ])
+
+        assert_equal [ :unmet_requirement ], violations(document, needy_registry).map(&:problem)
+      end
+
       test "accepts a requirement that lies on the only path to the step" do
         document = needy_document([ { "from" => "a", "to" => "r" }, { "from" => "r", "to" => "x" } ])
 
