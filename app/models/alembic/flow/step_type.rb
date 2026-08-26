@@ -5,9 +5,9 @@ module Alembic
         Declaration.new(id).tap { |decl| decl.instance_eval(&declaration) }.to_step_type
       end
 
-      attr_reader :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :naming_field, :drawn_from, :outputs, :required
+      attr_reader :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :naming_field, :naming, :drawn_from, :outputs, :required
 
-      def initialize(id:, step_name:, fields:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil, drawn_from: {}, outputs: [], required: [], record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
+      def initialize(id:, step_name:, fields:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil, naming: nil, drawn_from: {}, outputs: [], required: [], record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
         @id = id
         @step_name = step_name
         @fields = fields
@@ -16,6 +16,7 @@ module Alembic
         @behaviour = behaviour
         @routing = routing
         @naming_field = naming_field
+        @naming = naming
         @drawn_from = drawn_from
         @outputs = outputs
         @required = required
@@ -33,6 +34,10 @@ module Alembic
 
       def route(node, state)
         @routing&.call(node, state)
+      end
+
+      def name_of(node)
+        @naming&.call(node).presence || node.config[naming_field.to_s].presence
       end
 
       def routes?
@@ -141,8 +146,9 @@ module Alembic
           @awaits_input = true
         end
 
-        def names_by(field)
+        def names_by(field = nil, &naming)
           @naming_field = field
+          @naming = naming
         end
 
         def setting(name, type: nil, from: nil, label: nil, options: nil, limit: nil, check: nil, required: false, &entries)
@@ -182,7 +188,7 @@ module Alembic
         public
 
         def to_step_type
-          StepType.new(id: @id, step_name: @step_name, fields: @fields, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, drawn_from: @drawn_from, outputs: @declared_outputs, required: @required, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
+          StepType.new(id: @id, step_name: @step_name, fields: @fields, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, naming: @naming, drawn_from: @drawn_from, outputs: @declared_outputs, required: @required, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
         end
       end
     end

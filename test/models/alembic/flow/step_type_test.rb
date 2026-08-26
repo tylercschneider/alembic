@@ -111,6 +111,13 @@ module Alembic
         assert_equal [ :step ], step_type.required
       end
 
+      test "can name an instance from a block over its whole config" do
+        step_type = StepType.define(:branch) { names_by { |node| "#{node.config['step']} is #{node.config['answer']}" } }
+        node = Node.new(id: "b", type: "branch", config: { "step" => "budget", "answer" => "high" })
+
+        assert_equal "budget is high", step_type.name_of(node)
+      end
+
       test "can declare which field names an instance of it" do
         step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 

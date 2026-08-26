@@ -4,11 +4,11 @@ module Alembic
       def self.of(node, registry = Flow.registry)
         return "" unless node
 
-        (naming_field(node, registry)&.then { |field| node.config[field.to_s].presence }) || node.id
+        named(node, registry) || node.id
       end
 
-      def self.naming_field(node, registry)
-        registry.fetch(node.type).naming_field if registry.registered?(node.type)
+      def self.named(node, registry)
+        registry.fetch(node.type).name_of(node) if registry.registered?(node.type)
       end
     end
   end
