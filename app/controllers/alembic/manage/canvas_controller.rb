@@ -59,6 +59,8 @@ module Alembic
       end
 
       def remove_step
+        return render json: { error: refusal_to_remove }, status: :unprocessable_entity if fixed?(params[:step])
+
         apply(:removed, params[:step]) { |flow| flow.remove(params[:step]) }
       end
 
@@ -155,6 +157,16 @@ module Alembic
         return "Visitors already run version #{now_at}." if now_at == ran
 
         "Published version #{now_at}. Visitors run it now."
+      end
+
+      def fixed?(id)
+        step_type = document.node(id)&.then { |node| Flow.registry.fetch(node.type) if Flow.registry.registered?(node.type) }
+
+        step_type&.begins_here? || step_type&.ends_here? || false
+      end
+
+      def refusal_to_remove
+        "Cannot remove where a flow begins or ends."
       end
 
       def refusal(objections)

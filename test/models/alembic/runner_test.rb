@@ -14,7 +14,7 @@ module Alembic
     end
 
     def runner(definition = branching)
-      Runner.new(definition)
+      Runner.new(flowing(definition))
     end
 
     test "asks the step a flow begins at" do

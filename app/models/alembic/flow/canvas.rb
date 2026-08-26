@@ -17,7 +17,7 @@ module Alembic
 
         @document.nodes.map do |node|
           { "id" => node.id, "type" => node.type, "label" => label_for(node),
-            "config" => node.config, "ports" => ports_for(node), "ends_here" => ends_here?(node),
+            "config" => node.config, "ports" => ports_for(node), "ends_here" => ends_here?(node), "begins_here" => begins_here?(node),
             "choices" => choices_for(node), **placed[node.id] }
         end
       end
@@ -59,7 +59,7 @@ module Alembic
       end
 
       def palette
-        @registry.step_types.map do |step_type|
+        @registry.step_types.reject { |step_type| step_type.begins_here? || step_type.ends_here? }.map do |step_type|
           { "type" => step_type.id.to_s, "label" => step_type.step_name,
             "fields" => step_type.fields.transform_keys(&:to_s).transform_values(&:to_s),
             "labels" => step_type.labels.transform_keys(&:to_s),
@@ -122,6 +122,10 @@ module Alembic
 
       def ends_here?(node)
         step_type_for(node)&.ends_here? || false
+      end
+
+      def begins_here?(node)
+        step_type_for(node)&.begins_here? || false
       end
 
       def ports_for(node)

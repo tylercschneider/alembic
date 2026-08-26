@@ -7,12 +7,13 @@ module Alembic
 
       attr_reader :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :naming_field, :naming, :drawn_from, :outputs_of, :outputs, :required
 
-      def initialize(id:, step_name:, fields:, awaits_input:, ends_here: false, requirements:, behaviour:, routing:, naming_field: nil, naming: nil, drawn_from: {}, outputs_of: {}, outputs: [], required: [], record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
+      def initialize(id:, step_name:, fields:, awaits_input:, ends_here: false, begins_here: false, requirements:, behaviour:, routing:, naming_field: nil, naming: nil, drawn_from: {}, outputs_of: {}, outputs: [], required: [], record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
         @id = id
         @step_name = step_name
         @fields = fields
         @awaits_input = awaits_input
         @ends_here = ends_here
+        @begins_here = begins_here
         @requirements = requirements
         @behaviour = behaviour
         @routing = routing
@@ -60,6 +61,10 @@ module Alembic
 
       def ends_here?
         @ends_here
+      end
+
+      def begins_here?
+        @begins_here
       end
 
       def coerce(config)
@@ -128,6 +133,7 @@ module Alembic
           @required = []
           @awaits_input = false
           @ends_here = false
+          @begins_here = false
         end
 
         def requires(&derivation)
@@ -156,6 +162,10 @@ module Alembic
 
         def ends_here
           @ends_here = true
+        end
+
+        def begins_here
+          @begins_here = true
         end
 
         def names_by(field = nil, &naming)
@@ -202,7 +212,7 @@ module Alembic
         public
 
         def to_step_type
-          StepType.new(id: @id, step_name: @step_name, fields: @fields, awaits_input: @awaits_input, ends_here: @ends_here, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, naming: @naming, drawn_from: @drawn_from, outputs_of: @outputs_of, outputs: @declared_outputs, required: @required, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
+          StepType.new(id: @id, step_name: @step_name, fields: @fields, awaits_input: @awaits_input, ends_here: @ends_here, begins_here: @begins_here, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, naming: @naming, drawn_from: @drawn_from, outputs_of: @outputs_of, outputs: @declared_outputs, required: @required, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
         end
       end
     end

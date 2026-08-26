@@ -24,7 +24,7 @@ module Alembic
 
       def walk_from_entry
         seen = {}
-        frontier = known?(@document.entry) ? [ [ @document.entry, 0 ] ] : []
+        frontier = starting_points.map { |id| [ id, 0 ] }
 
         until frontier.empty?
           id, depth = frontier.shift
@@ -35,6 +35,13 @@ module Alembic
         end
 
         seen
+      end
+
+      def starting_points
+        return [ @document.entry ] if known?(@document.entry)
+
+        arrived = @document.edges.map(&:to)
+        @document.nodes.map(&:id).reject { |id| arrived.include?(id) }
       end
 
       def columns_for(rows)

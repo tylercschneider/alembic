@@ -4,6 +4,7 @@ module Alembic
 
     initializer "alembic.step_types" do |app|
       app.config.to_prepare do
+        Alembic::Flow::Start.register
         Alembic::Flow::Terminal.register
 
         Alembic::Steps::Question.register

@@ -19,6 +19,7 @@ module Alembic
             route { |node, state| state[node.config["step"]] }
           end)
           built.register(StepType.define(:stop) { step_name "End"; ends_here })
+          built.register(StepType.define(:go) { step_name "Start"; begins_here })
           built.register(StepType.define(:branch) do
             step_name "Branch"
             setting :step, type: :previous_step
@@ -31,7 +32,7 @@ module Alembic
       end
 
       def canvas(document)
-        Canvas.new(Document.new(document), registry: registry).to_h
+        Canvas.new(Document.new(flowing(document)), registry: registry).to_h
       end
 
       def flow
@@ -65,7 +66,7 @@ module Alembic
       end
 
       test "labels a node from the field its type says names it" do
-        assert_equal "Budget?", canvas(flow)["nodes"].first["label"]
+        assert_equal "Budget?", canvas(flow)["nodes"].find { |node| node["id"] == "a" }["label"]
       end
 
       test "falls back to the node id when its type names no field" do
@@ -73,7 +74,7 @@ module Alembic
       end
 
       test "carries every registered step type as a palette entry" do
-        assert_equal [ "Ask", "Switch", "End", "Branch" ], canvas(flow)["palette"].map { |entry| entry["label"] }
+        assert_equal [ "Ask", "Switch", "Branch" ], canvas(flow)["palette"].map { |entry| entry["label"] }
       end
 
       test "carries what a palette entry's record field holds" do
@@ -142,7 +143,8 @@ module Alembic
       end
 
       test "carries the document's edges" do
-        assert_equal [ [ "a", "b" ] ], canvas(flow)["edges"].map { |edge| [ edge["source"], edge["target"] ] }
+        assert_equal [ [ "start", "a" ], [ "a", "b" ] ],
+          canvas(flow)["edges"].map { |edge| [ edge["source"], edge["target"] ] }
       end
 
       test "carries the violations the document has" do
@@ -152,7 +154,7 @@ module Alembic
       end
 
       test "offers a step-naming setting the steps that come before that node" do
-        assert_equal [ { "value" => "a", "label" => "Budget?" } ], canvas(flow)["nodes"].last["choices"]["step"]
+        assert_includes canvas(flow)["nodes"].last["choices"]["step"], { "value" => "a", "label" => "Budget?" }
       end
 
       test "offers a drawing setting the values the step it names outputs" do
@@ -173,6 +175,20 @@ module Alembic
                      "edges" => [ { "from" => "a", "to" => "z" } ] }
 
         assert canvas(document)["nodes"].last["ends_here"]
+      end
+
+      test "offers no way to add a second beginning or ending" do
+        document = { "nodes" => [ { "id" => "a", "type" => "ask" }, { "id" => "z", "type" => "stop" } ],
+                     "edges" => [ { "from" => "a", "to" => "z" } ] }
+
+        assert_equal [ "Ask", "Switch", "Branch" ], canvas(document)["palette"].map { |entry| entry["label"] }
+      end
+
+      test "says of a node that the flow begins there" do
+        document = { "nodes" => [ { "id" => "g", "type" => "go" }, { "id" => "a", "type" => "ask" } ],
+                     "edges" => [ { "from" => "g", "to" => "a" } ] }
+
+        assert canvas(document)["nodes"].find { |node| node["id"] == "g" }["begins_here"]
       end
     end
   end

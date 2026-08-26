@@ -4,34 +4,34 @@ module Alembic
   class FlowCanvasTest < ApplicationSystemTestCase
     def flow
       @flow ||= Diagnostic.create!(slug: "canvas-system").tap do |diagnostic|
-        diagnostic.record_definition(
-          "slug" => "canvas-system", "entry" => "start",
-          "nodes" => [ { "id" => "start", "type" => "question", "question" => "First",
+        diagnostic.record_definition(flowing(
+          "slug" => "canvas-system", "entry" => "first",
+          "nodes" => [ { "id" => "first", "type" => "question", "question" => "First",
                          "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
-                       { "id" => "gate", "type" => "condition", "step" => "start", "output" => "answer", "comparison" => "is", "answer" => "yes" },
+                       { "id" => "gate", "type" => "condition", "step" => "first", "output" => "answer", "comparison" => "is", "answer" => "yes" },
                        { "id" => "yes_step", "type" => "question", "question" => "Yes path",
                          "answers" => [ { "value" => "on" } ] } ],
-          "edges" => [ { "from" => "start", "to" => "gate" },
+          "edges" => [ { "from" => "first", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => true } ]
-        )
+        ))
       end
     end
 
     def wired
       @wired ||= Diagnostic.create!(slug: "canvas-wired").tap do |diagnostic|
-        diagnostic.record_definition(
-          "slug" => "canvas-wired", "entry" => "start",
-          "nodes" => [ { "id" => "start", "type" => "question", "question" => "First",
+        diagnostic.record_definition(flowing(
+          "slug" => "canvas-wired", "entry" => "first",
+          "nodes" => [ { "id" => "first", "type" => "question", "question" => "First",
                          "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
-                       { "id" => "gate", "type" => "condition", "step" => "start", "output" => "answer", "comparison" => "is", "answer" => "yes" },
+                       { "id" => "gate", "type" => "condition", "step" => "first", "output" => "answer", "comparison" => "is", "answer" => "yes" },
                        { "id" => "yes_step", "type" => "question", "question" => "Yes path",
                          "answers" => [ { "value" => "on" } ] },
                        { "id" => "end", "type" => "terminal" } ],
-          "edges" => [ { "from" => "start", "to" => "gate" },
+          "edges" => [ { "from" => "first", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => true },
                        { "from" => "gate", "to" => "yes_step", "on" => false },
                        { "from" => "yes_step", "to" => "end" } ]
-        )
+        ))
       end
     end
 
@@ -55,7 +55,7 @@ module Alembic
       links = (1...12).map { |n| { "from" => "s#{n}", "to" => "s#{n + 1}" } }
 
       Diagnostic.create!(slug: "long-flow").tap do |diagnostic|
-        diagnostic.record_definition("slug" => "long-flow", "entry" => "s1", "nodes" => steps, "edges" => links)
+        diagnostic.record_definition(flowing("slug" => "long-flow", "entry" => "s1", "nodes" => steps, "edges" => links))
       end
     end
 
@@ -77,13 +77,13 @@ module Alembic
     test "draws every step in the flow" do
       canvas_for(flow)
 
-      assert_equal [ "start", "gate", "yes_step" ], step_ids
+      assert_equal [ "start", "first", "gate", "yes_step" ], step_ids
     end
 
     test "draws a connector for every edge" do
       canvas_for(flow)
 
-      assert_selector "svg path[marker-end]", count: 2
+      assert_selector "svg path[marker-end]", count: 3
     end
 
     test "labels a step by the field its type names it with" do
@@ -114,21 +114,21 @@ module Alembic
     test "removing a connection unlinks the two steps" do
       canvas_for(flow)
 
-      find("[data-connector='start-gate']").hover
-      find("[data-connector='start-gate']").click_button("×")
+      find("[data-connector='first-gate']").hover
+      find("[data-connector='first-gate']").click_button("×")
 
-      assert_selector "svg path[marker-end]", count: 1
+      assert_selector "svg path[marker-end]", count: 2
     end
 
     test "inserting a step on a connector puts it between the two" do
       canvas_for(flow)
 
-      find("[data-connector='start-gate']").hover
-      find("[data-connector='start-gate']").click_button("+")
+      find("[data-connector='first-gate']").hover
+      find("[data-connector='first-gate']").click_button("+")
       add_step_named("Question")
 
-      assert_selector "[data-step]", count: 4
-      assert_includes edges, [ "start", "question" ]
+      assert_selector "[data-step]", count: 5
+      assert_includes edges, [ "first", "question" ]
     end
 
     test "opening a step labels each setting its type declares" do
@@ -174,6 +174,27 @@ module Alembic
       assert_selector "[data-step='end']", text: "End"
     end
 
+    test "a step can be added to a flow that already has steps" do
+      canvas_for(flow)
+
+      find("[title='Add a step']").click
+      add_step_named("Question")
+
+      assert_selector "[data-step]", count: 5
+    end
+
+    test "the step a flow begins at simply says it begins" do
+      canvas_for(wired)
+
+      assert_selector "[data-step='start']", text: "Start"
+    end
+
+    test "the step a flow begins at is not a place to drop another step" do
+      canvas_for(wired)
+
+      assert_no_selector "[data-step='start'][draggable='true']"
+    end
+
     test "closing the panel leaves the flow drawn" do
       canvas_for(flow)
       step_card("gate").click
@@ -181,16 +202,16 @@ module Alembic
       find("[data-inspector]").click_button("×")
 
       assert_no_selector "[data-inspector]"
-      assert_selector "svg path[marker-end]", count: 2
+      assert_selector "svg path[marker-end]", count: 3
     end
 
     test "editing a field saves when the field is left" do
       canvas_for(flow)
-      step_card("start").click
+      step_card("first").click
 
       fill_in_first_field_with("Changed by hand")
 
-      assert_selector "[data-step='start']", text: "Changed by hand"
+      assert_selector "[data-step='first']", text: "Changed by hand"
     end
 
     test "dragging a step onto a connector splices it in there" do
@@ -198,32 +219,32 @@ module Alembic
         "nodes" => flow.definition["nodes"] + [ { "id" => "adrift", "type" => "question", "question" => "Adrift" } ]))
       canvas_for(flow)
 
-      step_card("adrift").drag_to(find("[data-connector='start-gate']"))
+      step_card("adrift").drag_to(find("[data-connector='first-gate']"))
 
-      assert_includes edges, [ "start", "adrift" ]
+      assert_includes edges, [ "first", "adrift" ]
     end
 
     test "undoing puts back what was there before" do
       canvas_for(flow)
-      find("[data-connector='start-gate']").hover
-      find("[data-connector='start-gate']").click_button("×")
-      assert_selector "svg path[marker-end]", count: 1
+      find("[data-connector='first-gate']").hover
+      find("[data-connector='first-gate']").click_button("×")
+      assert_selector "svg path[marker-end]", count: 2
 
       click_button("↶ Undo")
 
-      assert_selector "svg path[marker-end]", count: 2
+      assert_selector "svg path[marker-end]", count: 3
     end
 
     test "redoing puts back what was undone" do
       canvas_for(flow)
-      find("[data-connector='start-gate']").hover
-      find("[data-connector='start-gate']").click_button("×")
+      find("[data-connector='first-gate']").hover
+      find("[data-connector='first-gate']").click_button("×")
       click_button("↶ Undo")
-      assert_selector "svg path[marker-end]", count: 2
+      assert_selector "svg path[marker-end]", count: 3
 
       click_button("↷ Redo")
 
-      assert_selector "svg path[marker-end]", count: 1
+      assert_selector "svg path[marker-end]", count: 2
     end
 
     test "the flow's panel stays out of the way until it is opened" do
@@ -259,7 +280,7 @@ module Alembic
 
     test "a version is created from the flow's panel" do
       canvas_for(flow)
-      step_card("start").click
+      step_card("first").click
       fill_in_first_field_with("Changed by hand")
       find("[data-open-panel]").click
 
@@ -284,7 +305,7 @@ module Alembic
 
     test "the panel lists a change once a step is edited" do
       canvas_for(flow)
-      step_card("start").click
+      step_card("first").click
       fill_in_first_field_with("Changed by hand")
       find("[data-open-panel]").click
 
@@ -301,7 +322,7 @@ module Alembic
 
     test "creating a version empties the change list" do
       canvas_for(wired)
-      step_card("start").click
+      step_card("first").click
       fill_in_first_field_with("Changed by hand")
       find("[data-open-panel]").click
       find("[data-create-version]").click
@@ -329,7 +350,7 @@ module Alembic
 
     test "the flow's panel says which version it created" do
       canvas_for(wired)
-      step_card("start").click
+      step_card("first").click
       fill_in_first_field_with("Changed by hand")
       find("[data-open-panel]").click
 

@@ -135,6 +135,14 @@ module Alembic
         assert_not_predicate StepType.define(:ask) { }, :ends_here?
       end
 
+      test "declares itself a step a flow begins at" do
+        assert_predicate StepType.define(:go) { begins_here }, :begins_here?
+      end
+
+      test "does not begin a flow unless it says so" do
+        assert_not_predicate StepType.define(:ask) { }, :begins_here?
+      end
+
       test "can declare which field names an instance of it" do
         step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 
