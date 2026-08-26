@@ -82,6 +82,10 @@ module Alembic
 
         assert_nil digest(looping).next_step({})
       end
+
+      test "reports the steps that come before a step on every path to it" do
+        assert_equal [ "first", "gate" ], digest(branching).preceding("last")
+      end
     end
   end
 end

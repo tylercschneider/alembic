@@ -18,6 +18,11 @@ module Alembic
         @document.nodes
       end
 
+      def preceding(id)
+        @document.nodes.map(&:id).uniq
+          .reject { |other| other == id || @document.reachable(without: other).include?(id) }
+      end
+
       def requirements(id)
         node = step(id)
         step_type(node)&.requirements_for(node).to_a
