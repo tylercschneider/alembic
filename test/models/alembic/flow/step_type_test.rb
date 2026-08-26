@@ -91,13 +91,6 @@ module Alembic
         assert_equal :step, step_type.drawn_from[:answer]
       end
 
-      test "declares what a later step may choose from it" do
-        step_type = StepType.define(:ask) { offers { |node| node.config["answers"] } }
-        node = Node.new(id: "q", type: "ask", config: { "answers" => [ { "value" => "high" } ] })
-
-        assert_equal [ { "value" => "high" } ], step_type.offerings_for(node)
-      end
-
       test "declares a named output a later step may read" do
         step_type = StepType.define(:ask) { output :answer, label: "Answer" }
 

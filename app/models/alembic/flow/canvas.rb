@@ -92,11 +92,11 @@ module Alembic
 
       def drawn_by(node)
         step_type_for(node)&.drawn_from.to_h.to_h do |name, source|
-          [ name.to_s, offerings_of(node.config[source.to_s]) ]
+          [ name.to_s, values_out_of(node.config[source.to_s]) ]
         end
       end
 
-      def offerings_of(id)
+      def values_out_of(id)
         named = @document.node(id)
         return [] unless named
 
