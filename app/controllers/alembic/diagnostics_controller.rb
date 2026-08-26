@@ -1,13 +1,13 @@
 module Alembic
   class DiagnosticsController < ApplicationController
+    helper_method :flow_start_path, :flow_step_path, :previewing?
+
     def show
-      @diagnostic = Diagnostic.find_by!(slug: params[:slug])
+      @diagnostic = admit(Diagnostic.find_by(slug: params[:slug]))
     end
 
     def step
       @guide = runner
-      raise ActiveRecord::RecordNotFound unless @guide
-
       @answers = submitted_answers
       @answers = without_last_answer(@answers) if params[:back]
       @question = @guide.next_question(@answers)
@@ -17,6 +17,18 @@ module Alembic
     end
 
     private
+
+    def flow_start_path(slug)
+      alembic.diagnostic_path(slug)
+    end
+
+    def flow_step_path(slug)
+      alembic.diagnostic_step_path(slug)
+    end
+
+    def previewing?
+      false
+    end
 
     def render_completion
       @answered = @guide.answers_on_path(@answers)
@@ -29,11 +41,8 @@ module Alembic
     end
 
     def runner
-      diagnostic = Diagnostic.find_by(slug: params[:slug])
-      return if diagnostic&.published_definition.blank?
-
-      @stored_diagnostic = diagnostic
-      diagnostic.runner
+      @stored_diagnostic = admit(Diagnostic.find_by(slug: params[:slug]))
+      @stored_diagnostic.runner
     end
 
     def submitted_answers

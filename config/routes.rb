@@ -2,6 +2,9 @@ Alembic::Engine.routes.draw do
   namespace :manage do
     resources :diagnostics, only: [ :index, :create, :show, :edit, :update, :destroy ] do
       resource :definition, only: [ :edit, :update ]
+      resource :preview, only: :show, controller: "previews" do
+        get :step
+      end
       resources :versions, only: :index do
         post :return, on: :member
       end
