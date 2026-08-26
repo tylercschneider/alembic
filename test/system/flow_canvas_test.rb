@@ -174,6 +174,15 @@ module Alembic
       assert_selector "[data-step='end']", text: "End"
     end
 
+    test "a step can be added to a flow that already has steps" do
+      canvas_for(flow)
+
+      find("[title='Add a step']").click
+      add_step_named("Start")
+
+      assert_selector "[data-step]", count: 5
+    end
+
     test "closing the panel leaves the flow drawn" do
       canvas_for(flow)
       step_card("gate").click

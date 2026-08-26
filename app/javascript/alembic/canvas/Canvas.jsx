@@ -80,7 +80,7 @@ const Canvas = ({ base, token, initial }) => {
             Choose the step “{armed[1] || "next"}” should lead to — <button onClick={() => setArmed(null)} style={{ border: "none", background: "none", color: "#1e40af", textDecoration: "underline", cursor: "pointer", fontSize: 12, padding: 0 }}>cancel</button>
           </div>
         )}
-        <Toolbar empty={flow.nodes.length === 0} undoable={flow.undoable} redoable={flow.redoable}
+        <Toolbar undoable={flow.undoable} redoable={flow.redoable}
                  onAdd={() => setAdding({ at: { x: 16, y: 52 } })}
                  onUndo={() => { setSelected(null); send("/undo", "POST") }}
                  onRedo={() => { setSelected(null); send("/redo", "POST") }} />
