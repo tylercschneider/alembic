@@ -195,6 +195,18 @@ module Alembic
       assert_no_selector "[data-step='start'][draggable='true']"
     end
 
+    test "a step that simply leads on offers no connection to arm" do
+      canvas_for(wired)
+
+      assert_no_selector "[data-step='yes_step'] button"
+    end
+
+    test "a step that branches still offers each of its results" do
+      canvas_for(wired)
+
+      assert_selector "[data-step='gate'] button", count: 2
+    end
+
     test "closing the panel leaves the flow drawn" do
       canvas_for(flow)
       step_card("gate").click

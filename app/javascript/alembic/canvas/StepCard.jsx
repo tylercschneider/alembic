@@ -10,7 +10,7 @@ const named = { fontWeight: 600, lineHeight: 1.3 }
 
 const StepCard = ({ node, selected, armed, connecting, onSelect, onArm, onDragEnd, onDragStart }) => {
   const fixed = node.begins_here || node.ends_here
-  const ports = node.ends_here ? [] : node.ports.length ? node.ports : [ null ]
+  const ports = node.ends_here ? [] : node.ports
 
   return (
     <div ref={node.ref}
@@ -37,8 +37,8 @@ const StepCard = ({ node, selected, armed, connecting, onSelect, onArm, onDragEn
       {ports.length > 0 && (
         <div style={{ padding: node.begins_here ? "0 14px 8px" : "10px 0 0" }}>
           {ports.map((port) => (
-            <Port key={port || "next"} name={port} connected={node.connected.includes(port)}
-                  connecting={connecting} armed={armed === (port || "")} onArm={(event) => onArm(port || "", event)} />
+            <Port key={port} name={port} connected={node.connected.includes(port)}
+                  connecting={connecting} armed={armed === port} onArm={(event) => onArm(port, event)} />
           ))}
         </div>
       )}
