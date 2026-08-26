@@ -12,6 +12,12 @@ module Alembic
             setting(:options, type: :list) { setting :value, type: :string; setting :weight, type: :integer }
             names_by :text
           end)
+          built.register(StepType.define(:switch) do
+            step_name "Switch"
+            setting :step, type: :previous_step
+            output :choice, from: :step
+            route { |node, state| state[node.config["step"]] }
+          end)
           built.register(StepType.define(:branch) do
             step_name "Branch"
             setting :step, type: :previous_step
@@ -30,6 +36,13 @@ module Alembic
         { "entry" => "a",
           "nodes" => [ { "id" => "a", "type" => "ask", "text" => "Budget?" }, { "id" => "b", "type" => "branch" } ],
           "edges" => [ { "from" => "a", "to" => "b" } ] }
+      end
+
+      def switching
+        { "entry" => "a",
+          "nodes" => [ { "id" => "a", "type" => "ask", "options" => [ { "value" => "high" }, { "value" => "low" } ] },
+                       { "id" => "s", "type" => "switch", "step" => "a" } ],
+          "edges" => [ { "from" => "a", "to" => "s" } ] }
       end
 
       def picking
@@ -58,7 +71,7 @@ module Alembic
       end
 
       test "carries every registered step type as a palette entry" do
-        assert_equal [ "Ask", "Branch" ], canvas(flow)["palette"].map { |entry| entry["label"] }
+        assert_equal [ "Ask", "Switch", "Branch" ], canvas(flow)["palette"].map { |entry| entry["label"] }
       end
 
       test "carries what a palette entry's record field holds" do
@@ -142,6 +155,10 @@ module Alembic
 
       test "offers a drawing setting the values the step it names outputs" do
         assert_equal [ { "value" => "high" } ], canvas(picking)["nodes"].last["choices"]["answer"]
+      end
+
+      test "gives a switching node a connection point for each value the step it names outputs" do
+        assert_equal [ "high", "low" ], canvas(switching)["nodes"].last["ports"]
       end
     end
   end

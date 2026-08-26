@@ -117,7 +117,13 @@ module Alembic
         step_type = step_type_for(node)
         return [] unless step_type&.routes?
 
-        step_type.outputs.flat_map { |output| output.values_for(node) }.map { |value| value["value"].to_s }
+        step_type.outputs.flat_map { |output| values_taken(output, node) }.map { |value| value["value"].to_s }
+      end
+
+      def values_taken(output, node)
+        return output.values_for(node) unless output.from
+
+        values_out_of(node.config[output.from.to_s])
       end
 
       def step_type_for(node)
