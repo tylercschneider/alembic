@@ -79,5 +79,21 @@ module Alembic
         assert_response :not_found
       end
     end
+
+    test "an admin can preview a diagnostic a visitor cannot reach" do
+      without_host_configuration do
+        get alembic.manage_diagnostic_preview_path(published)
+
+        assert_response :success
+      end
+    end
+
+    test "an admin can step through a preview a visitor cannot reach" do
+      without_host_configuration do
+        get alembic.step_manage_diagnostic_preview_path(published)
+
+        assert_response :success
+      end
+    end
   end
 end
