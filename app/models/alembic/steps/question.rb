@@ -14,7 +14,7 @@ module Alembic
         setting :weight, type: :integer
       end
 
-      names_by :question
+      names_by :name, :question
       awaits_input
 
       def self.asked(step)
