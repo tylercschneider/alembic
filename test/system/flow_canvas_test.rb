@@ -225,6 +225,12 @@ module Alembic
       assert_selector "svg path[data-link^='gate-gate--false']"
     end
 
+    test "a placeholder's arrow offers nothing to insert into or remove" do
+      canvas_for(flow)
+
+      assert_no_selector "[data-connector='gate-gate--false']", visible: :all
+    end
+
     test "the step a flow ends at can be picked up and moved" do
       canvas_for(wired)
 
