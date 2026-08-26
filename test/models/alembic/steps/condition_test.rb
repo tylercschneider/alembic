@@ -59,8 +59,8 @@ module Alembic
         assert_equal [ :result ], Condition.step_type.outputs.map(&:name)
       end
 
-      test "cannot run without the step and answer it tests" do
-        assert_equal [ :step, :answer ], Condition.step_type.required
+      test "cannot run without the step, comparison and answer it tests" do
+        assert_equal [ :step, :comparison, :answer ], Condition.step_type.required
       end
 
       test "offers a comparison deciding which way the test falls" do
