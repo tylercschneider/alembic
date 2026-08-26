@@ -70,6 +70,13 @@ module Alembic
       update!(published_version: current_definition_version, status: :published)
     end
 
+    def return_to(version)
+      raise ActiveRecord::RecordNotFound unless definition_versions.exists?(version.id)
+
+      update!(document: version.definition, undone_changes: [],
+        changes_since_version: changes_since_version.to_a + [ returning_to(version) ])
+    end
+
     def cut_version
       record_definition(document, changes_since_version.to_a) unless cut?
 
@@ -78,6 +85,11 @@ module Alembic
 
     def undoable
       undo_history.to_a + changes_since_version.to_a
+    end
+
+    def returning_to(version)
+      { "action" => "returned", "steps" => [], "named" => [],
+        "detail" => "version #{version.number}", "before" => document }
     end
 
     def cut?

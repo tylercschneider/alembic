@@ -21,5 +21,13 @@ module Alembic
     test "drops a name that is missing rather than quoting nothing" do
       assert_equal "Connected “branch”", Change.phrase("action" => "connected", "named" => [ "branch", nil ])
     end
+
+    test "phrases a detail plainly rather than quoting it like a name" do
+      assert_equal "Returned to version 3", Change.phrase("action" => "returned", "detail" => "version 3")
+    end
+
+    test "prefers a name over a detail when both arrive" do
+      assert_equal "Added “A”", Change.phrase("action" => "added", "named" => [ "A" ], "detail" => "ignored")
+    end
   end
 end
