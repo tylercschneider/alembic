@@ -31,7 +31,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_230500) do
     t.string "kind"
     t.string "slug"
     t.string "start_label"
-    t.string "status"
+    t.string "status", default: "active", null: false
     t.text "summary"
     t.integer "summary_cursor"
     t.string "title"

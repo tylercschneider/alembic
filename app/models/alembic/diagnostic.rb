@@ -1,6 +1,6 @@
 module Alembic
   class Diagnostic < ApplicationRecord
-    enum :status, { draft: "draft", published: "published" }
+    enum :status, { active: "active", hidden: "hidden", inactive: "inactive" }
     enum :kind, { scored: "scored", guide: "guide" }
 
     validates :slug, presence: true

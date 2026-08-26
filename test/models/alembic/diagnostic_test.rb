@@ -2,8 +2,8 @@ require "test_helper"
 
 module Alembic
   class DiagnosticTest < ActiveSupport::TestCase
-    test "reports when it is published" do
-      assert Diagnostic.new(status: :published).published?
+    test "reports when it is hidden" do
+      assert Diagnostic.new(status: :hidden).hidden?
     end
 
     test "reports its kind" do
@@ -396,6 +396,12 @@ module Alembic
       diagnostic.retire_version(retired)
 
       assert_raises(OutOfService) { diagnostic.return_to(retired) }
+    end
+
+    test "a diagnostic is active until it is set otherwise" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+
+      assert_predicate diagnostic, :active?
     end
   end
 end
