@@ -47,8 +47,8 @@ module Alembic
         assert_not_predicate Condition.step_type, :awaits_input?
       end
 
-      test "declares the step whose answer it tests" do
-        assert_equal :string, Condition.step_type.fields[:step]
+      test "declares the step whose answer it tests as one that comes before it" do
+        assert_equal :previous_step, Condition.step_type.fields[:step]
       end
 
       test "declares the answer it tests for" do
