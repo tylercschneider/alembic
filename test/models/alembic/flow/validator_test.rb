@@ -266,6 +266,20 @@ module Alembic
 
         assert_empty found.map(&:problem).select { |problem| problem == :unrouted_value }
       end
+
+      test "reports an unwired result on a condition a diagnostic actually uses" do
+        document = { "entry" => "ask",
+                     "nodes" => [ { "id" => "ask", "type" => "question", "question" => "Budget?",
+                                    "answers" => [ { "value" => "high" } ] },
+                                  { "id" => "gate", "type" => "condition", "step" => "ask", "output" => "answer",
+                                    "comparison" => "is", "answer" => "high" },
+                                  { "id" => "posh", "type" => "question", "question" => "Posh?",
+                                    "answers" => [ { "value" => "yes" } ] } ],
+                     "edges" => [ { "from" => "ask", "to" => "gate" },
+                                  { "from" => "gate", "to" => "posh", "on" => true } ] }
+
+        assert_includes violations(document).map(&:problem), :unrouted_value
+      end
     end
   end
 end
