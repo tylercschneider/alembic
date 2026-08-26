@@ -99,6 +99,12 @@ module Alembic
           step_type.values_of(:result, node)
       end
 
+      test "declares an output drawing its values from the step a setting names" do
+        step_type = StepType.define(:switch) { setting :step, type: :previous_step; output :choice, from: :step }
+
+        assert_equal :step, step_type.outputs.first.from
+      end
+
       test "can declare which field names an instance of it" do
         step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 

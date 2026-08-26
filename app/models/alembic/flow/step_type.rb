@@ -119,8 +119,8 @@ module Alembic
           @requirements = derivation
         end
 
-        def output(name, type: :string, label: nil, values: nil)
-          @declared_outputs += [ Output.new(name: name, type: type, label: label, values: values) ]
+        def output(name, type: :string, label: nil, values: nil, from: nil)
+          @declared_outputs += [ Output.new(name: name, type: type, label: label, values: values, from: from) ]
         end
 
         def process(&behaviour)
