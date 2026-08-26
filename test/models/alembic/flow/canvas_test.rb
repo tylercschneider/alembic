@@ -7,7 +7,7 @@ module Alembic
         Registry.new.tap do |built|
           built.register(StepType.define(:ask) do
             step_name "Ask"
-            offers { |node| Array(node.config["options"]) }
+            output :answer, values: ->(node) { Array(node.config["options"]) }
             setting :text, type: :string
             setting(:options, type: :list) { setting :value, type: :string; setting :weight, type: :integer }
             names_by :text
@@ -134,7 +134,7 @@ module Alembic
         assert_equal [ { "value" => "a", "label" => "Budget?" } ], canvas(flow)["nodes"].last["choices"]["step"]
       end
 
-      test "offers a drawing setting what the step it names offers" do
+      test "offers a drawing setting the values the step it names outputs" do
         assert_equal [ { "value" => "high" } ], canvas(picking)["nodes"].last["choices"]["answer"]
       end
     end

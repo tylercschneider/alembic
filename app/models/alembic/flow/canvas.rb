@@ -98,8 +98,9 @@ module Alembic
 
       def offerings_of(id)
         named = @document.node(id)
+        return [] unless named
 
-        named ? step_type_for(named)&.offerings_for(named).to_a : []
+        step_type_for(named)&.outputs.to_a.flat_map { |output| output.values_for(named) }
       end
 
       def naming_steps(node)
