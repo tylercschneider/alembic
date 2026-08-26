@@ -40,6 +40,13 @@ module Alembic
         assert_equal [ "a" ], step_type.requirements_for(node_testing("a"))
       end
 
+      test "requires a step its configuration refers to" do
+        step_type = StepType.define(:agent) { }
+        node = Node.new(id: "reply", type: "agent", config: { "prompt" => "Echo {{ask}}" })
+
+        assert_equal [ "ask" ], step_type.requirements_for(node)
+      end
+
       test "requires nothing when it declares no requirements" do
         step_type = StepType.define(:agent) { }
 

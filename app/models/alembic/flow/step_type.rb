@@ -34,7 +34,7 @@ module Alembic
       end
 
       def requirements_for(node)
-        Array(@requirements&.call(node))
+        Array(@requirements&.call(node)) | References.of(node.config)
       end
 
       def awaits_input?
