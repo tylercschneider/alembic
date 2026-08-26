@@ -7,7 +7,7 @@ module Alembic
 
       def update
         @diagnostic = Diagnostic.find(params[:diagnostic_id])
-        @diagnostic.record_definition(JSON.parse(params.require(:definition)))
+        @diagnostic.edit_document(JSON.parse(params.require(:definition)))
         redirect_to manage_diagnostic_path(@diagnostic), notice: "Definition saved."
       end
     end
