@@ -225,6 +225,21 @@ module Alembic
       assert_selector "svg path[data-link^='gate-gate--false']"
     end
 
+    test "the step a flow ends at can be picked up and moved" do
+      canvas_for(wired)
+
+      assert_selector "[data-step='end'][draggable='true']"
+    end
+
+    test "the step a flow ends at can be deleted" do
+      canvas_for(wired)
+
+      step_card("end").click
+      find("[data-inspector]").click_button("Delete step")
+
+      assert_no_selector "[data-step='end']"
+    end
+
     test "closing the panel leaves the flow drawn" do
       canvas_for(flow)
       step_card("gate").click
