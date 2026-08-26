@@ -416,16 +416,17 @@ account entitlement, a purchase record — stays yours.
 **Configure nothing and every flow is closed.** There is no open default and no
 setting that opens everything at once.
 
-### The two refusals
+### The refusals
 
-The gate raises one of two errors, so you can tell the cases apart:
+The gate raises one of three errors, so you can tell the cases apart:
 
 | Error | Meaning |
 |---|---|
-| `Alembic::NotPublished` | The flow has no published version. |
-| `Alembic::NotPermitted` | It is published, but not for this visitor. |
+| `Alembic::NotPublished` | The flow has no live version. |
+| `Alembic::NotPermitted` | It is live, but not for this visitor, or the diagnostic is inactive. |
+| `Alembic::Withdrawn` | The version this run was part-way through was withdrawn. |
 
-Configure nothing and both render a plain `404`. That is deliberate: a closed
+Configure nothing and all three render a plain `404`. That is deliberate: a closed
 flow is indistinguishable from one that does not exist, so a slug cannot be
 probed to learn what is there, and the engine has nowhere sensible to send
 someone it knows nothing about.
@@ -465,7 +466,64 @@ It runs the published flow the way a visitor would and is authenticated as the
 rest of the builder is, so the visitor gate has no bypass in it. A flow with
 nothing published has nothing to preview.
 
-## 8. What ships built in
+## 8. Version statuses and availability
+
+Two separate things decide whether someone can run a flow: the status of a
+version, and the availability of the diagnostic itself.
+
+### A version's status
+
+Every version a host creates carries one of five statuses.
+
+| Status | New runs start | Runs in flight | Publishable | Can return to |
+|---|---|---|---|---|
+| `draft` | no | — | yes | yes |
+| `live` | yes | continue | — | yes |
+| `superseded` | no | continue | yes, again | yes |
+| `retired` | no | continue | no | no |
+| `withdrawn` | no | **stopped** | no | no |
+
+Retired and withdrawn are the pair to choose between. Retired stops new people
+arriving and lets anyone part-way through finish. Withdrawn stops them too.
+
+Publishing makes a version `live` and marks the previously live one
+`superseded`. Exactly one version can be `live`, enforced by a unique index
+rather than by convention.
+
+A version row is never destroyed by a status change, so a finished run stays
+exactly re-derivable no matter what happened to its version afterwards.
+
+```ruby
+diagnostic.publish                          # current version becomes live
+diagnostic.retire_version(some_version)     # no new runs, in-flight continue
+some_version.update!(status: :withdrawn)    # in-flight stopped too
+```
+
+Publishing or returning to a retired or withdrawn version raises
+`Alembic::OutOfService`.
+
+### A diagnostic's availability
+
+Separately, a diagnostic is `active`, `hidden` or `inactive`.
+
+| Status | Reachable by link | Runs in flight | In `Diagnostic.listable` |
+|---|---|---|---|
+| `active` | yes | continue | yes |
+| `hidden` | yes | continue | no |
+| `inactive` | no | **stopped** | no |
+
+Alembic has no public list of its own, so `hidden` only means the host leaves
+it out of whatever list the host builds:
+
+```ruby
+Alembic::Diagnostic.listable
+```
+
+An inactive diagnostic raises `Alembic::NotPermitted`, and a withdrawn version
+raises `Alembic::Withdrawn`, both answered by the host the same way the other
+refusals are.
+
+## 9. What ships built in
 
 Two step types, both registered by the engine:
 
@@ -490,7 +548,7 @@ Six output types:
 None of these are privileged — they register through the same public call a
 host would use, and a host can add its own or ignore them entirely.
 
-## 9. Known gaps
+## 10. Known gaps
 
 Documented so nobody builds against something that isn't there:
 
@@ -504,7 +562,7 @@ Documented so nobody builds against something that isn't there:
   this interface, not part of it — a host orchestrating agents should use
   `Digest` directly.
 
-## 10. A non-diagnostic example
+## 11. A non-diagnostic example
 
 Nothing above is question-shaped. The same engine orchestrating agent work:
 
