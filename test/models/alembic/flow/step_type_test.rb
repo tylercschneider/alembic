@@ -118,6 +118,15 @@ module Alembic
         assert_equal "budget is high", step_type.name_of(node)
       end
 
+      test "declares a setting choosing among the outputs of the step another names" do
+        step_type = StepType.define(:reads) do
+          setting :step, type: :previous_step
+          setting :output, outputs_of: :step
+        end
+
+        assert_equal :step, step_type.outputs_of[:output]
+      end
+
       test "can declare which field names an instance of it" do
         step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 
