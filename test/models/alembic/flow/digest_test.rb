@@ -123,6 +123,12 @@ module Alembic
       test "reports no directing values for a step that does not route" do
         assert_empty digest(branching).routing_values("first")
       end
+
+      test "reports the outputs a step names for a later one to read" do
+        document = { "entry" => "a", "nodes" => [ { "id" => "a", "type" => "pick" } ], "edges" => [] }
+
+        assert_equal [ { "value" => "answer", "label" => "Answer" } ], digest(document).outputs_of("a")
+      end
     end
   end
 end

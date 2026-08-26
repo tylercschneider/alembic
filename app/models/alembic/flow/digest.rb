@@ -38,6 +38,13 @@ module Alembic
         values_out_of(node.config[output.from.to_s])
       end
 
+      def outputs_of(id)
+        named = step(id)
+        return [] unless named
+
+        step_type(named)&.outputs.to_a.map { |output| { "value" => output.name.to_s, "label" => output.label } }
+      end
+
       def values_out_of(id)
         named = step(id)
         return [] unless named
