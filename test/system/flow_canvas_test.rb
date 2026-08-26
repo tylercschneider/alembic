@@ -120,6 +120,14 @@ module Alembic
       assert_selector "[data-inspector]", text: "Answer"
     end
 
+    test "opening a condition offers the steps that come before it" do
+      canvas_for(flow)
+
+      step_card("gate").click
+
+      assert_selector "[data-inspector] select option", text: "First"
+    end
+
     test "closing the panel leaves the flow drawn" do
       canvas_for(flow)
       step_card("gate").click

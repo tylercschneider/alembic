@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import StepCard from "./StepCard"
 import Inspector from "./Inspector"
+import { offeredTo } from "./choices"
 import TypePicker from "./TypePicker"
 import Toolbar from "./Toolbar"
 import Panel from "./Panel"
@@ -141,7 +142,7 @@ const Canvas = ({ base, token, initial }) => {
         <Inspector node={selectedNode}
                    fields={entryFor?.fields || {}} holds={entryFor?.records || {}}
                    labels={entryFor?.labels || {}} recordLabels={entryFor?.record_labels || {}}
-                   choices={entryFor?.choices || {}}
+                   choices={offeredTo(selectedNode, entryFor)}
                    onClose={() => setSelected(null)}
                    onSave={(config) => send(`/steps/${selectedNode.id}`, "PATCH", { config })}
                    onDelete={() => { setSelected(null); send(`/steps/${selectedNode.id}`, "DELETE") }} />
