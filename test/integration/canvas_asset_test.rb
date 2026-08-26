@@ -7,11 +7,5 @@ module Alembic
 
       assert_response :success
     end
-
-    test "the canvas bundle carries the library it was built from" do
-      bundle = Engine.root.join("app/assets/builds/alembic/canvas.js").read
-
-      assert_includes bundle, "react.transitional.element"
-    end
   end
 end

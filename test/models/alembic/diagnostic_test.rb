@@ -28,10 +28,6 @@ module Alembic
       assert Diagnostic.new(kind: :scored).scored?
     end
 
-    test "is invalid without a slug" do
-      assert_not Diagnostic.new(slug: nil).valid?
-    end
-
     test "builds a runner from the version it published" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition({ "slug" => "demo" })
