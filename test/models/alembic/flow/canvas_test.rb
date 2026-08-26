@@ -7,11 +7,12 @@ module Alembic
         Registry.new.tap do |built|
           built.register(StepType.define(:ask) do
             step_name "Ask"
+            offers { |node| Array(node.config["options"]) }
             setting :text, type: :string
             setting(:options, type: :list) { setting :value, type: :string; setting :weight, type: :integer }
             names_by :text
           end)
-          built.register(StepType.define(:branch) { step_name "Branch"; setting :step, type: :previous_step; outputs :yes, :no })
+          built.register(StepType.define(:branch) { step_name "Branch"; setting :step, type: :previous_step; setting :answer, from: :step; outputs :yes, :no })
         end
       end
 
@@ -22,6 +23,13 @@ module Alembic
       def flow
         { "entry" => "a",
           "nodes" => [ { "id" => "a", "type" => "ask", "text" => "Budget?" }, { "id" => "b", "type" => "branch" } ],
+          "edges" => [ { "from" => "a", "to" => "b" } ] }
+      end
+
+      def picking
+        { "entry" => "a",
+          "nodes" => [ { "id" => "a", "type" => "ask", "text" => "Budget?", "options" => [ { "value" => "high" } ] },
+                       { "id" => "b", "type" => "branch", "step" => "a" } ],
           "edges" => [ { "from" => "a", "to" => "b" } ] }
       end
 
@@ -124,6 +132,10 @@ module Alembic
 
       test "offers a step-naming setting the steps that come before that node" do
         assert_equal [ { "value" => "a", "label" => "Budget?" } ], canvas(flow)["nodes"].last["choices"]["step"]
+      end
+
+      test "offers a drawing setting what the step it names offers" do
+        assert_equal [ { "value" => "high" } ], canvas(picking)["nodes"].last["choices"]["answer"]
       end
     end
   end
