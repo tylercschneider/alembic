@@ -198,8 +198,9 @@ module Alembic
 
       test "reports a deciding step left without an edge for one of its results" do
         document = deciding_document([ { "from" => "gate", "to" => "yes_step", "on" => true } ])
+        found = Validator.new(Document.new(document), registry: deciding_registry, checks: [ :unrouted_value ]).violations
 
-        assert_includes violations(document, deciding_registry).map(&:problem), :unrouted_value
+        assert_includes found.map(&:problem), :unrouted_value
       end
 
       test "accepts a deciding step wired for every result it can reach" do
@@ -238,8 +239,9 @@ module Alembic
 
       test "reports a step that cannot follow the second connection leaving it" do
         document = leading_document([ { "from" => "a", "to" => "b" }, { "from" => "a", "to" => "c" } ])
+        found = Validator.new(Document.new(document), registry: deciding_registry, checks: [ :unfollowed_path ]).violations
 
-        assert_includes violations(document, deciding_registry).map(&:problem), :unfollowed_path
+        assert_includes found.map(&:problem), :unfollowed_path
       end
 
       test "accepts a step with one connection leaving it" do
@@ -256,6 +258,27 @@ module Alembic
                                   { "from" => "gate", "to" => "c", "on" => false } ] }
 
         assert_empty violations(document, deciding_registry)
+      end
+
+      test "leaves a branching step's unwired result alone unless that check is asked for" do
+        document = deciding_document([ { "from" => "gate", "to" => "yes_step", "on" => true } ])
+        found = Validator.new(Document.new(document), registry: deciding_registry, checks: []).violations
+
+        assert_empty found.map(&:problem).select { |problem| problem == :unrouted_value }
+      end
+
+      test "reports an unwired result on a condition a diagnostic actually uses" do
+        document = { "entry" => "ask",
+                     "nodes" => [ { "id" => "ask", "type" => "question", "question" => "Budget?",
+                                    "answers" => [ { "value" => "high" } ] },
+                                  { "id" => "gate", "type" => "condition", "step" => "ask", "output" => "answer",
+                                    "comparison" => "is", "answer" => "high" },
+                                  { "id" => "posh", "type" => "question", "question" => "Posh?",
+                                    "answers" => [ { "value" => "yes" } ] } ],
+                     "edges" => [ { "from" => "ask", "to" => "gate" },
+                                  { "from" => "gate", "to" => "posh", "on" => true } ] }
+
+        assert_includes violations(document).map(&:problem), :unrouted_value
       end
     end
   end

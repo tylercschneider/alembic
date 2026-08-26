@@ -7,6 +7,9 @@ module Alembic
         Alembic::Steps::Question.register
         Alembic::Steps::Condition.register
         Alembic::Steps::Switch.register
+
+        Alembic::Flow.check(:unrouted_value)
+        Alembic::Flow.check(:unfollowed_path)
         Alembic::Outputs::WeightedSum.register
         Alembic::Outputs::Percentage.register
         Alembic::Outputs::Grouped.register
