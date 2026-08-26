@@ -6,6 +6,7 @@ module Alembic
       def registry
         @registry ||= Registry.new.tap do |built|
           built.register(StepType.define(:ask) { setting :text, type: :string; awaits_input })
+          built.register(StepType.define(:check) { route { |_node, state| state["a"] == "yes" } })
           built.register(StepType.define(:branch) do
             setting :answer, type: :string
             ports :yes, :no
@@ -13,6 +14,15 @@ module Alembic
             route { |node, state| state[node.config["answer"]] == "yes" ? :yes : :no }
           end)
         end
+      end
+
+      def deciding
+        { "entry" => "gate",
+          "nodes" => [ { "id" => "gate", "type" => "check" },
+                       { "id" => "yes_step", "type" => "ask" },
+                       { "id" => "no_step", "type" => "ask" } ],
+          "edges" => [ { "from" => "gate", "to" => "yes_step", "on" => true },
+                       { "from" => "gate", "to" => "no_step", "on" => false } ] }
       end
 
       def digest(document)
@@ -89,6 +99,10 @@ module Alembic
 
       test "reports nothing before a step the entry cannot reach" do
         assert_empty digest(branching.merge("edges" => [])).preceding("last")
+      end
+
+      test "takes the edge marked false when a step routes to false" do
+        assert_equal "no_step", digest(deciding).next_step({ "a" => "no" }).id
       end
     end
   end

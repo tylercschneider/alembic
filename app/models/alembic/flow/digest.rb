@@ -63,7 +63,7 @@ module Alembic
       def successor(node, state)
         leaving = @document.edges_from(node.id)
         port = step_type(node)&.route(node, state)
-        taken = port ? leaving.find { |edge| edge.on.to_s == port.to_s } : leaving.first
+        taken = port.nil? ? leaving.first : leaving.find { |edge| edge.on.to_s == port.to_s }
 
         taken && @document.node(taken.to)
       end
