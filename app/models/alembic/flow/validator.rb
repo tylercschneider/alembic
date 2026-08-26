@@ -7,7 +7,7 @@ module Alembic
       end
 
       def violations
-        structural_violations + unmet_requirements + missing_settings + missing_values + unrouted_values
+        structural_violations + unmet_requirements + missing_settings + missing_values + unrouted_values + unfollowed_paths
       end
 
       def structural_violations
@@ -46,6 +46,19 @@ module Alembic
           requirements_for(node).reject { |required| precedes_every_path?(required, node.id) }
             .map { |required| Violation.new(node: node.id, problem: :unmet_requirement, detail: required) }
         end
+      end
+
+      def unfollowed_paths
+        @document.nodes.select { |node| leads_on?(node) }.flat_map { |node| unfollowed_paths_from(node) }
+      end
+
+      def leads_on?(node)
+        @registry.registered?(node.type) && !@registry.fetch(node.type).routes?
+      end
+
+      def unfollowed_paths_from(node)
+        @document.edges_from(node.id).drop(1)
+          .map { |edge| Violation.new(node: node.id, problem: :unfollowed_path, detail: edge.to) }
       end
 
       def unrouted_values

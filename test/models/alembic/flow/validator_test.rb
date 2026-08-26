@@ -11,12 +11,16 @@ module Alembic
         Registry.new.tap do |registry|
           registry.register(StepType.define(:needy) { requires { |node| [ node.config["needs"] ].compact } })
           registry.register(StepType.define(:plain) { })
+          registry.register(StepType.define(:forks) do
+            output :way, values: [ "r", "x" ]
+            route { |_node, _state| "r" }
+          end)
         end
       end
 
-      def needy_document(edges)
+      def needy_document(edges, leading: "plain")
         { "entry" => "a",
-          "nodes" => [ { "id" => "a", "type" => "plain" }, { "id" => "r", "type" => "plain" },
+          "nodes" => [ { "id" => "a", "type" => leading }, { "id" => "r", "type" => "plain" },
                        { "id" => "x", "type" => "needy", "needs" => "r" } ],
           "edges" => edges }
       end
@@ -28,13 +32,15 @@ module Alembic
       end
 
       test "reports a requirement that lies on only one of two paths to the step" do
-        document = needy_document([ { "from" => "a", "to" => "r" }, { "from" => "r", "to" => "x" }, { "from" => "a", "to" => "x" } ])
+        document = needy_document([ { "from" => "a", "to" => "r", "on" => "r" }, { "from" => "r", "to" => "x" },
+                                    { "from" => "a", "to" => "x", "on" => "x" } ], leading: "forks")
 
         assert_equal [ :unmet_requirement ], violations(document, needy_registry).map(&:problem)
       end
 
       test "identifies the step and the requirement that is unmet" do
-        document = needy_document([ { "from" => "a", "to" => "r" }, { "from" => "a", "to" => "x" } ])
+        document = needy_document([ { "from" => "a", "to" => "r", "on" => "r" },
+                                    { "from" => "a", "to" => "x", "on" => "x" } ], leading: "forks")
         violation = violations(document, needy_registry).first
 
         assert_equal [ "x", "r" ], [ violation.node, violation.detail ]
@@ -63,7 +69,8 @@ module Alembic
       end
 
       test "reports a requirement that lies on no path to the step" do
-        document = needy_document([ { "from" => "a", "to" => "r" }, { "from" => "a", "to" => "x" } ])
+        document = needy_document([ { "from" => "a", "to" => "r", "on" => "r" },
+                                    { "from" => "a", "to" => "x", "on" => "x" } ], leading: "forks")
 
         assert_equal [ :unmet_requirement ], violations(document, needy_registry).map(&:problem)
       end
@@ -220,6 +227,35 @@ module Alembic
                      "edges" => [] }
 
         assert_empty violations(document, listing_registry)
+      end
+
+      def leading_document(edges)
+        { "entry" => "a",
+          "nodes" => [ { "id" => "a", "type" => "plain" }, { "id" => "b", "type" => "plain" },
+                       { "id" => "c", "type" => "plain" } ],
+          "edges" => edges }
+      end
+
+      test "reports a step that cannot follow the second connection leaving it" do
+        document = leading_document([ { "from" => "a", "to" => "b" }, { "from" => "a", "to" => "c" } ])
+
+        assert_includes violations(document, deciding_registry).map(&:problem), :unfollowed_path
+      end
+
+      test "accepts a step with one connection leaving it" do
+        document = leading_document([ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "c" } ])
+
+        assert_empty violations(document, deciding_registry)
+      end
+
+      test "never reports a branching step, however many connections leave it" do
+        document = { "entry" => "gate",
+                     "nodes" => [ { "id" => "gate", "type" => "decides" }, { "id" => "b", "type" => "plain" },
+                                  { "id" => "c", "type" => "plain" } ],
+                     "edges" => [ { "from" => "gate", "to" => "b", "on" => true },
+                                  { "from" => "gate", "to" => "c", "on" => false } ] }
+
+        assert_empty violations(document, deciding_registry)
       end
     end
   end
