@@ -35,6 +35,10 @@ module Alembic
         @routing&.call(node, state)
       end
 
+      def routes?
+        @routing.present?
+      end
+
       def requirements_for(node)
         Array(@requirements&.call(node))
       end

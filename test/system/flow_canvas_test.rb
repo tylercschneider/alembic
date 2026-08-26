@@ -85,7 +85,7 @@ module Alembic
     test "adding a step from an unconnected branch wires it to that branch" do
       canvas_for(flow)
 
-      step_card("gate").click_button("no")
+      step_card("gate").click_button("false")
       add_step_named("Question")
 
       assert_selector "[data-step]", count: 4

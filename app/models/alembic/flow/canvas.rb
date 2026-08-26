@@ -66,7 +66,7 @@ module Alembic
             "choices" => step_type.choices.transform_keys(&:to_s),
             "records" => holdings_of(step_type),
             "record_labels" => step_type.record_labels.to_h { |name, held| [ name.to_s, held.transform_keys(&:to_s) ] },
-            "ports" => step_type.ports.map(&:to_s), "awaits_input" => step_type.awaits_input? }
+            "awaits_input" => step_type.awaits_input? }
         end
       end
 
@@ -114,7 +114,10 @@ module Alembic
       end
 
       def ports_for(node)
-        step_type_for(node)&.ports.to_a.map(&:to_s)
+        step_type = step_type_for(node)
+        return [] unless step_type&.routes?
+
+        step_type.outputs.flat_map { |output| output.values_for(node) }.map { |value| value["value"].to_s }
       end
 
       def step_type_for(node)

@@ -12,7 +12,13 @@ module Alembic
             setting(:options, type: :list) { setting :value, type: :string; setting :weight, type: :integer }
             names_by :text
           end)
-          built.register(StepType.define(:branch) { step_name "Branch"; setting :step, type: :previous_step; setting :answer, from: :step; ports :yes, :no })
+          built.register(StepType.define(:branch) do
+            step_name "Branch"
+            setting :step, type: :previous_step
+            setting :answer, from: :step
+            output :result, type: :boolean, values: [ true, false ]
+            route { |_node, _state| true }
+          end)
         end
       end
 
@@ -65,8 +71,8 @@ module Alembic
         assert_equal("string", canvas(flow)["palette"].first["fields"]["text"])
       end
 
-      test "carries a palette entry's output ports" do
-        assert_equal [ "yes", "no" ], canvas(flow)["palette"].last["ports"]
+      test "gives a routing node a connection point for each value its output takes" do
+        assert_equal [ "true", "false" ], canvas(flow)["nodes"].last["ports"]
       end
 
       def routed(document, from, to)
