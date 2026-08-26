@@ -195,9 +195,10 @@ module Alembic
         document = { "nodes" => [ { "id" => "g", "type" => "go" }, { "id" => "a", "type" => "ask" },
                                   { "id" => "adrift", "type" => "ask" } ],
                      "edges" => [ { "from" => "g", "to" => "a" } ] }
-        drawn = canvas(document)["nodes"]
+        built = Document.new(document, registry: registry)
 
-        assert_equal [ false, false, true ], drawn.map { |node| node["loose"] }.last(3)
+        assert_equal [ false, false, true ],
+          Canvas.new(built, registry: registry).to_h["nodes"].map { |node| node["loose"] }
       end
     end
   end
