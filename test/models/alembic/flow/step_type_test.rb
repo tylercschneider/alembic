@@ -79,13 +79,19 @@ module Alembic
       test "can declare which field names an instance of it" do
         step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 
-        assert_equal :text, step_type.naming_field
+        assert_equal [ :text ], step_type.naming_fields
+      end
+
+      test "can declare several fields that name an instance of it, in order" do
+        step_type = StepType.define(:ask) { setting :name, type: :string; setting :text, type: :string; names_by :name, :text }
+
+        assert_equal [ :name, :text ], step_type.naming_fields
       end
 
       test "names an instance by nothing unless it says so" do
         step_type = StepType.define(:branch) { setting :answer, type: :string }
 
-        assert_nil step_type.naming_field
+        assert_empty step_type.naming_fields
       end
 
       test "declares a setting holding a repeating group" do
