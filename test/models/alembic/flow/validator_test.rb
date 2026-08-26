@@ -280,6 +280,31 @@ module Alembic
 
         assert_includes violations(document).map(&:problem), :unrouted_value
       end
+
+      def ending_registry
+        Registry.new.tap do |registry|
+          registry.register(StepType.define(:plain) { })
+          registry.register(StepType.define(:stop) { ends_here })
+        end
+      end
+
+      def ending_document(last)
+        { "entry" => "a",
+          "nodes" => [ { "id" => "a", "type" => "plain" }, { "id" => "b", "type" => last } ],
+          "edges" => [ { "from" => "a", "to" => "b" } ] }
+      end
+
+      def endings(document)
+        Validator.new(Document.new(document), registry: ending_registry, checks: [ :dead_end ]).violations
+      end
+
+      test "reports a step with nothing leading away from it that does not end the flow" do
+        assert_equal [ :dead_end ], endings(ending_document("plain")).map(&:problem)
+      end
+
+      test "accepts a flow whose last step ends it" do
+        assert_empty endings(ending_document("stop"))
+      end
     end
   end
 end

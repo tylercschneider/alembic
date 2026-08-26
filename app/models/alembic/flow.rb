@@ -3,7 +3,7 @@ module Alembic
     FIELD_TYPES = %i[string integer float boolean select multi_select previous_step from_step list].freeze
 
     OUTPUT_TYPES = %i[string integer float boolean].freeze
-    OPTIONAL_CHECKS = %i[unrouted_value unfollowed_path].freeze
+    OPTIONAL_CHECKS = %i[unrouted_value unfollowed_path dead_end].freeze
 
     class UnknownFieldType < ArgumentError; end
     class UnknownOutputType < ArgumentError; end

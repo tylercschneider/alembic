@@ -1,7 +1,7 @@
 module Alembic
   module Flow
     class Validator
-      OPTIONAL = { unrouted_value: :unrouted_values, unfollowed_path: :unfollowed_paths }.freeze
+      OPTIONAL = { unrouted_value: :unrouted_values, unfollowed_path: :unfollowed_paths, dead_end: :dead_ends }.freeze
 
       def initialize(document, registry: Flow.registry, checks: Flow.checks)
         @document = document
@@ -53,6 +53,15 @@ module Alembic
           requirements_for(node).reject { |required| precedes_every_path?(required, node.id) }
             .map { |required| Violation.new(node: node.id, problem: :unmet_requirement, detail: required) }
         end
+      end
+
+      def dead_ends
+        @document.nodes.reject { |node| ends_here?(node) || @document.edges_from(node.id).any? }
+          .map { |node| Violation.new(node: node.id, problem: :dead_end) }
+      end
+
+      def ends_here?(node)
+        @registry.registered?(node.type) && @registry.fetch(node.type).ends_here?
       end
 
       def unfollowed_paths
