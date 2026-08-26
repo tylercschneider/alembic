@@ -71,7 +71,7 @@ module Alembic
     end
 
     def cut_version
-      record_definition(document) unless cut?
+      record_definition(document, changes_since_version.to_a) unless cut?
 
       update!(undo_history: undoable, changes_since_version: [], undone_changes: [])
     end
@@ -84,8 +84,9 @@ module Alembic
       document == definition
     end
 
-    def record_definition(payload)
-      definition_versions.create!(number: next_definition_number, definition: payload)
+    def record_definition(payload, captured = [])
+      definition_versions.create!(number: next_definition_number, definition: payload,
+        changes_captured: captured.map { |change| change.except("before") })
         .tap { |version| update!(definition_cursor: version.number, document: payload) }
     end
 

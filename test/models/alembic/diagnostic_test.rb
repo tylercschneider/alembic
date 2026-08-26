@@ -236,7 +236,7 @@ module Alembic
     test "cutting a version clears what had changed since the last one" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
-      diagnostic.update!(document: { "entry" => "b" }, changes_since_version: [ "Moved a step" ])
+      diagnostic.update!(document: { "entry" => "b" }, changes_since_version: [ { "action" => "moved", "steps" => [ "a" ], "named" => [ "A" ] } ])
 
       diagnostic.cut_version
 
@@ -260,6 +260,15 @@ module Alembic
       diagnostic.publish
 
       assert_equal "b", diagnostic.reload.published_version.definition["entry"]
+    end
+
+    test "a version carries the changes that produced it" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "entry" => "a" })
+      diagnostic.update!(changes_since_version: [ { "action" => "added", "steps" => [ "a" ], "named" => [ "A" ] } ])
+
+      diagnostic.cut_version
+
+      assert_equal [ "added" ], diagnostic.definition_versions.last.changes.map { |change| change["action"] }
     end
   end
 end
