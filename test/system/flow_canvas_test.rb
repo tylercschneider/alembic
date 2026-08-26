@@ -25,10 +25,12 @@ module Alembic
                          "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
                        { "id" => "gate", "type" => "condition", "step" => "start", "output" => "answer", "comparison" => "is", "answer" => "yes" },
                        { "id" => "yes_step", "type" => "question", "question" => "Yes path",
-                         "answers" => [ { "value" => "on" } ] } ],
+                         "answers" => [ { "value" => "on" } ] },
+                       { "id" => "end", "type" => "terminal" } ],
           "edges" => [ { "from" => "start", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => true },
-                       { "from" => "gate", "to" => "yes_step", "on" => false } ]
+                       { "from" => "gate", "to" => "yes_step", "on" => false },
+                       { "from" => "yes_step", "to" => "end" } ]
         )
       end
     end

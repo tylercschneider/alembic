@@ -3,8 +3,8 @@ require "test_helper"
 module Alembic
   module Flow
     class ValidatorTest < ActiveSupport::TestCase
-      def violations(document, registry = Flow.registry)
-        Validator.new(Document.new(document), registry: registry).violations
+      def violations(document, registry = Flow.registry, checks: [])
+        Validator.new(Document.new(document), registry: registry, checks: checks).violations
       end
 
       def needy_registry
@@ -278,7 +278,7 @@ module Alembic
                      "edges" => [ { "from" => "ask", "to" => "gate" },
                                   { "from" => "gate", "to" => "posh", "on" => true } ] }
 
-        assert_includes violations(document).map(&:problem), :unrouted_value
+        assert_includes violations(document, Flow.registry, checks: Flow.checks).map(&:problem), :unrouted_value
       end
 
       def ending_registry

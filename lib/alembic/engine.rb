@@ -12,6 +12,7 @@ module Alembic
 
         Alembic::Flow.check(:unrouted_value)
         Alembic::Flow.check(:unfollowed_path)
+        Alembic::Flow.check(:dead_end)
         Alembic::Outputs::WeightedSum.register
         Alembic::Outputs::Percentage.register
         Alembic::Outputs::Grouped.register
