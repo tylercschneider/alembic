@@ -8,7 +8,7 @@ module Alembic
           "slug" => "canvas-system", "entry" => "start",
           "nodes" => [ { "id" => "start", "type" => "question", "question" => "First",
                          "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
-                       { "id" => "gate", "type" => "condition", "step" => "start", "answer" => "yes" },
+                       { "id" => "gate", "type" => "condition", "step" => "start", "comparison" => "is", "answer" => "yes" },
                        { "id" => "yes_step", "type" => "question", "question" => "Yes path" } ],
           "edges" => [ { "from" => "start", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => true } ]
@@ -22,7 +22,7 @@ module Alembic
           "slug" => "canvas-wired", "entry" => "start",
           "nodes" => [ { "id" => "start", "type" => "question", "question" => "First",
                          "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
-                       { "id" => "gate", "type" => "condition", "step" => "start", "answer" => "yes" },
+                       { "id" => "gate", "type" => "condition", "step" => "start", "comparison" => "is", "answer" => "yes" },
                        { "id" => "yes_step", "type" => "question", "question" => "Yes path" } ],
           "edges" => [ { "from" => "start", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => true },
@@ -150,6 +150,12 @@ module Alembic
       step_card("gate").click
 
       assert_selector "[data-inspector] select option", text: "Yes please"
+    end
+
+    test "a connector says which result it leaves on" do
+      canvas_for(flow)
+
+      assert_selector "[data-connector-label]", text: "true"
     end
 
     test "closing the panel leaves the flow drawn" do

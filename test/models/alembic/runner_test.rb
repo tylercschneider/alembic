@@ -5,7 +5,7 @@ module Alembic
     def branching
       { "slug" => "r", "entry" => "first",
         "nodes" => [ { "id" => "first", "type" => "question", "text" => "Budget?", "options" => [ "low", "high" ] },
-                     { "id" => "gate", "type" => "condition", "step" => "first", "answer" => "high" },
+                     { "id" => "gate", "type" => "condition", "step" => "first", "comparison" => "is", "answer" => "high" },
                      { "id" => "posh", "type" => "question", "text" => "Which premium tier?" },
                      { "id" => "plain", "type" => "question", "text" => "Which basic tier?" } ],
         "edges" => [ { "from" => "first", "to" => "gate" },

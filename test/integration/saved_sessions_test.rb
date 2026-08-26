@@ -6,7 +6,7 @@ module Alembic
       { "slug" => "saved", "entry" => "budget",
         "nodes" => [ { "id" => "budget", "type" => "question", "text" => "Budget?",
                        "options" => [ { "value" => "low", "label" => "Modest" }, { "value" => "high", "label" => "Generous" } ] },
-                     { "id" => "gate", "type" => "condition", "step" => "budget", "answer" => "high" },
+                     { "id" => "gate", "type" => "condition", "step" => "budget", "comparison" => "is", "answer" => "high" },
                      { "id" => "posh", "type" => "question", "text" => "Premium tier?", "options" => [ "gold" ] },
                      { "id" => "plain", "type" => "question", "text" => "Basic tier?", "options" => [ "bronze" ] } ],
         "edges" => [ { "from" => "budget", "to" => "gate" },
