@@ -145,6 +145,31 @@ module Alembic
 
         assert_equal [ :missing_setting ], violations(document, demanding_registry).map(&:problem)
       end
+
+      def reading_registry
+        Registry.new.tap do |registry|
+          registry.register(StepType.define(:pick) { output :answer, values: ->(node) { Array(node.config["options"]) } })
+          registry.register(StepType.define(:reads) do
+            setting :step, type: :previous_step
+            setting :answer, from: :step
+          end)
+        end
+      end
+
+      def reading_document(chosen)
+        { "entry" => "a",
+          "nodes" => [ { "id" => "a", "type" => "pick", "options" => [ { "value" => "high" } ] },
+                       { "id" => "b", "type" => "reads", "step" => "a", "answer" => chosen } ],
+          "edges" => [ { "from" => "a", "to" => "b" } ] }
+      end
+
+      test "reports a step reading a value the step it names no longer offers" do
+        assert_equal [ :missing_value ], violations(reading_document("gone"), reading_registry).map(&:problem)
+      end
+
+      test "accepts a step reading a value the step it names still offers" do
+        assert_empty violations(reading_document("high"), reading_registry)
+      end
     end
   end
 end
