@@ -240,6 +240,14 @@ module Alembic
       assert_no_selector "[data-step='end']"
     end
 
+    test "dragging a step onto a waiting spot fills it" do
+      canvas_for(adrift)
+
+      step_card("adrift").drag_to(find("[data-placeholder='gate--false']"))
+
+      assert_includes edges, [ "gate", "adrift" ]
+    end
+
     test "closing the panel leaves the flow drawn" do
       canvas_for(flow)
       step_card("gate").click
