@@ -22,7 +22,7 @@ module Alembic
             step_name "Branch"
             setting :step, type: :previous_step
             setting :output, outputs_of: :step
-            setting :answer, from: :step
+            setting :answer, from: :output
             output :result, type: :boolean, values: [ true, false ]
             route { |_node, _state| true }
           end)
@@ -49,7 +49,7 @@ module Alembic
       def picking
         { "entry" => "a",
           "nodes" => [ { "id" => "a", "type" => "ask", "text" => "Budget?", "options" => [ { "value" => "high" } ] },
-                       { "id" => "b", "type" => "branch", "step" => "a" } ],
+                       { "id" => "b", "type" => "branch", "step" => "a", "output" => "answer" } ],
           "edges" => [ { "from" => "a", "to" => "b" } ] }
       end
 

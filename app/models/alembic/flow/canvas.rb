@@ -98,12 +98,12 @@ module Alembic
 
       def drawn_by(node)
         step_type_for(node)&.drawn_from.to_h.to_h do |name, source|
-          [ name.to_s, values_out_of(node.config[source.to_s]) ]
+          [ name.to_s, digest.values_of(step_named_by(node, source), node.config[source.to_s]) ]
         end
       end
 
-      def values_out_of(id)
-        digest.values_out_of(id)
+      def step_named_by(node, source)
+        node.config[step_type_for(node).outputs_of[source].to_s]
       end
 
       def digest
