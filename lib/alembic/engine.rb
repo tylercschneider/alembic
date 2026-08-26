@@ -6,6 +6,7 @@ module Alembic
       app.config.to_prepare do
         Alembic::Steps::Question.register
         Alembic::Steps::Condition.register
+        Alembic::Steps::Switch.register
         Alembic::Outputs::WeightedSum.register
         Alembic::Outputs::Percentage.register
         Alembic::Outputs::Grouped.register

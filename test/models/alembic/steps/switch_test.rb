@@ -22,6 +22,18 @@ module Alembic
       test "requires the step it directs on" do
         assert_equal [ "budget" ], Switch.step_type.requirements_for(switch({ "step" => "budget" }))
       end
+
+      test "registers through the public step-type API" do
+        registry = Flow::Registry.new
+
+        Switch.register(registry)
+
+        assert_equal :switch, registry.fetch("switch").id
+      end
+
+      test "is registered for the application to use" do
+        assert_equal :switch, Flow.registry.fetch("switch").id
+      end
     end
   end
 end
