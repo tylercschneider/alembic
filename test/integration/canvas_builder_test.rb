@@ -458,5 +458,11 @@ module Alembic
 
       assert_response :no_content
     end
+
+    test "the builder page offers a way to try the flow as a visitor" do
+      get alembic.manage_diagnostic_path(diagnostic)
+
+      assert_select "a[href=?]", alembic.manage_diagnostic_preview_path(diagnostic)
+    end
   end
 end
