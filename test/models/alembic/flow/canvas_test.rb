@@ -146,7 +146,7 @@ module Alembic
       test "carries the violations the document has" do
         stranded = flow.merge("nodes" => flow["nodes"] + [ { "id" => "loose", "type" => "ask" } ])
 
-        assert_equal [ "loose" ], canvas(stranded)["violations"].map { |violation| violation["node"] }
+        assert_includes canvas(stranded)["violations"].map { |violation| violation["node"] }, "loose"
       end
 
       test "offers a step-naming setting the steps that come before that node" do

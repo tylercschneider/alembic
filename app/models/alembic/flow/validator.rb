@@ -7,7 +7,7 @@ module Alembic
       end
 
       def violations
-        structural_violations + unmet_requirements + missing_settings + missing_values
+        structural_violations + unmet_requirements + missing_settings + missing_values + unrouted_values
       end
 
       def structural_violations
@@ -48,6 +48,21 @@ module Alembic
         end
       end
 
+      def unrouted_values
+        @document.nodes.flat_map { |node| unrouted_values_in(node) }
+      end
+
+      def unrouted_values_in(node)
+        wired = @document.edges_from(node.id).map { |edge| edge.on.to_s }
+
+        digest.routing_values(node.id).reject { |value| wired.include?(value) }
+          .map { |value| Violation.new(node: node.id, problem: :unrouted_value, detail: value) }
+      end
+
+      def digest
+        Digest.new(@document, registry: @registry)
+      end
+
       def missing_values
         @document.nodes.flat_map { |node| missing_values_in(node) }
       end
@@ -68,7 +83,7 @@ module Alembic
       end
 
       def offered_by(id)
-        Digest.new(@document, registry: @registry).values_out_of(id).map { |value| value["value"].to_s }
+        digest.values_out_of(id).map { |value| value["value"].to_s }
       end
 
       def missing_settings

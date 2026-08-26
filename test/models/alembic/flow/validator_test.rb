@@ -170,6 +170,36 @@ module Alembic
       test "accepts a step reading a value the step it names still offers" do
         assert_empty violations(reading_document("high"), reading_registry)
       end
+
+      def deciding_registry
+        Registry.new.tap do |registry|
+          registry.register(StepType.define(:plain) { })
+          registry.register(StepType.define(:decides) do
+            output :result, type: :boolean, values: [ true, false ]
+            route { |_node, _state| true }
+          end)
+        end
+      end
+
+      def deciding_document(edges)
+        { "entry" => "gate",
+          "nodes" => [ { "id" => "gate", "type" => "decides" }, { "id" => "yes_step", "type" => "plain" },
+                       { "id" => "no_step", "type" => "plain" } ],
+          "edges" => edges }
+      end
+
+      test "reports a deciding step left without an edge for one of its results" do
+        document = deciding_document([ { "from" => "gate", "to" => "yes_step", "on" => true } ])
+
+        assert_includes violations(document, deciding_registry).map(&:problem), :unrouted_value
+      end
+
+      test "accepts a deciding step wired for every result it can reach" do
+        document = deciding_document([ { "from" => "gate", "to" => "yes_step", "on" => true },
+                                       { "from" => "gate", "to" => "no_step", "on" => false } ])
+
+        assert_empty violations(document, deciding_registry)
+      end
     end
   end
 end

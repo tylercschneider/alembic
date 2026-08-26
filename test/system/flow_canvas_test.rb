@@ -16,6 +16,21 @@ module Alembic
       end
     end
 
+    def wired
+      @wired ||= Diagnostic.create!(slug: "canvas-wired").tap do |diagnostic|
+        diagnostic.record_definition(
+          "slug" => "canvas-wired", "entry" => "start",
+          "nodes" => [ { "id" => "start", "type" => "question", "question" => "First",
+                         "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
+                       { "id" => "gate", "type" => "condition", "step" => "start", "answer" => "yes" },
+                       { "id" => "yes_step", "type" => "question", "question" => "Yes path" } ],
+          "edges" => [ { "from" => "start", "to" => "gate" },
+                       { "from" => "gate", "to" => "yes_step", "on" => true },
+                       { "from" => "gate", "to" => "yes_step", "on" => false } ]
+        )
+      end
+    end
+
     def adrift
       flow.tap do |diagnostic|
         diagnostic.record_definition(diagnostic.definition.merge(
@@ -263,7 +278,7 @@ module Alembic
     end
 
     test "creating a version empties the change list" do
-      canvas_for(flow)
+      canvas_for(wired)
       step_card("start").click
       fill_in_first_field_with("Changed by hand")
       find("[data-open-panel]").click
@@ -282,7 +297,7 @@ module Alembic
     end
 
     test "the flow's panel says when there was nothing to capture" do
-      canvas_for(flow)
+      canvas_for(wired)
       find("[data-open-panel]").click
 
       find("[data-create-version]").click
@@ -291,7 +306,7 @@ module Alembic
     end
 
     test "the flow's panel says which version it created" do
-      canvas_for(flow)
+      canvas_for(wired)
       step_card("start").click
       fill_in_first_field_with("Changed by hand")
       find("[data-open-panel]").click
