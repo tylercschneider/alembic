@@ -7,7 +7,7 @@ module Alembic
       end
 
       def violations
-        structural_violations + unmet_requirements
+        structural_violations + unmet_requirements + missing_settings
       end
 
       def structural_violations
@@ -46,6 +46,19 @@ module Alembic
           requirements_for(node).reject { |required| precedes_every_path?(required, node.id) }
             .map { |required| Violation.new(node: node.id, problem: :unmet_requirement, detail: required) }
         end
+      end
+
+      def missing_settings
+        @document.nodes.flat_map do |node|
+          required_of(node).reject { |name| node.config[name.to_s].present? }
+            .map { |name| Violation.new(node: node.id, problem: :missing_setting, detail: name.to_s) }
+        end
+      end
+
+      def required_of(node)
+        return [] unless @registry.registered?(node.type)
+
+        @registry.fetch(node.type).required
       end
 
       def requirements_for(node)

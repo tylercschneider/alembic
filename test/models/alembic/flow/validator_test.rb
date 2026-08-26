@@ -133,6 +133,18 @@ module Alembic
 
         assert_equal [ :missing_edge_target ], violations(document).map(&:problem)
       end
+
+      def demanding_registry
+        Registry.new.tap do |registry|
+          registry.register(StepType.define(:needs) { setting :step, type: :string, required: true })
+        end
+      end
+
+      test "reports a step left without a setting it cannot run without" do
+        document = { "entry" => "a", "nodes" => [ { "id" => "a", "type" => "needs" } ], "edges" => [] }
+
+        assert_equal [ :missing_setting ], violations(document, demanding_registry).map(&:problem)
+      end
     end
   end
 end
