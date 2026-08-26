@@ -7,8 +7,8 @@ module Alembic
         Flow::Node.new(id: "branch", type: "condition", config: config)
       end
 
-      test "requires the step whose state it tests" do
-        node = branch({ "answer" => "budget", "equals" => "high" })
+      test "requires the step whose answer it tests" do
+        node = branch({ "step" => "budget", "answer" => "high" })
 
         assert_equal [ "budget" ], Condition.step_type.requirements_for(node)
       end
@@ -25,38 +25,20 @@ module Alembic
         assert_equal :condition, registry.fetch("condition").id
       end
 
-      test "ignores an empty set and falls back to the value it tests for" do
-        node = branch({ "answer" => "budget", "equals" => "high", "in" => [] })
+      test "leaves by the yes port when the step gave the answer it tests for" do
+        node = branch({ "step" => "budget", "answer" => "high" })
 
         assert_equal :yes, Condition.step_type.route(node, { "budget" => "high" })
       end
 
-      test "leaves by the yes port when the tested state equals the value" do
-        node = branch({ "answer" => "budget", "equals" => "high" })
-
-        assert_equal :yes, Condition.step_type.route(node, { "budget" => "high" })
-      end
-
-      test "leaves by the no port when the tested state differs from the value" do
-        node = branch({ "answer" => "budget", "equals" => "high" })
+      test "leaves by the no port when the step gave a different answer" do
+        node = branch({ "step" => "budget", "answer" => "high" })
 
         assert_equal :no, Condition.step_type.route(node, { "budget" => "low" })
       end
 
-      test "leaves by the yes port when the tested state is in the set" do
-        node = branch({ "answer" => "budget", "in" => [ "mid", "high" ] })
-
-        assert_equal :yes, Condition.step_type.route(node, { "budget" => "high" })
-      end
-
-      test "leaves by the no port when the tested state is outside the set" do
-        node = branch({ "answer" => "budget", "in" => [ "mid", "high" ] })
-
-        assert_equal :no, Condition.step_type.route(node, { "budget" => "low" })
-      end
-
-      test "leaves by the no port when the tested step has no state yet" do
-        node = branch({ "answer" => "budget", "equals" => "high" })
+      test "leaves by the no port when the step has not been answered yet" do
+        node = branch({ "step" => "budget", "answer" => "high" })
 
         assert_equal :no, Condition.step_type.route(node, {})
       end
@@ -69,29 +51,12 @@ module Alembic
         assert_equal :string, Condition.step_type.fields[:step]
       end
 
-      test "declares the value it tests for equality" do
-        assert_equal :string, Condition.step_type.fields[:equals]
-      end
-
-      test "declares the set it tests for membership" do
-        assert_equal :list, Condition.step_type.fields[:in]
+      test "declares the answer it tests for" do
+        assert_equal :string, Condition.step_type.fields[:answer]
       end
 
       test "declares two named output ports" do
         assert_equal [ :yes, :no ], Condition.step_type.ports
-      end
-
-      test "matches a value listed in its entries" do
-        node = Flow::Node.new(id: "g", type: "condition",
-          config: { "answer" => "a", "in" => [ { "value" => "high" } ] })
-
-        assert_equal :yes, Condition.step_type.route(node, { "a" => "high" })
-      end
-
-      test "still reads entries stored as plain values" do
-        node = Flow::Node.new(id: "g", type: "condition", config: { "answer" => "a", "in" => [ "high" ] })
-
-        assert_equal :yes, Condition.step_type.route(node, { "a" => "high" })
       end
     end
   end

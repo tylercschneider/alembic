@@ -7,7 +7,7 @@ module Alembic
         diagnostic.record_definition(
           "slug" => "canvas-system", "entry" => "start",
           "nodes" => [ { "id" => "start", "type" => "question", "question" => "First" },
-                       { "id" => "gate", "type" => "condition", "answer" => "start", "equals" => "yes" },
+                       { "id" => "gate", "type" => "condition", "step" => "start", "answer" => "yes" },
                        { "id" => "yes_step", "type" => "question", "question" => "Yes path" } ],
           "edges" => [ { "from" => "start", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => "yes" } ]
