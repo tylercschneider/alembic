@@ -25,6 +25,20 @@ module Alembic
         edges.select { |edge| edge.from == id }
       end
 
+      def reachable(without: nil)
+        found = []
+        frontier = [ entry ]
+
+        while (id = frontier.shift)
+          next if found.include?(id) || id == without
+
+          found << id
+          frontier.concat(edges_from(id).map(&:to))
+        end
+
+        found
+      end
+
       def to_h
         @document
       end

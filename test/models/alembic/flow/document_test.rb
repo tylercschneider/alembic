@@ -3,6 +3,14 @@ require "test_helper"
 module Alembic
   module Flow
     class DocumentTest < ActiveSupport::TestCase
+      test "reports what stays reachable from the entry when a step is left out" do
+        document = Document.new({ "entry" => "a",
+                                  "nodes" => [ { "id" => "a" }, { "id" => "b" }, { "id" => "c" } ],
+                                  "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "c" } ] })
+
+        assert_equal [ "a" ], document.reachable(without: "b")
+      end
+
       test "has no nodes when the document declares none" do
         assert_empty Document.new({}).nodes
       end

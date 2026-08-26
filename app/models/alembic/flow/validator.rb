@@ -55,27 +55,13 @@ module Alembic
       end
 
       def precedes_every_path?(required, id)
-        known?(required) && !reachable(without: required).include?(id)
+        known?(required) && !@document.reachable(without: required).include?(id)
       end
 
       def unreachable
         return [] unless known?(@document.entry)
 
-        (@document.nodes.map(&:id).uniq - reachable).map { |id| Violation.new(node: id, problem: :unreachable) }
-      end
-
-      def reachable(without: nil)
-        found = []
-        frontier = [ @document.entry ]
-
-        while (id = frontier.shift)
-          next if found.include?(id) || id == without
-
-          found << id
-          frontier.concat(@document.edges_from(id).map(&:to))
-        end
-
-        found
+        (@document.nodes.map(&:id).uniq - @document.reachable).map { |id| Violation.new(node: id, problem: :unreachable) }
       end
 
       def known?(id)
