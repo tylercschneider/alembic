@@ -25,10 +25,12 @@ module Alembic
                          "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
                        { "id" => "gate", "type" => "condition", "step" => "start", "output" => "answer", "comparison" => "is", "answer" => "yes" },
                        { "id" => "yes_step", "type" => "question", "question" => "Yes path",
-                         "answers" => [ { "value" => "on" } ] } ],
+                         "answers" => [ { "value" => "on" } ] },
+                       { "id" => "end", "type" => "terminal" } ],
           "edges" => [ { "from" => "start", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => true },
-                       { "from" => "gate", "to" => "yes_step", "on" => false } ]
+                       { "from" => "gate", "to" => "yes_step", "on" => false },
+                       { "from" => "yes_step", "to" => "end" } ]
         )
       end
     end
@@ -158,6 +160,18 @@ module Alembic
       canvas_for(flow)
 
       assert_selector "[data-connector-label]", text: "true"
+    end
+
+    test "the step a flow ends at offers nowhere to connect on from" do
+      canvas_for(wired)
+
+      assert_no_selector "[data-step='end'] button"
+    end
+
+    test "the step a flow ends at simply says it ends" do
+      canvas_for(wired)
+
+      assert_selector "[data-step='end']", text: "End"
     end
 
     test "closing the panel leaves the flow drawn" do

@@ -7,8 +7,9 @@ module Alembic
         built.record_definition(
           "slug" => "canvas", "entry" => "a",
           "nodes" => [ { "id" => "a", "type" => "question", "text" => "A", "answers" => [ { "value" => "yes" } ] },
-                       { "id" => "b", "type" => "question", "answers" => [ { "value" => "yes" } ] } ],
-          "edges" => [ { "from" => "a", "to" => "b" } ]
+                       { "id" => "b", "type" => "question", "answers" => [ { "value" => "yes" } ] },
+                       { "id" => "end", "type" => "terminal" } ],
+          "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "end" } ]
         )
       end
     end
@@ -17,8 +18,8 @@ module Alembic
       alembic.manage_diagnostic_canvas_path(diagnostic)
     end
 
-    def add_step_with_answers(id, from: nil)
-      post "#{canvas_path}/steps", params: { id: id, type: "question", from: from }.compact
+    def add_step_with_answers(id, from: nil, to: nil)
+      post "#{canvas_path}/steps", params: { id: id, type: "question", from: from, to: to }.compact
       patch "#{canvas_path}/steps/#{id}", params: { config: { question: "New", answers: [ { "value" => "yes" } ] } }
     end
 
@@ -41,7 +42,7 @@ module Alembic
     test "the canvas screen carries the flow as JSON" do
       get "#{canvas_path}.json"
 
-      assert_equal [ "a", "b" ], response.parsed_body["nodes"].map { |node| node["id"] }
+      assert_equal [ "a", "b", "end" ], response.parsed_body["nodes"].map { |node| node["id"] }
     end
 
     test "the canvas screen carries the registered step types as a palette" do
@@ -53,7 +54,7 @@ module Alembic
     test "adding a step records a new version carrying it" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
 
-      assert_equal [ "a", "b", "c" ], nodes
+      assert_equal [ "a", "b", "end", "c" ], nodes
     end
 
     test "undoing an edit restores what the flow was before it" do
@@ -61,7 +62,7 @@ module Alembic
 
       post "#{canvas_path}/undo"
 
-      assert_equal [ "a", "b" ], nodes
+      assert_equal [ "a", "b", "end" ], nodes
     end
 
     test "redoing puts back what was undone" do
@@ -70,7 +71,7 @@ module Alembic
 
       post "#{canvas_path}/redo"
 
-      assert_equal [ "a", "b", "c" ], nodes
+      assert_equal [ "a", "b", "end", "c" ], nodes
     end
 
     test "the canvas says whether there is anything to redo" do
@@ -85,7 +86,7 @@ module Alembic
     test "undoing with nothing behind it leaves the flow alone" do
       post "#{canvas_path}/undo"
 
-      assert_equal [ "a", "b" ], nodes
+      assert_equal [ "a", "b", "end" ], nodes
     end
 
     test "the canvas says whether there is anything to undo" do
@@ -117,7 +118,8 @@ module Alembic
     test "adding a step on an edge puts it between the two steps" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "a", to: "b" }
 
-      assert_equal [ [ "a", "c" ], [ "c", "b" ] ], diagnostic.reload.document["edges"].map { |edge| [ edge["from"], edge["to"] ] }
+      assert_equal [ [ "b", "end" ], [ "a", "c" ], [ "c", "b" ] ],
+        diagnostic.reload.document["edges"].map { |edge| [ edge["from"], edge["to"] ] }
     end
 
     test "configuring a step records the new configuration" do
@@ -129,7 +131,7 @@ module Alembic
     test "removing a step records a version without it" do
       delete "#{canvas_path}/steps/b"
 
-      assert_equal [ "a" ], nodes
+      assert_equal [ "a", "end" ], nodes
     end
 
     test "connecting two steps records the new edge" do
@@ -142,7 +144,7 @@ module Alembic
     test "disconnecting two steps records a version without the edge" do
       delete "#{canvas_path}/edges", params: { from: "a", to: "b" }
 
-      assert_empty diagnostic.reload.document["edges"]
+      assert_equal [ [ "b", "end" ] ], diagnostic.reload.document["edges"].map { |edge| [ edge["from"], edge["to"] ] }
     end
 
     test "editing records no new version" do
@@ -157,7 +159,7 @@ module Alembic
     test "a refused edit leaves the definition untouched" do
       post "#{canvas_path}/steps", params: { id: "a", type: "question" }
 
-      assert_equal [ "a", "b" ], nodes
+      assert_equal [ "a", "b", "end" ], nodes
     end
 
     test "a refused edit reports why" do
@@ -200,7 +202,7 @@ module Alembic
     end
 
     test "creating a version records the document being edited" do
-      add_step_with_answers("c", from: "b")
+      add_step_with_answers("c", from: "b", to: "end")
 
       assert_difference -> { diagnostic.definition_versions.count } do
         post "#{canvas_path}/versions"
@@ -270,7 +272,7 @@ module Alembic
     end
 
     test "the change list empties when a version is created" do
-      add_step_with_answers("c", from: "b")
+      add_step_with_answers("c", from: "b", to: "end")
       post "#{canvas_path}/versions"
 
       get canvas_path, headers: { "Accept" => "application/json" }
@@ -351,11 +353,12 @@ module Alembic
 
       post "#{canvas_path}/publish"
 
-      assert_equal "Cannot publish: “adrift” is unreachable, “adrift” is missing setting.", response.parsed_body["error"]
+      assert_equal "Cannot publish: “adrift” is unreachable, “adrift” is missing setting, “adrift” is dead end.",
+        response.parsed_body["error"]
     end
 
     test "creating a version says which one it created" do
-      add_step_with_answers("c", from: "b")
+      add_step_with_answers("c", from: "b", to: "end")
 
       post "#{canvas_path}/versions"
 
@@ -369,8 +372,7 @@ module Alembic
     end
 
     test "publishing says which version visitors now run" do
-      add_step_with_answers("c")
-      post "#{canvas_path}/edges", params: { from: "b", to: "c" }
+      add_step_with_answers("c", from: "b", to: "end")
 
       post "#{canvas_path}/publish"
 
@@ -386,7 +388,7 @@ module Alembic
     end
 
     test "the versions page lists a flow's versions newest first" do
-      add_step_with_answers("c", from: "b")
+      add_step_with_answers("c", from: "b", to: "end")
       post "#{canvas_path}/versions"
 
       get alembic.manage_diagnostic_versions_path(diagnostic)
@@ -403,7 +405,7 @@ module Alembic
     end
 
     test "the versions page shows what a version captured" do
-      add_step_with_answers("c", from: "b")
+      add_step_with_answers("c", from: "b", to: "end")
       post "#{canvas_path}/versions"
 
       get alembic.manage_diagnostic_versions_path(diagnostic)
@@ -418,7 +420,7 @@ module Alembic
     end
 
     test "the history offers a way back to an earlier version" do
-      add_step_with_answers("c", from: "b")
+      add_step_with_answers("c", from: "b", to: "end")
       post "#{canvas_path}/versions"
 
       get alembic.manage_diagnostic_versions_path(diagnostic)
@@ -427,7 +429,7 @@ module Alembic
     end
 
     test "returning from the history makes that version the live document" do
-      add_step_with_answers("c", from: "b")
+      add_step_with_answers("c", from: "b", to: "end")
       post "#{canvas_path}/versions"
       first = diagnostic.definition_versions.order(:number).first
 

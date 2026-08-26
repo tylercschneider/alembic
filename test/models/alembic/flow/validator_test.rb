@@ -3,8 +3,8 @@ require "test_helper"
 module Alembic
   module Flow
     class ValidatorTest < ActiveSupport::TestCase
-      def violations(document, registry = Flow.registry)
-        Validator.new(Document.new(document), registry: registry).violations
+      def violations(document, registry = Flow.registry, checks: [])
+        Validator.new(Document.new(document), registry: registry, checks: checks).violations
       end
 
       def needy_registry
@@ -278,7 +278,50 @@ module Alembic
                      "edges" => [ { "from" => "ask", "to" => "gate" },
                                   { "from" => "gate", "to" => "posh", "on" => true } ] }
 
-        assert_includes violations(document).map(&:problem), :unrouted_value
+        assert_includes violations(document, Flow.registry, checks: Flow.checks).map(&:problem), :unrouted_value
+      end
+
+      def ending_registry
+        Registry.new.tap do |registry|
+          registry.register(StepType.define(:plain) { })
+          registry.register(StepType.define(:stop) { ends_here })
+        end
+      end
+
+      def ending_document(last)
+        { "entry" => "a",
+          "nodes" => [ { "id" => "a", "type" => "plain" }, { "id" => "b", "type" => last } ],
+          "edges" => [ { "from" => "a", "to" => "b" } ] }
+      end
+
+      def endings(document)
+        Validator.new(Document.new(document), registry: ending_registry, checks: [ :dead_end ]).violations
+      end
+
+      test "reports a step with nothing leading away from it that does not end the flow" do
+        assert_equal [ :dead_end ], endings(ending_document("plain")).map(&:problem)
+      end
+
+      test "accepts a flow whose last step ends it" do
+        assert_empty endings(ending_document("stop"))
+      end
+
+      test "reports a step leading on from where the flow ends" do
+        document = { "entry" => "a",
+                     "nodes" => [ { "id" => "a", "type" => "plain" }, { "id" => "b", "type" => "stop" },
+                                  { "id" => "c", "type" => "stop" } ],
+                     "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "c" } ] }
+
+        assert_equal [ :past_the_end ], endings(document).map(&:problem)
+      end
+
+      test "reports a dead end on a flow of the kind a diagnostic actually builds" do
+        document = { "entry" => "ask",
+                     "nodes" => [ { "id" => "ask", "type" => "question", "question" => "Budget?",
+                                    "answers" => [ { "value" => "high" } ] } ],
+                     "edges" => [] }
+
+        assert_includes violations(document, Flow.registry, checks: Flow.checks).map(&:problem), :dead_end
       end
     end
   end
