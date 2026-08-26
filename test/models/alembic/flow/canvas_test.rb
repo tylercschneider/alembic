@@ -190,6 +190,15 @@ module Alembic
 
         assert canvas(document)["nodes"].find { |node| node["id"] == "g" }["begins_here"]
       end
+
+      test "says of a node that nothing in the flow leads to it" do
+        document = { "nodes" => [ { "id" => "g", "type" => "go" }, { "id" => "a", "type" => "ask" },
+                                  { "id" => "adrift", "type" => "ask" } ],
+                     "edges" => [ { "from" => "g", "to" => "a" } ] }
+        drawn = canvas(document)["nodes"]
+
+        assert_equal [ false, false, true ], drawn.map { |node| node["loose"] }.last(3)
+      end
     end
   end
 end

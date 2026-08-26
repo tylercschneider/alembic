@@ -17,7 +17,7 @@ module Alembic
 
         @document.nodes.map do |node|
           { "id" => node.id, "type" => node.type, "label" => label_for(node),
-            "config" => node.config, "ports" => ports_for(node), "ends_here" => ends_here?(node), "begins_here" => begins_here?(node),
+            "config" => node.config, "ports" => ports_for(node), "ends_here" => ends_here?(node), "begins_here" => begins_here?(node), "loose" => loose?(node),
             "choices" => choices_for(node), **placed[node.id] }
         end
       end
@@ -122,6 +122,10 @@ module Alembic
 
       def ends_here?(node)
         step_type_for(node)&.ends_here? || false
+      end
+
+      def loose?(node)
+        @document.entry.present? && @document.reachable.exclude?(node.id)
       end
 
       def begins_here?(node)
