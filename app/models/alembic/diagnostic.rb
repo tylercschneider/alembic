@@ -111,10 +111,6 @@ module Alembic
     end
 
     def available?
-      active?
-    end
-
-    def resumable?
       !inactive?
     end
 

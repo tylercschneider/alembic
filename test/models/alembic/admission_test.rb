@@ -53,5 +53,18 @@ module Alembic
 
       assert_raises(NotPermitted) { Admission.of_run(run) }
     end
+
+    test "it admits a visitor with the link when the diagnostic is hidden" do
+      published.update!(status: :hidden)
+
+      assert_equal published, Admission.of(published, permitted: true)
+    end
+
+    test "it lets a run carry on when the diagnostic is hidden" do
+      run = Response.start(published)
+      published.update!(status: :hidden)
+
+      assert_equal run, Admission.of_run(run)
+    end
   end
 end
