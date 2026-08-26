@@ -65,8 +65,8 @@ module Alembic
         assert_not_predicate Condition.step_type, :awaits_input?
       end
 
-      test "declares the step whose state it tests" do
-        assert_equal :string, Condition.step_type.fields[:answer]
+      test "declares the step whose answer it tests" do
+        assert_equal :string, Condition.step_type.fields[:step]
       end
 
       test "declares the value it tests for equality" do

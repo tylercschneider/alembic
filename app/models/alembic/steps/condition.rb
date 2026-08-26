@@ -5,6 +5,7 @@ module Alembic
 
       step_name "Condition"
 
+      setting :step, type: :string
       setting :answer, type: :string
       setting :equals, type: :string
       setting :in, type: :list do
