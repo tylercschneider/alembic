@@ -13,7 +13,7 @@ module Alembic
         setting :weight, type: :integer
       end
 
-      output :answer, label: "Answer", values: ->(node) { Question.offered(node.config) }
+      output :answer, type: :string, label: "Answer", values: ->(node) { Question.offered(node.config) }
 
       names_by :question
       awaits_input

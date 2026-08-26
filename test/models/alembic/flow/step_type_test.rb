@@ -104,6 +104,12 @@ module Alembic
         assert_equal [ { "value" => "high" } ], step_type.values_of(:answer, node)
       end
 
+      test "declares the type an output's value takes" do
+        step_type = StepType.define(:ask) { output :weight, type: :integer }
+
+        assert_equal :integer, step_type.outputs.first.type
+      end
+
       test "can declare which field names an instance of it" do
         step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 
