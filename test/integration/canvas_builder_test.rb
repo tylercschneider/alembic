@@ -306,6 +306,12 @@ module Alembic
       assert_equal "A better name", diagnostic.reload.title
     end
 
+    test "saving the details says they were saved" do
+      patch "#{canvas_path}/details", params: { diagnostic: { title: "A better name" } }
+
+      assert_equal "Saved the flow's details.", response.parsed_body["notice"]
+    end
+
     test "a refused publish says it could not publish and why" do
       post "#{canvas_path}/steps", params: { id: "adrift", type: "question" }
 

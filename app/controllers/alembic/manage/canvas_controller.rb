@@ -25,7 +25,7 @@ module Alembic
 
       def details
         diagnostic.update!(details_params)
-        head :no_content
+        render json: { notice: "Saved the flow's details." }
       end
 
       def undo
