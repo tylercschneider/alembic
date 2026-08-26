@@ -329,6 +329,17 @@ module Alembic
       assert_selector "header h1", text: "A better name"
     end
 
+    test "saving one detail keeps the ones that were already stored" do
+      named = flow.tap { |diagnostic| diagnostic.update!(summary: "What this asks about") }
+      canvas_for(named)
+      find("[data-open-panel]").click
+
+      rename_to("A better name")
+      assert_selector "[data-notice]"
+
+      assert_equal "What this asks about", named.reload.summary
+    end
+
     private
 
     def rename_to(name)
