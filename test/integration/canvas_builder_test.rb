@@ -238,13 +238,13 @@ module Alembic
       post "#{canvas_path}/publish"
 
       assert_response :unprocessable_entity
-      assert_nil diagnostic.reload.published_version
+      assert_nil diagnostic.reload.live_version
     end
 
     test "publishing a sound document marks it for visitors" do
       post "#{canvas_path}/publish"
 
-      assert_equal diagnostic.reload.definition_versions.last, diagnostic.published_version
+      assert_equal diagnostic.reload.definition_versions.last, diagnostic.live_version
     end
 
     test "the canvas carries what has changed since the last version" do
@@ -285,7 +285,7 @@ module Alembic
 
       get canvas_path, headers: { "Accept" => "application/json" }
 
-      assert_equal diagnostic.reload.published_version.number, response.parsed_body["flow"]["published"]
+      assert_equal diagnostic.reload.live_version.number, response.parsed_body["flow"]["published"]
     end
 
     test "the canvas carries where the definition is edited" do

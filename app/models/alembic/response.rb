@@ -6,7 +6,7 @@ module Alembic
     belongs_to :owner, polymorphic: true, optional: true
 
     def self.start(diagnostic)
-      create!(diagnostic: diagnostic, definition_version: diagnostic.published_version,
+      create!(diagnostic: diagnostic, definition_version: diagnostic.live_version,
         summary_version: diagnostic.current_summary_version)
     end
 

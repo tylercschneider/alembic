@@ -259,7 +259,7 @@ module Alembic
 
       diagnostic.publish
 
-      assert_equal "b", diagnostic.reload.published_version.definition["entry"]
+      assert_equal "b", diagnostic.reload.live_version.definition["entry"]
     end
 
     test "a version carries the changes that produced it" do
@@ -320,11 +320,11 @@ module Alembic
     test "returning leaves visitors on the version they were running" do
       diagnostic = returnable
       diagnostic.publish
-      running = diagnostic.published_version
+      running = diagnostic.live_version
 
       diagnostic.return_to(diagnostic.definition_versions.order(:number).first)
 
-      assert_equal running, diagnostic.reload.published_version
+      assert_equal running, diagnostic.reload.live_version
     end
 
     test "undoing a return puts the document back" do
@@ -360,6 +360,15 @@ module Alembic
       diagnostic.publish
 
       assert_predicate first.reload, :superseded?
+    end
+
+    test "publishing the version that is already live leaves it live" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic.publish
+
+      diagnostic.publish
+
+      assert_predicate diagnostic.current_definition_version.reload, :live?
     end
   end
 end

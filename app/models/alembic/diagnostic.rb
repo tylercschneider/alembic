@@ -9,7 +9,6 @@ module Alembic
     # destroying a diagnostic trips the responses -> definition_versions FK.
     has_many :responses, dependent: :destroy
     has_many :definition_versions, dependent: :destroy
-    belongs_to :published_version, class_name: "DefinitionVersion", optional: true
     has_many :summary_versions, dependent: :destroy
 
     def self.upsert_definition(definition)
@@ -67,9 +66,7 @@ module Alembic
     def publish
       create_version
 
-      live_version&.update!(status: :superseded)
-      current_definition_version.update!(status: :live)
-      update!(published_version: current_definition_version, status: :published)
+      publish_version(current_definition_version)
     end
 
     def return_to(version)
@@ -104,16 +101,23 @@ module Alembic
         .tap { |version| update!(definition_cursor: version.number, document: payload) }
     end
 
+    def publish_version(version)
+      return if live_version == version
+
+      live_version&.update!(status: :superseded)
+      version.update!(status: :live)
+    end
+
     def live_version
       definition_versions.find_by(status: :live)
     end
 
-    def published_definition
-      published_version&.definition
+    def live_definition
+      live_version&.definition
     end
 
     def runner
-      Runner.new(published_definition)
+      Runner.new(live_definition)
     end
 
     def summarises?

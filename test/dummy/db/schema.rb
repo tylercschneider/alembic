@@ -29,7 +29,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_230500) do
     t.integer "definition_cursor"
     t.json "document"
     t.string "kind"
-    t.integer "published_version_id"
     t.string "slug"
     t.string "start_label"
     t.string "status"
@@ -39,7 +38,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_230500) do
     t.json "undo_history"
     t.json "undone_changes"
     t.datetime "updated_at", null: false
-    t.index ["published_version_id"], name: "index_alembic_diagnostics_on_published_version_id"
     t.index ["slug"], name: "index_alembic_diagnostics_on_slug", unique: true
   end
 
@@ -70,7 +68,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_230500) do
   end
 
   add_foreign_key "alembic_definition_versions", "alembic_diagnostics", column: "diagnostic_id"
-  add_foreign_key "alembic_diagnostics", "alembic_definition_versions", column: "published_version_id"
   add_foreign_key "alembic_responses", "alembic_definition_versions", column: "definition_version_id"
   add_foreign_key "alembic_responses", "alembic_diagnostics", column: "diagnostic_id"
   add_foreign_key "alembic_responses", "alembic_summary_versions", column: "summary_version_id"
