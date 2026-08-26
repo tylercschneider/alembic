@@ -1,6 +1,6 @@
 import React from "react"
 import { action } from "./styles"
-import { phrased, worded } from "./changes"
+import { worded } from "./changes"
 import { standing } from "./flow"
 
 const sheet = { width: 280, padding: 20, overflowY: "auto", background: "#fff", borderLeft: "1px solid #e5e7eb" }
@@ -16,7 +16,7 @@ const Panel = ({ flow, changes, problems, refusal, notice, onCreate, onPublish, 
       <button title="Close" onClick={onClose}
               style={{ border: "none", background: "none", cursor: "pointer", fontSize: 18, lineHeight: 1, color: "#6b7280" }}>×</button>
     </div>
-    <p style={quiet} data-versions>{standing(flow)}</p>
+    <a style={{ ...quiet, display: "block", color: "#2563eb" }} href={flow.history_url} data-history>{standing(flow)}</a>
 
     <h2 style={heading}>Problems</h2>
     {refusal && <p style={{ ...item, color: "#991b1b", fontWeight: 600 }} data-refusal>{refusal}</p>}
@@ -30,7 +30,7 @@ const Panel = ({ flow, changes, problems, refusal, notice, onCreate, onPublish, 
     <h2 style={heading}>Changes since the last version</h2>
     {changes.length === 0
       ? <p style={quiet}>Nothing has changed.</p>
-      : changes.map((change, at) => <p key={at} style={item} data-change>{phrased(change)}</p>)}
+      : changes.map((change, at) => <p key={at} style={item} data-change>{change}</p>)}
 
     <div style={{ marginTop: 16 }}>
       <button style={{ ...action, textAlign: "center" }} onClick={onCreate} data-create-version>Create version</button>

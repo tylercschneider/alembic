@@ -200,7 +200,7 @@ module Alembic
 
       find("[data-open-panel]").click
 
-      assert_selector "[data-versions]", text: "Version 1 · never published"
+      assert_selector "[data-history]", text: "Version 1 · never published"
     end
 
     test "a version is created from the flow's panel" do
@@ -291,6 +291,15 @@ module Alembic
       find("body").click
 
       assert_no_selector "[data-builder-panel]"
+    end
+
+    test "the flow's standing leads to its history" do
+      canvas_for(flow)
+      find("[data-open-panel]").click
+
+      find("[data-history]").click
+
+      assert_selector "[data-version]", text: "Version 1"
     end
 
     private
