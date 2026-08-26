@@ -67,6 +67,7 @@ module Alembic
     def publish
       create_version
 
+      current_definition_version.update!(status: :live)
       update!(published_version: current_definition_version, status: :published)
     end
 

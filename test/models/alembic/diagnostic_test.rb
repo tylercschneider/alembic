@@ -342,5 +342,13 @@ module Alembic
         diagnostic.record_definition("entry" => "second")
       end
     end
+
+    test "publishing makes the version live" do
+      diagnostic = Diagnostic.create!(slug: "demo", document: { "slug" => "demo" })
+
+      diagnostic.publish
+
+      assert_predicate diagnostic.current_definition_version, :live?
+    end
   end
 end
