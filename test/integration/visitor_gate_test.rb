@@ -35,5 +35,13 @@ module Alembic
 
       assert_response :success
     end
+
+    test "a visitor cannot reach a diagnostic with nothing published even when the host authorizes it" do
+      unpublished = Diagnostic.create!(slug: "unpublished")
+
+      get alembic.diagnostic_path(unpublished.slug)
+
+      assert_response :not_found
+    end
   end
 end

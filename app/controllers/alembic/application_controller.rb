@@ -8,10 +8,7 @@ module Alembic
     private
 
     def admit(diagnostic)
-      raise NotPublished if diagnostic.nil? || diagnostic.published_definition.blank?
-      raise NotPermitted unless permitted?(diagnostic)
-
-      diagnostic
+      Admission.of(diagnostic, permitted: permitted?(diagnostic))
     end
 
     def permitted?(diagnostic)
