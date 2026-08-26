@@ -58,6 +58,10 @@ module Alembic
       test "declares the result it decides as an output" do
         assert_equal [ :result ], Condition.step_type.outputs.map(&:name)
       end
+
+      test "cannot run without the step and answer it tests" do
+        assert_equal [ :step, :answer ], Condition.step_type.required
+      end
     end
   end
 end

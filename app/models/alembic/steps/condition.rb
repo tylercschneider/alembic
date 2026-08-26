@@ -5,8 +5,8 @@ module Alembic
 
       step_name "Condition"
 
-      setting :step, type: :previous_step
-      setting :answer, from: :step
+      setting :step, type: :previous_step, required: true
+      setting :answer, from: :step, required: true
 
       output :result, type: :boolean, values: [ true, false ]
 
