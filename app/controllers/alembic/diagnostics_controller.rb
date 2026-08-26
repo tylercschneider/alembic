@@ -6,8 +6,6 @@ module Alembic
 
     def step
       @guide = runner
-      raise ActiveRecord::RecordNotFound unless @guide
-
       @answers = submitted_answers
       @answers = without_last_answer(@answers) if params[:back]
       @question = @guide.next_question(@answers)
@@ -29,11 +27,8 @@ module Alembic
     end
 
     def runner
-      diagnostic = Diagnostic.find_by(slug: params[:slug])
-      return if diagnostic&.published_definition.blank?
-
-      @stored_diagnostic = diagnostic
-      diagnostic.runner
+      @stored_diagnostic = admit(Diagnostic.find_by(slug: params[:slug]))
+      @stored_diagnostic.runner
     end
 
     def submitted_answers

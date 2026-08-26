@@ -43,5 +43,13 @@ module Alembic
 
       assert_response :not_found
     end
+
+    test "a visitor cannot step through a diagnostic the host has not authorized" do
+      without_host_configuration do
+        get alembic.diagnostic_step_path(published.slug)
+
+        assert_response :not_found
+      end
+    end
   end
 end
