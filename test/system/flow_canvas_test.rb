@@ -116,8 +116,8 @@ module Alembic
 
       step_card("gate").click
 
+      assert_selector "[data-inspector]", text: "Step"
       assert_selector "[data-inspector]", text: "Answer"
-      assert_selector "[data-inspector]", text: "Equals"
     end
 
     test "closing the panel leaves the flow drawn" do
