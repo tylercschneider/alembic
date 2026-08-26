@@ -24,7 +24,7 @@ test("says nothing has changed when the flow is untouched", () => {
 })
 
 test("lists a line for each change", () => {
-  const tree = panel({ changes: [ { action: "added", named: [ "A" ] }, { action: "moved", named: [ "B" ] } ] })
+  const tree = panel({ changes: [ "Added “A”", "Moved “B”" ] })
 
   assert.equal(shown(tree, "data-change").length, 2)
 })
@@ -44,6 +44,10 @@ test("shows a refusal instead of a notice when both arrive", () => {
 
   assert.equal(shown(tree, "data-notice").length, 0)
   assert.equal(shown(tree, "data-refusal").length, 1)
+})
+
+test("offers the way to the flow's history", () => {
+  assert.equal(shown(panel({}), "data-history").length, 1)
 })
 
 test("offers the way to the definition and the details", () => {

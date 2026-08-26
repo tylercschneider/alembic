@@ -16,7 +16,7 @@ module Alembic
       end
 
       def listed_changes(diagnostic)
-        diagnostic.changes_since_version.to_a.map { |change| change.except("before") }
+        diagnostic.changes_since_version.to_a.map { |change| Change.phrase(change) }
       end
 
       def flow_details(diagnostic)
@@ -24,7 +24,8 @@ module Alembic
           "version" => diagnostic.current_definition_version&.number,
           "published" => diagnostic.published_version&.number,
           "definition_url" => edit_manage_diagnostic_definition_path(diagnostic),
-          "details_url" => edit_manage_diagnostic_path(diagnostic) }
+          "details_url" => edit_manage_diagnostic_path(diagnostic),
+          "history_url" => manage_diagnostic_versions_path(diagnostic) }
       end
     end
   end

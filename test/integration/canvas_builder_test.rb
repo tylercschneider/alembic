@@ -252,15 +252,15 @@ module Alembic
 
       get canvas_path, headers: { "Accept" => "application/json" }
 
-      assert_equal [ "added" ], response.parsed_body["changes"].map { |change| change["action"] }
+      assert_equal [ "Added “c”" ], response.parsed_body["changes"]
     end
 
-    test "the canvas does not ship the documents undo keeps" do
+    test "the canvas ships a change as a sentence, not the document undo keeps" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
 
       get canvas_path, headers: { "Accept" => "application/json" }
 
-      assert_not response.parsed_body["changes"].first.key?("before")
+      assert_kind_of String, response.parsed_body["changes"].first
     end
 
     test "the change list empties when a version is cut" do
@@ -337,6 +337,38 @@ module Alembic
       post "#{canvas_path}/publish"
 
       assert_equal "Visitors already run version 1.", response.parsed_body["notice"]
+    end
+
+    test "the versions page lists a flow's versions newest first" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/versions"
+
+      get alembic.manage_diagnostic_versions_path(diagnostic)
+
+      assert_select "[data-version]:first-of-type", text: /2/
+    end
+
+    test "the versions page marks the version visitors run" do
+      post "#{canvas_path}/publish"
+
+      get alembic.manage_diagnostic_versions_path(diagnostic)
+
+      assert_select "[data-live]"
+    end
+
+    test "the versions page shows what a version captured" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/versions"
+
+      get alembic.manage_diagnostic_versions_path(diagnostic)
+
+      assert_select "[data-captured]", text: /Added/
+    end
+
+    test "the versions page lists a version that captured nothing" do
+      get alembic.manage_diagnostic_versions_path(diagnostic)
+
+      assert_select "[data-version]", count: 1
     end
   end
 end
