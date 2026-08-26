@@ -159,7 +159,7 @@ module Alembic
     test "a connector says which result it leaves on" do
       canvas_for(flow)
 
-      assert_selector "[data-connector-label]", text: "true"
+      assert_selector "[data-link-label]", text: "true", count: 1
     end
 
     test "the step a flow ends at offers nowhere to connect on from" do

@@ -16,7 +16,7 @@ const ConnectorLayer = ({ links, extent, dragging, onInsert, onRemove, onDrop })
     </svg>
 
     {links.filter((link) => link.label).map((link) => (
-      <div key={`${link.id}-label`}
+      <div key={`${link.id}-label`} data-link-label={link.id}
            style={{ position: "absolute", left: link.midX - 10, top: link.midY - 18, zIndex: 3,
                     fontSize: 11, color: "#6b7280", background: "#fafafa", padding: "0 3px" }}>{link.label}</div>
     ))}

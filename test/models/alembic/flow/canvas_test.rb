@@ -243,6 +243,18 @@ module Alembic
 
         assert_equal [ "g" ], gaps.map { |node| node["from"] }
       end
+
+      test "labels a connection with the result it leaves on, as words" do
+        document = { "nodes" => [ { "id" => "a", "type" => "branch" }, { "id" => "l", "type" => "ask" },
+                                  { "id" => "r", "type" => "ask" } ],
+                     "edges" => [ { "from" => "a", "to" => "l", "on" => true },
+                                  { "from" => "a", "to" => "r", "on" => false } ] }
+        built = Document.new(document, registry: registry)
+
+        labelled = Canvas.new(built, registry: registry).to_h["edges"].filter_map { |edge| edge["label"] }
+
+        assert_equal [ "true", "false" ], labelled
+      end
     end
   end
 end

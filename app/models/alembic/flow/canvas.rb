@@ -30,7 +30,7 @@ module Alembic
 
       def edges
         drawn.edges.each_with_index.map do |edge, index|
-          { "id" => "#{edge.from}-#{edge.to}-#{index}", "source" => edge.from, "target" => edge.to, "label" => edge.on,
+          { "id" => "#{edge.from}-#{edge.to}-#{index}", "source" => edge.from, "target" => edge.to, "label" => edge.on&.to_s,
             "placeholder" => waiting.any? { |gap| gap[:id] == edge.to } }.merge(routing(edge, placed))
         end
       end
