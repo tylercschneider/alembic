@@ -6,8 +6,9 @@ module Alembic
       @flow ||= Diagnostic.create!(slug: "canvas-system").tap do |diagnostic|
         diagnostic.record_definition(
           "slug" => "canvas-system", "entry" => "start",
-          "nodes" => [ { "id" => "start", "type" => "question", "question" => "First" },
-                       { "id" => "gate", "type" => "condition", "answer" => "start", "equals" => "yes" },
+          "nodes" => [ { "id" => "start", "type" => "question", "question" => "First",
+                         "answers" => [ { "value" => "yes", "label" => "Yes please" } ] },
+                       { "id" => "gate", "type" => "condition", "step" => "start", "answer" => "yes" },
                        { "id" => "yes_step", "type" => "question", "question" => "Yes path" } ],
           "edges" => [ { "from" => "start", "to" => "gate" },
                        { "from" => "gate", "to" => "yes_step", "on" => "yes" } ]
@@ -116,8 +117,24 @@ module Alembic
 
       step_card("gate").click
 
+      assert_selector "[data-inspector]", text: "Step"
       assert_selector "[data-inspector]", text: "Answer"
-      assert_selector "[data-inspector]", text: "Equals"
+    end
+
+    test "opening a condition offers the steps that come before it" do
+      canvas_for(flow)
+
+      step_card("gate").click
+
+      assert_selector "[data-inspector] select option", text: "First"
+    end
+
+    test "opening a condition offers the answers of the step it names" do
+      canvas_for(flow)
+
+      step_card("gate").click
+
+      assert_selector "[data-inspector] select option", text: "Yes please"
     end
 
     test "closing the panel leaves the flow drawn" do

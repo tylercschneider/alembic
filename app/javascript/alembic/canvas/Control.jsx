@@ -6,13 +6,16 @@ export const control = {
   border: "1px solid #d1d5db", borderRadius: 4, fontSize: 13, boxSizing: "border-box"
 }
 
+const offered = (choices) =>
+  (choices || []).map((choice) => (typeof choice === "object" ? choice : { value: choice, label: choice }))
+
 const Control = ({ type, value, choices, onChange, onSettle }) => {
   if (type === "boolean") return <input type="checkbox" checked={Boolean(value)} onChange={(e) => onSettle(e.target.checked)} />
 
-  if (type === "select") {
+  if (type === "select" || type === "previous_step" || type === "from_step") {
     return <select style={control} value={value ?? ""} onChange={(e) => onSettle(e.target.value)}>
       <option value=""></option>
-      {(choices || []).map((choice) => <option key={choice} value={choice}>{choice}</option>)}
+      {offered(choices).map((choice) => <option key={choice.value} value={choice.value}>{choice.label}</option>)}
     </select>
   }
 

@@ -13,6 +13,8 @@ module Alembic
         setting :weight, type: :integer
       end
 
+      offers { |node| Question.offered(node.config) }
+
       names_by :question
       awaits_input
 
@@ -22,6 +24,12 @@ module Alembic
 
       def self.answers_of(step)
         Array(step.to_h["answers"] || step.to_h["options"])
+      end
+
+      def self.offered(step)
+        answers_of(step).map do |answer|
+          { "value" => answer["value"], "label" => answer["label"].presence || answer["value"] }
+        end
       end
 
       def self.category_of(step)

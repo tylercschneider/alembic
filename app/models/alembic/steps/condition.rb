@@ -5,31 +5,15 @@ module Alembic
 
       step_name "Condition"
 
-      setting :answer, type: :string
-      setting :equals, type: :string
-      setting :in, type: :list do
-        setting :value, type: :string
-      end
+      setting :step, type: :previous_step
+      setting :answer, from: :step
 
       outputs :yes, :no
 
-      requires { |node| [ node.config["answer"] ].compact }
+      requires { |node| [ node.config["step"] ].compact }
 
       def route(node, state)
-        holds?(node.config, state) ? :yes : :no
-      end
-
-      private
-
-      def holds?(config, state)
-        tested = state[config["answer"]]
-        return chosen(config).include?(tested) if chosen(config).any?
-
-        tested == config["equals"]
-      end
-
-      def chosen(config)
-        Array(config["in"]).map { |entry| entry.is_a?(Hash) ? entry["value"] : entry }.compact
+        state[node.config["step"]] == node.config["answer"] ? :yes : :no
       end
     end
   end

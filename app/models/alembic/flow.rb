@@ -1,6 +1,6 @@
 module Alembic
   module Flow
-    FIELD_TYPES = %i[string integer float boolean select multi_select list].freeze
+    FIELD_TYPES = %i[string integer float boolean select multi_select previous_step from_step list].freeze
 
     class UnknownFieldType < ArgumentError; end
     class UnknownStepType < KeyError; end
