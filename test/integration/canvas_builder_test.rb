@@ -6,7 +6,8 @@ module Alembic
       @diagnostic ||= Diagnostic.create!(slug: "canvas").tap do |built|
         built.record_definition(
           "slug" => "canvas", "entry" => "a",
-          "nodes" => [ { "id" => "a", "type" => "question", "text" => "A" }, { "id" => "b", "type" => "question" } ],
+          "nodes" => [ { "id" => "a", "type" => "question", "text" => "A", "answers" => [ { "value" => "yes" } ] },
+                       { "id" => "b", "type" => "question", "answers" => [ { "value" => "yes" } ] } ],
           "edges" => [ { "from" => "a", "to" => "b" } ]
         )
       end
@@ -14,6 +15,11 @@ module Alembic
 
     def canvas_path
       alembic.manage_diagnostic_canvas_path(diagnostic)
+    end
+
+    def add_step_with_answers(id, from: nil)
+      post "#{canvas_path}/steps", params: { id: id, type: "question", from: from }.compact
+      patch "#{canvas_path}/steps/#{id}", params: { config: { question: "New", answers: [ { "value" => "yes" } ] } }
     end
 
     def nodes
@@ -194,7 +200,7 @@ module Alembic
     end
 
     test "creating a version records the document being edited" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b" }
+      add_step_with_answers("c", from: "b")
 
       assert_difference -> { diagnostic.definition_versions.count } do
         post "#{canvas_path}/versions"
@@ -264,7 +270,7 @@ module Alembic
     end
 
     test "the change list empties when a version is created" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b" }
+      add_step_with_answers("c", from: "b")
       post "#{canvas_path}/versions"
 
       get canvas_path, headers: { "Accept" => "application/json" }
@@ -345,11 +351,11 @@ module Alembic
 
       post "#{canvas_path}/publish"
 
-      assert_equal "Cannot publish: “adrift” is unreachable.", response.parsed_body["error"]
+      assert_equal "Cannot publish: “adrift” is unreachable, “adrift” is missing setting.", response.parsed_body["error"]
     end
 
     test "creating a version says which one it created" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b" }
+      add_step_with_answers("c", from: "b")
 
       post "#{canvas_path}/versions"
 
@@ -363,7 +369,7 @@ module Alembic
     end
 
     test "publishing says which version visitors now run" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      add_step_with_answers("c")
       post "#{canvas_path}/edges", params: { from: "b", to: "c" }
 
       post "#{canvas_path}/publish"
@@ -380,7 +386,7 @@ module Alembic
     end
 
     test "the versions page lists a flow's versions newest first" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b" }
+      add_step_with_answers("c", from: "b")
       post "#{canvas_path}/versions"
 
       get alembic.manage_diagnostic_versions_path(diagnostic)
@@ -397,7 +403,7 @@ module Alembic
     end
 
     test "the versions page shows what a version captured" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b" }
+      add_step_with_answers("c", from: "b")
       post "#{canvas_path}/versions"
 
       get alembic.manage_diagnostic_versions_path(diagnostic)
@@ -412,7 +418,7 @@ module Alembic
     end
 
     test "the history offers a way back to an earlier version" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b" }
+      add_step_with_answers("c", from: "b")
       post "#{canvas_path}/versions"
 
       get alembic.manage_diagnostic_versions_path(diagnostic)
@@ -421,7 +427,7 @@ module Alembic
     end
 
     test "returning from the history makes that version the live document" do
-      post "#{canvas_path}/steps", params: { id: "c", type: "question", from: "b" }
+      add_step_with_answers("c", from: "b")
       post "#{canvas_path}/versions"
       first = diagnostic.definition_versions.order(:number).first
 
