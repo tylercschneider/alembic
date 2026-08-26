@@ -208,9 +208,9 @@ module Alembic
     end
 
     test "a change names the step it touched" do
-      patch "#{canvas_path}/steps/a", params: { config: { question: "What is your budget?" } }
+      patch "#{canvas_path}/steps/a", params: { config: { name: "Budget" } }
 
-      assert_equal [ "What is your budget?" ], diagnostic.reload.changes_since_version.last["named"]
+      assert_equal [ "Budget" ], diagnostic.reload.changes_since_version.last["named"]
     end
 
     test "a change falls back to the step id when it has no name" do

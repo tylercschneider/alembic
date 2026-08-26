@@ -23,8 +23,8 @@ module Alembic
         assert_equal :string, Question.step_type.fields[:category]
       end
 
-      test "is named by its name before the question it asks" do
-        assert_equal [ :name, :question ], Question.step_type.naming_fields
+      test "is named by its name" do
+        assert_equal :name, Question.step_type.naming_field
       end
 
       test "has a single unnamed output" do
