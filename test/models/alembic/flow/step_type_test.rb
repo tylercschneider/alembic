@@ -21,7 +21,6 @@ module Alembic
 
       test "carries the routing it declares separately from its behaviour" do
         step_type = StepType.define(:branch) do
-          ports :yes, :no
           route { |node, state| state["ok"] ? :yes : :no }
         end
 
@@ -56,24 +55,6 @@ module Alembic
         step_type = StepType.define(:agent) { }
 
         assert_not_predicate step_type, :awaits_input?
-      end
-
-      test "declares named output ports" do
-        step_type = StepType.define(:branch) { ports :yes, :no }
-
-        assert_equal [ :yes, :no ], step_type.ports
-      end
-
-      test "has a single unnamed output when it declares no ports" do
-        step_type = StepType.define(:agent) { }
-
-        assert_predicate step_type, :single_output?
-      end
-
-      test "does not have a single unnamed output once it names ports" do
-        step_type = StepType.define(:branch) { ports :yes, :no }
-
-        assert_not_predicate step_type, :single_output?
       end
 
       test "declares a setting naming a step that comes before it" do

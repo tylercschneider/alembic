@@ -12,8 +12,6 @@ module Alembic
       class Gate
         include Flow::Step
 
-        ports :yes, :no
-
         def route(node, state)
           state[node.config["answer"]].present? ? :yes : :no
         end

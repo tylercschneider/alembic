@@ -10,8 +10,6 @@ module Alembic
 
       output :result, type: :boolean, values: [ true, false ]
 
-      ports :yes, :no
-
       requires { |node| [ node.config["step"] ].compact }
 
       def route(node, state)

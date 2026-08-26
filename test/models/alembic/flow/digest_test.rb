@@ -9,7 +9,6 @@ module Alembic
           built.register(StepType.define(:check) { route { |_node, state| state["a"] == "yes" } })
           built.register(StepType.define(:branch) do
             setting :answer, type: :string
-            ports :yes, :no
             requires { |node| [ node.config["answer"] ].compact }
             route { |node, state| state[node.config["answer"]] == "yes" ? :yes : :no }
           end)

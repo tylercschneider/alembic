@@ -5,13 +5,12 @@ module Alembic
         Declaration.new(id).tap { |decl| decl.instance_eval(&declaration) }.to_step_type
       end
 
-      attr_reader :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :ports, :naming_field, :drawn_from, :outputs
+      attr_reader :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :naming_field, :drawn_from, :outputs
 
-      def initialize(id:, step_name:, fields:, ports:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil, drawn_from: {}, outputs: [], record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
+      def initialize(id:, step_name:, fields:, awaits_input:, requirements:, behaviour:, routing:, naming_field: nil, drawn_from: {}, outputs: [], record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
         @id = id
         @step_name = step_name
         @fields = fields
-        @ports = ports
         @awaits_input = awaits_input
         @requirements = requirements
         @behaviour = behaviour
@@ -57,10 +56,6 @@ module Alembic
 
       def objections(config)
         config.to_h.flat_map { |name, value| objections_to(name.to_sym, value) }.compact
-      end
-
-      def single_output?
-        ports.empty?
       end
 
       private
@@ -115,7 +110,6 @@ module Alembic
           @choices = {}
           @limits = {}
           @checks = {}
-          @ports = []
           @drawn_from = {}
           @declared_outputs = []
           @awaits_input = false
@@ -147,10 +141,6 @@ module Alembic
 
         def names_by(field)
           @naming_field = field
-        end
-
-        def ports(*names)
-          @ports = names
         end
 
         def setting(name, type: nil, from: nil, label: nil, options: nil, limit: nil, check: nil, &entries)
@@ -189,7 +179,7 @@ module Alembic
         public
 
         def to_step_type
-          StepType.new(id: @id, step_name: @step_name, fields: @fields, ports: @ports, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, drawn_from: @drawn_from, outputs: @declared_outputs, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
+          StepType.new(id: @id, step_name: @step_name, fields: @fields, awaits_input: @awaits_input, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, drawn_from: @drawn_from, outputs: @declared_outputs, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
         end
       end
     end

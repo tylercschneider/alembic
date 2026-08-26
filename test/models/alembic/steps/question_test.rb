@@ -30,10 +30,6 @@ module Alembic
         assert_equal [ :answer ], Question.step_type.outputs.map(&:name)
       end
 
-      test "has a single unnamed output" do
-        assert_predicate Question.step_type, :single_output?
-      end
-
       test "registers through the public step-type API" do
         registry = Flow::Registry.new
 
