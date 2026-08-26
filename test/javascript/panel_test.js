@@ -74,3 +74,12 @@ test("offers the flow's summary for editing", () => {
 test("offers the flow's start label for editing", () => {
   assert.equal(shown(panel({}), "data-flow-start-label").length, 1)
 })
+
+test("saves a field that was changed when it is left", () => {
+  const saved = []
+  const tree = panel({ flow: { title: "A flow", slug: "a-flow" }, onSaveDetails: (given) => saved.push(given) })
+
+  shown(tree, "data-flow-title")[0].props.onBlur({ target: { value: "A better name" } })
+
+  assert.deepEqual(saved, [ { title: "A better name" } ])
+})
