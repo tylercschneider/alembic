@@ -29,5 +29,11 @@ module Alembic
         assert_response :not_found
       end
     end
+
+    test "a visitor can reach a diagnostic the host authorizes" do
+      get alembic.diagnostic_path(published.slug)
+
+      assert_response :success
+    end
   end
 end

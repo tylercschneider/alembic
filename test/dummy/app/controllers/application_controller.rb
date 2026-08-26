@@ -3,4 +3,8 @@ class ApplicationController < ActionController::Base
   allow_browser versions: :modern
 
   helper Rails.application.routes.url_helpers
+
+  def alembic_visitor_permitted?(diagnostic)
+    diagnostic.present?
+  end
 end
