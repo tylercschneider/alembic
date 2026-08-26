@@ -21,6 +21,7 @@ module Alembic
 
       def flow_details(diagnostic)
         { "title" => diagnostic.title.presence || diagnostic.slug,
+          "summary" => diagnostic.summary,
           "version" => diagnostic.current_definition_version&.number,
           "published" => diagnostic.live_version&.number,
           "definition_url" => edit_manage_diagnostic_definition_path(diagnostic),
