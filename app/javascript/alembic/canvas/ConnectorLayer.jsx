@@ -11,7 +11,7 @@ const ConnectorLayer = ({ links, extent, dragging, onInsert, onRemove, onDrop })
         </marker>
       </defs>
       {links.map((link) => (
-        <path key={link.id} fill="none" stroke="#9ca3af" strokeWidth="1.5" markerEnd="url(#alembic-arrow)" d={link.path} />
+        <path key={link.id} data-link={link.id} fill="none" stroke="#9ca3af" strokeWidth="1.5" markerEnd="url(#alembic-arrow)" d={link.path} />
       ))}
     </svg>
 

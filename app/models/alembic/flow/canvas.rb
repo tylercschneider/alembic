@@ -52,9 +52,15 @@ module Alembic
 
       def gaps_after(node)
         wired = @document.edges_from(node.id).map { |edge| edge.on.to_s }
+        results = digest.routing_values(node.id)
+        return [ { id: "#{node.id}--", from: node.id, on: nil } ] if results.empty? && leads_nowhere?(node)
 
-        digest.routing_values(node.id).reject { |value| wired.include?(value) }
+        results.reject { |value| wired.include?(value) }
           .map { |value| { id: "#{node.id}--#{value}", from: node.id, on: value } }
+      end
+
+      def leads_nowhere?(node)
+        !ends_here?(node) && !loose?(node) && @document.edges_from(node.id).none?
       end
 
       def routing(edge, placed)

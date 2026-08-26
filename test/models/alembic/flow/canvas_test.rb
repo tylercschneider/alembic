@@ -196,8 +196,9 @@ module Alembic
                      "edges" => [ { "from" => "g", "to" => "a" } ] }
         built = Document.new(document, registry: registry)
 
-        assert_equal [ false, false, true ],
-          Canvas.new(built, registry: registry).to_h["nodes"].map { |node| node["loose"] }
+        drawn = Canvas.new(built, registry: registry).to_h["nodes"].reject { |node| node["placeholder"] }
+
+        assert_equal [ false, false, true ], drawn.map { |node| node["loose"] }
       end
 
       test "draws a placeholder where a result has nowhere to go" do
@@ -216,6 +217,31 @@ module Alembic
         drawn = Canvas.new(built, registry: registry).to_h
 
         assert_equal [ "b", "b" ], drawn["edges"].select { |edge| edge["placeholder"] }.map { |edge| edge["source"] }
+      end
+
+      test "draws a placeholder where a step leads nowhere at all" do
+        document = { "nodes" => [ { "id" => "a", "type" => "ask" } ], "edges" => [] }
+        built = Document.new(document, registry: registry)
+        drawn = Canvas.new(built, registry: registry).to_h
+
+        assert_equal [ "a--" ], drawn["nodes"].select { |node| node["placeholder"] }.map { |node| node["id"] }
+      end
+
+      test "draws no placeholder after a step the flow ends at" do
+        document = { "nodes" => [ { "id" => "z", "type" => "stop" } ], "edges" => [] }
+        built = Document.new(document, registry: registry)
+        drawn = Canvas.new(built, registry: registry).to_h
+
+        assert_empty drawn["nodes"].select { |node| node["placeholder"] }
+      end
+
+      test "draws no placeholder after a step waiting outside the flow" do
+        document = { "nodes" => [ { "id" => "g", "type" => "go" }, { "id" => "adrift", "type" => "ask" } ],
+                     "edges" => [] }
+        built = Document.new(document, registry: registry)
+        gaps = Canvas.new(built, registry: registry).to_h["nodes"].select { |node| node["placeholder"] }
+
+        assert_equal [ "g" ], gaps.map { |node| node["from"] }
       end
     end
   end
