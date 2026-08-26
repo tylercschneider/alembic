@@ -66,6 +66,18 @@ module Alembic
       test "offers a comparison deciding which way the test falls" do
         assert_equal [ "is", "is not" ], Condition.step_type.choices[:comparison]
       end
+
+      test "decides false when the step gave the answer it tests for and is not" do
+        node = branch({ "step" => "budget", "comparison" => "is not", "answer" => "high" })
+
+        assert_equal false, Condition.step_type.route(node, { "budget" => "high" })
+      end
+
+      test "decides true when the step gave a different answer and is not" do
+        node = branch({ "step" => "budget", "comparison" => "is not", "answer" => "high" })
+
+        assert_equal true, Condition.step_type.route(node, { "budget" => "low" })
+      end
     end
   end
 end
