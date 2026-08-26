@@ -18,6 +18,10 @@ module Alembic
       test "directs by the answer the step it names gave" do
         assert_equal "high", Switch.step_type.route(switch({ "step" => "budget" }), { "budget" => "high" })
       end
+
+      test "requires the step it directs on" do
+        assert_equal [ "budget" ], Switch.step_type.requirements_for(switch({ "step" => "budget" }))
+      end
     end
   end
 end
