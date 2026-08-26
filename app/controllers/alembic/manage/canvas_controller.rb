@@ -7,6 +7,9 @@ module Alembic
       end
 
       def create
+        objections = Flow::Validator.new(document).violations
+        return render json: { error: refusal(objections) }, status: :unprocessable_entity if objections.any?
+
         stood_at = diagnostic.current_definition_version&.number
         diagnostic.create_version
 
