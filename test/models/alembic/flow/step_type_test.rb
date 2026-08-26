@@ -110,6 +110,14 @@ module Alembic
         assert_equal :integer, step_type.outputs.first.type
       end
 
+      test "reads a plain output value as a value labelled by itself" do
+        step_type = StepType.define(:check) { output :result, type: :boolean, values: [ true, false ] }
+        node = Node.new(id: "g", type: "check", config: {})
+
+        assert_equal [ { "value" => true, "label" => "true" }, { "value" => false, "label" => "false" } ],
+          step_type.values_of(:result, node)
+      end
+
       test "can declare which field names an instance of it" do
         step_type = StepType.define(:ask) { setting :text, type: :string; names_by :text }
 

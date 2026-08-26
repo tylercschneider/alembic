@@ -8,7 +8,15 @@ module Alembic
       end
 
       def values_for(node)
-        Array(values.respond_to?(:call) ? values.call(node) : values)
+        Array(values.respond_to?(:call) ? values.call(node) : values).map { |value| taken(value) }
+      end
+
+      private
+
+      def taken(value)
+        return value if value.is_a?(Hash)
+
+        { "value" => value, "label" => value.to_s }
       end
     end
   end
