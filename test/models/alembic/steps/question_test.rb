@@ -26,6 +26,10 @@ module Alembic
         assert_equal [ { "value" => "high", "label" => "Over $1k" } ], Question.step_type.offerings_for(node)
       end
 
+      test "declares the answer it captures as an output" do
+        assert_equal [ :answer ], Question.step_type.outputs.map(&:name)
+      end
+
       test "has a single unnamed output" do
         assert_predicate Question.step_type, :single_output?
       end
