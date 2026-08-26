@@ -370,5 +370,24 @@ module Alembic
 
       assert_select "[data-version]", count: 1
     end
+
+    test "the history offers a way back to an earlier version" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/versions"
+
+      get alembic.manage_diagnostic_versions_path(diagnostic)
+
+      assert_select "[data-return]", count: 1
+    end
+
+    test "returning from the history makes that version the live document" do
+      post "#{canvas_path}/steps", params: { id: "c", type: "question" }
+      post "#{canvas_path}/versions"
+      first = diagnostic.definition_versions.order(:number).first
+
+      post alembic.return_manage_diagnostic_version_path(diagnostic, first)
+
+      assert_equal first.definition, diagnostic.reload.document
+    end
   end
 end

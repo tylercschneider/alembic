@@ -270,5 +270,77 @@ module Alembic
 
       assert_equal [ "added" ], diagnostic.definition_versions.last.changes.map { |change| change["action"] }
     end
+
+    test "returning to a version makes its content the live document" do
+      diagnostic = Diagnostic.create!(slug: "demo")
+      diagnostic.record_definition("entry" => "first")
+      first = diagnostic.definition_versions.last
+      diagnostic.update!(document: { "entry" => "later" })
+
+      diagnostic.return_to(first)
+
+      assert_equal({ "entry" => "first" }, diagnostic.reload.document)
+    end
+
+    test "returning to a version leaves every version in place" do
+      diagnostic = returnable
+      first = diagnostic.definition_versions.order(:number).first
+
+      assert_no_difference -> { diagnostic.definition_versions.count } do
+        diagnostic.return_to(first)
+      end
+    end
+
+    test "returning to a version leaves that version's content alone" do
+      diagnostic = returnable
+      first = diagnostic.definition_versions.order(:number).first
+
+      diagnostic.return_to(first)
+
+      assert_equal({ "entry" => "first" }, first.reload.definition)
+    end
+
+    test "returning records that the document was returned" do
+      diagnostic = returnable
+      first = diagnostic.definition_versions.order(:number).first
+
+      diagnostic.return_to(first)
+
+      assert_equal "Returned to version 1", Change.phrase(diagnostic.reload.changes_since_version.last)
+    end
+
+    test "refuses a version belonging to another diagnostic" do
+      diagnostic = returnable
+      stranger = Diagnostic.create!(slug: "stranger")
+      stranger.record_definition("entry" => "theirs")
+
+      assert_raises(ActiveRecord::RecordNotFound) { diagnostic.return_to(stranger.definition_versions.last) }
+    end
+
+    test "returning leaves visitors on the version they were running" do
+      diagnostic = returnable
+      diagnostic.publish
+      running = diagnostic.published_version
+
+      diagnostic.return_to(diagnostic.definition_versions.order(:number).first)
+
+      assert_equal running, diagnostic.reload.published_version
+    end
+
+    test "undoing a return puts the document back" do
+      diagnostic = returnable
+      diagnostic.return_to(diagnostic.definition_versions.order(:number).first)
+
+      diagnostic.undo_change
+
+      assert_equal({ "entry" => "second" }, diagnostic.reload.document)
+    end
+
+    def returnable
+      Diagnostic.create!(slug: "returnable").tap do |diagnostic|
+        diagnostic.record_definition("entry" => "first")
+        diagnostic.record_definition("entry" => "second")
+      end
+    end
   end
 end
