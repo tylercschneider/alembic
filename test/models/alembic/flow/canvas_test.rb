@@ -19,6 +19,7 @@ module Alembic
             route { |node, state| state[node.config["step"]] }
           end)
           built.register(StepType.define(:stop) { step_name "End"; ends_here })
+          built.register(StepType.define(:go) { step_name "Start"; begins_here })
           built.register(StepType.define(:branch) do
             step_name "Branch"
             setting :step, type: :previous_step
@@ -181,6 +182,13 @@ module Alembic
                      "edges" => [ { "from" => "a", "to" => "z" } ] }
 
         assert_equal [ "Ask", "Switch", "Branch" ], canvas(document)["palette"].map { |entry| entry["label"] }
+      end
+
+      test "says of a node that the flow begins there" do
+        document = { "nodes" => [ { "id" => "g", "type" => "go" }, { "id" => "a", "type" => "ask" } ],
+                     "edges" => [ { "from" => "g", "to" => "a" } ] }
+
+        assert canvas(document)["nodes"].find { |node| node["id"] == "g" }["begins_here"]
       end
     end
   end
