@@ -56,3 +56,39 @@ test("offers the way to the definition and the details", () => {
   assert.equal(shown(tree, "data-definition").length, 1)
   assert.equal(shown(tree, "data-details").length, 1)
 })
+
+test("names a flow that has no title by its slug", () => {
+  const tree = panel({ flow: { title: null, slug: "a-flow", version: 1, published: 1 } })
+
+  assert.equal(shown(tree, "data-flow-name")[0].props.children, "a-flow")
+})
+
+test("offers the flow's title for editing", () => {
+  assert.equal(shown(panel({}), "data-flow-title").length, 1)
+})
+
+test("offers the flow's summary for editing", () => {
+  assert.equal(shown(panel({}), "data-flow-summary").length, 1)
+})
+
+test("offers the flow's start label for editing", () => {
+  assert.equal(shown(panel({}), "data-flow-start-label").length, 1)
+})
+
+test("saves a field that was changed when it is left", () => {
+  const saved = []
+  const tree = panel({ flow: { title: "A flow", slug: "a-flow" }, onSaveDetails: (given) => saved.push(given) })
+
+  shown(tree, "data-flow-title")[0].props.onBlur({ target: { value: "A better name" } })
+
+  assert.deepEqual(saved, [ { title: "A better name" } ])
+})
+
+test("saves nothing when a field is left as it was stored", () => {
+  const saved = []
+  const tree = panel({ flow: { title: "A flow", slug: "a-flow" }, onSaveDetails: (given) => saved.push(given) })
+
+  shown(tree, "data-flow-title")[0].props.onBlur({ target: { value: "A flow" } })
+
+  assert.deepEqual(saved, [])
+})

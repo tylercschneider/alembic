@@ -41,6 +41,10 @@ const Canvas = ({ base, token, initial }) => {
     return () => document.removeEventListener("click", away)
   }, [ showing ])
 
+  useEffect(() => {
+    document.dispatchEvent(new CustomEvent("alembic:flow-named", { detail: flow.flow?.title || flow.flow?.slug }))
+  }, [ flow.flow?.title, flow.flow?.slug ])
+
   const byId = useMemo(() => Object.fromEntries(flow.nodes.map((node) => [ node.id, node ])), [ flow.nodes ])
   const { links, extent } = useConnectors(flow, surface, cards, [ flow, selected, byId ])
 
@@ -129,7 +133,8 @@ const Canvas = ({ base, token, initial }) => {
         <Panel flow={flow.flow || {}} changes={flow.changes || []} problems={flow.violations} refusal={error} notice={notice}
                onClose={() => setShowing(false)}
                onCreate={() => send("/versions", "POST")}
-               onPublish={() => send("/publish", "POST")} />
+               onPublish={() => send("/publish", "POST")}
+               onSaveDetails={(details) => send("/details", "PATCH", { diagnostic: details })} />
       )}
 
       {selectedNode && (

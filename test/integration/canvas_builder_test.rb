@@ -300,6 +300,46 @@ module Alembic
       assert_equal alembic.edit_manage_diagnostic_path(diagnostic), response.parsed_body["flow"]["details_url"]
     end
 
+    test "saving the details stores the flow's title" do
+      patch "#{canvas_path}/details", params: { diagnostic: { title: "A better name" } }
+
+      assert_equal "A better name", diagnostic.reload.title
+    end
+
+    test "saving the details says they were saved" do
+      patch "#{canvas_path}/details", params: { diagnostic: { title: "A better name" } }
+
+      assert_equal "Saved the flow's details.", response.parsed_body["notice"]
+    end
+
+    test "the canvas carries the flow's summary" do
+      diagnostic.update!(summary: "What this asks about")
+
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal "What this asks about", response.parsed_body["flow"]["summary"]
+    end
+
+    test "the canvas carries the flow's start label" do
+      diagnostic.update!(start_label: "Begin")
+
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal "Begin", response.parsed_body["flow"]["start_label"]
+    end
+
+    test "the canvas carries the flow's slug" do
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_equal "canvas", response.parsed_body["flow"]["slug"]
+    end
+
+    test "the canvas carries the title of a flow that has none as nothing" do
+      get canvas_path, headers: { "Accept" => "application/json" }
+
+      assert_nil response.parsed_body["flow"]["title"]
+    end
+
     test "a refused publish says it could not publish and why" do
       post "#{canvas_path}/steps", params: { id: "adrift", type: "question" }
 

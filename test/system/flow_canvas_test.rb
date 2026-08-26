@@ -302,7 +302,50 @@ module Alembic
       assert_selector "[data-version]", text: "Version 1"
     end
 
+    test "the flow is renamed from its panel" do
+      canvas_for(flow)
+      find("[data-open-panel]").click
+
+      rename_to("A better name")
+
+      assert_selector "[data-flow-name]", text: "A better name"
+    end
+
+    test "the flow's panel says the details were saved" do
+      canvas_for(flow)
+      find("[data-open-panel]").click
+
+      rename_to("A better name")
+
+      assert_selector "[data-notice]", text: "Saved the flow's details."
+    end
+
+    test "the builder page follows the flow's new name" do
+      canvas_for(flow)
+      find("[data-open-panel]").click
+
+      rename_to("A better name")
+
+      assert_selector "header h1", text: "A better name"
+    end
+
+    test "saving one detail keeps the ones that were already stored" do
+      named = flow.tap { |diagnostic| diagnostic.update!(summary: "What this asks about") }
+      canvas_for(named)
+      find("[data-open-panel]").click
+
+      rename_to("A better name")
+      assert_selector "[data-notice]"
+
+      assert_equal "What this asks about", named.reload.summary
+    end
+
     private
+
+    def rename_to(name)
+      find("[data-flow-title]").set(name)
+      find("[data-builder-panel] h2", match: :first).click
+    end
 
     def fill_in_first_field_with(text)
       field = find("[data-inspector] input[type='text']", match: :first)
