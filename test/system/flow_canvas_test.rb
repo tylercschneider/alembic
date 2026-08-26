@@ -207,6 +207,18 @@ module Alembic
       assert_selector "[data-step='gate'] button", count: 2
     end
 
+    test "a step nothing leads to waits beside the flow" do
+      canvas_for(adrift)
+
+      assert_selector "[data-loose] [data-step='adrift']"
+    end
+
+    test "a step the flow leads to is drawn in the flow" do
+      canvas_for(adrift)
+
+      assert_no_selector "[data-loose] [data-step='gate']"
+    end
+
     test "closing the panel leaves the flow drawn" do
       canvas_for(flow)
       step_card("gate").click
