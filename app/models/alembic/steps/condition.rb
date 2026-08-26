@@ -6,7 +6,7 @@ module Alembic
       step_name "Condition"
 
       setting :step, type: :previous_step
-      setting :answer, type: :string
+      setting :answer, from: :step
 
       outputs :yes, :no
 

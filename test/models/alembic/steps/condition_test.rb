@@ -51,8 +51,8 @@ module Alembic
         assert_equal :previous_step, Condition.step_type.fields[:step]
       end
 
-      test "declares the answer it tests for" do
-        assert_equal :string, Condition.step_type.fields[:answer]
+      test "draws the answer it tests from the step it names" do
+        assert_equal :step, Condition.step_type.drawn_from[:answer]
       end
 
       test "declares two named output ports" do
