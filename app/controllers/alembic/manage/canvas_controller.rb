@@ -162,11 +162,11 @@ module Alembic
       def fixed?(id)
         step_type = document.node(id)&.then { |node| Flow.registry.fetch(node.type) if Flow.registry.registered?(node.type) }
 
-        step_type&.begins_here? || step_type&.ends_here? || false
+        step_type&.begins_here? || false
       end
 
       def refusal_to_remove
-        "Cannot remove where a flow begins or ends."
+        "Cannot remove where a flow begins."
       end
 
       def refusal(objections)

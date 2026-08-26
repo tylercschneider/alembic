@@ -76,7 +76,7 @@ module Alembic
       end
 
       def palette
-        @registry.step_types.reject { |step_type| step_type.begins_here? || step_type.ends_here? }.map do |step_type|
+        @registry.step_types.reject(&:begins_here?).map do |step_type|
           { "type" => step_type.id.to_s, "label" => step_type.step_name,
             "fields" => step_type.fields.transform_keys(&:to_s).transform_values(&:to_s),
             "labels" => step_type.labels.transform_keys(&:to_s),

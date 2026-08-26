@@ -76,7 +76,7 @@ module Alembic
       end
 
       test "carries every registered step type as a palette entry" do
-        assert_equal [ "Ask", "Switch", "Branch" ], canvas(flow)["palette"].map { |entry| entry["label"] }
+        assert_equal [ "Ask", "Switch", "End", "Branch" ], canvas(flow)["palette"].map { |entry| entry["label"] }
       end
 
       test "carries what a palette entry's record field holds" do
@@ -176,11 +176,11 @@ module Alembic
         assert canvas(document)["nodes"].last["ends_here"]
       end
 
-      test "offers no way to add a second beginning or ending" do
+      test "offers no way to add a second beginning" do
         document = { "nodes" => [ { "id" => "a", "type" => "ask" }, { "id" => "z", "type" => "stop" } ],
                      "edges" => [ { "from" => "a", "to" => "z" } ] }
 
-        assert_equal [ "Ask", "Switch", "Branch" ], canvas(document)["palette"].map { |entry| entry["label"] }
+        assert_equal [ "Ask", "Switch", "End", "Branch" ], canvas(document)["palette"].map { |entry| entry["label"] }
       end
 
       test "says of a node that the flow begins there" do
