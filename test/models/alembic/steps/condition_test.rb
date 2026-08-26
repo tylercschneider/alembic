@@ -55,6 +55,10 @@ module Alembic
         assert_equal :step, Condition.step_type.drawn_from[:answer]
       end
 
+      test "declares the result it decides as an output" do
+        assert_equal [ :result ], Condition.step_type.outputs.map(&:name)
+      end
+
       test "declares two named output ports" do
         assert_equal [ :yes, :no ], Condition.step_type.ports
       end

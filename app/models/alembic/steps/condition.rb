@@ -8,6 +8,8 @@ module Alembic
       setting :step, type: :previous_step
       setting :answer, from: :step
 
+      output :result, type: :boolean, values: [ true, false ]
+
       ports :yes, :no
 
       requires { |node| [ node.config["step"] ].compact }
