@@ -10,3 +10,7 @@ const control = (given) => Control({
 test("offers a step that comes before as a choice rather than free text", () => {
   assert.equal(control({}).type, "select")
 })
+
+test("offers an answer drawn from another step as a choice rather than free text", () => {
+  assert.equal(control({ type: "from_step", choices: [ { value: "high", label: "Over $1k" } ] }).type, "select")
+})
