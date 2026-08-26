@@ -66,3 +66,7 @@ test("names a flow that has no title by its slug", () => {
 test("offers the flow's title for editing", () => {
   assert.equal(shown(panel({}), "data-flow-title").length, 1)
 })
+
+test("offers the flow's summary for editing", () => {
+  assert.equal(shown(panel({}), "data-flow-summary").length, 1)
+})
