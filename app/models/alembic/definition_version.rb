@@ -11,6 +11,8 @@ module Alembic
       changes_captured.to_a
     end
 
-    before_update { raise ActiveRecord::ReadOnlyRecord }
+    FROZEN = %w[definition number diagnostic_id changes_captured].freeze
+
+    before_update { raise ActiveRecord::ReadOnlyRecord if changed.intersect?(FROZEN) }
   end
 end

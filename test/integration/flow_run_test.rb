@@ -141,12 +141,12 @@ module Alembic
       assert_select "legend", text: /What is your budget\?/
     end
 
-    test "a visitor keeps running the published version after a newer one is cut" do
+    test "a visitor keeps running the published version after a newer one is created" do
       diagnostic = flowed
       diagnostic.publish
       diagnostic.update!(document: { "slug" => diagnostic.slug, "entry" => "later",
         "nodes" => [ { "id" => "later", "type" => "question", "question" => "Something else?" } ], "edges" => [] })
-      diagnostic.cut_version
+      diagnostic.create_version
 
       get alembic.diagnostic_step_path(diagnostic.slug)
 

@@ -245,7 +245,7 @@ module Alembic
       assert_selector "[data-problem]", text: "unreachable"
     end
 
-    test "cutting a version empties the change list" do
+    test "creating a version empties the change list" do
       canvas_for(flow)
       step_card("start").click
       fill_in_first_field_with("Changed by hand")

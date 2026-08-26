@@ -193,7 +193,7 @@ module Alembic
       assert_includes drawn["nodes"].map { |node| node["id"] }, "c"
     end
 
-    test "cutting a version records the document being edited" do
+    test "creating a version records the document being edited" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
 
       assert_difference -> { diagnostic.definition_versions.count } do
@@ -263,7 +263,7 @@ module Alembic
       assert_kind_of String, response.parsed_body["changes"].first
     end
 
-    test "the change list empties when a version is cut" do
+    test "the change list empties when a version is created" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
       post "#{canvas_path}/versions"
 

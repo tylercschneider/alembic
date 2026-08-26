@@ -94,21 +94,21 @@ module Alembic
       assert_equal({ "entry" => "one" }, diagnostic.reload.document)
     end
 
-    test "cutting a version leaves nothing to redo but keeps what can be undone" do
+    test "creating a version leaves nothing to redo but keeps what can be undone" do
       diagnostic = Diagnostic.create!(slug: "undo", document: { "entry" => "one" })
       edited(diagnostic, "two", { "entry" => "one" })
       diagnostic.undo_change
 
-      diagnostic.cut_version
+      diagnostic.create_version
 
       assert_not diagnostic.redoable?
     end
 
-    test "cutting a version leaves the author able to undo past it" do
+    test "creating a version leaves the author able to undo past it" do
       diagnostic = Diagnostic.create!(slug: "undo", document: { "entry" => "one" })
       edited(diagnostic, "two", { "entry" => "one" })
 
-      diagnostic.cut_version
+      diagnostic.create_version
 
       assert_predicate diagnostic, :undoable?
     end
@@ -223,36 +223,36 @@ module Alembic
       assert_equal "a", diagnostic.reload.document["entry"]
     end
 
-    test "cutting a version records the live document" do
+    test "creating a version records the live document" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
       diagnostic.update!(document: { "entry" => "b", "nodes" => [], "edges" => [] })
 
-      diagnostic.cut_version
+      diagnostic.create_version
 
       assert_equal "b", diagnostic.definition_versions.order(:number).last.definition["entry"]
     end
 
-    test "cutting a version clears what had changed since the last one" do
+    test "creating a version clears what had changed since the last one" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
       diagnostic.update!(document: { "entry" => "b" }, changes_since_version: [ { "action" => "moved", "steps" => [ "a" ], "named" => [ "A" ] } ])
 
-      diagnostic.cut_version
+      diagnostic.create_version
 
       assert_empty diagnostic.reload.changes_since_version
     end
 
-    test "cutting a version twice over records only one" do
+    test "creating a version twice over records only one" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
 
       assert_no_difference -> { diagnostic.definition_versions.count } do
-        diagnostic.cut_version
+        diagnostic.create_version
       end
     end
 
-    test "publishing marks the cut version as the one visitors run" do
+    test "publishing marks the created version as the one visitors run" do
       diagnostic = Diagnostic.create!(slug: "demo")
       diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
       diagnostic.update!(document: { "entry" => "b", "nodes" => [], "edges" => [] })
@@ -266,7 +266,7 @@ module Alembic
       diagnostic = Diagnostic.create!(slug: "demo", document: { "entry" => "a" })
       diagnostic.update!(changes_since_version: [ { "action" => "added", "steps" => [ "a" ], "named" => [ "A" ] } ])
 
-      diagnostic.cut_version
+      diagnostic.create_version
 
       assert_equal [ "added" ], diagnostic.definition_versions.last.changes.map { |change| change["action"] }
     end

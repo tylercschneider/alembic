@@ -6,9 +6,9 @@ module Alembic
         render json: canvas_payload(diagnostic)
       end
 
-      def cut
+      def create
         stood_at = diagnostic.current_definition_version&.number
-        diagnostic.cut_version
+        diagnostic.create_version
 
         render json: { notice: created(stood_at) }
       end

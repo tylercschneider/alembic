@@ -65,7 +65,7 @@ module Alembic
     end
 
     def publish
-      cut_version
+      create_version
 
       update!(published_version: current_definition_version, status: :published)
     end
@@ -77,8 +77,8 @@ module Alembic
         changes_since_version: changes_since_version.to_a + [ returning_to(version) ])
     end
 
-    def cut_version
-      record_definition(document, changes_since_version.to_a) unless cut?
+    def create_version
+      record_definition(document, changes_since_version.to_a) unless versioned?
 
       update!(undo_history: undoable, changes_since_version: [], undone_changes: [])
     end
@@ -92,7 +92,7 @@ module Alembic
         "detail" => "version #{version.number}", "before" => document }
     end
 
-    def cut?
+    def versioned?
       document == definition
     end
 
