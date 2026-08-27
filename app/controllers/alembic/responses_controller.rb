@@ -36,7 +36,7 @@ module Alembic
     def saved_session
       run = Flow::Run.find(params[:id])
 
-      Admission.of_run(run, permitted: permitted?(run.diagnostic))
+      Admission.of_run(run, permitted: permitted?(run.flow))
     end
 
     def diagnostic

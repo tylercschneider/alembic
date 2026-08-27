@@ -3,14 +3,14 @@ module Alembic
     class Run < ApplicationRecord
       self.table_name = "alembic_flow_runs"
 
-      belongs_to :diagnostic
+      belongs_to :flow, class_name: "Alembic::Diagnostic", foreign_key: :diagnostic_id
       belongs_to :definition_version
       belongs_to :summary_version, optional: true
       belongs_to :owner, polymorphic: true, optional: true
 
-      def self.start(diagnostic)
-        create!(diagnostic: diagnostic, definition_version: diagnostic.live_version,
-          summary_version: diagnostic.current_summary_version)
+      def self.start(flow)
+        create!(flow: flow, definition_version: flow.live_version,
+          summary_version: flow.current_summary_version)
       end
 
       def record_answer(step_id, value)
