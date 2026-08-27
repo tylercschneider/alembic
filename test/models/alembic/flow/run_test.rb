@@ -92,10 +92,10 @@ module Alembic
         assert_equal({ pick: "a" }, response.reload.answers)
       end
 
-      test "builds its guide from the definition it is pinned to" do
-        response = Flow::Run.start(alembic_diagnostics(:db_guide))
+      test "reads the steps of the flow it is pinned to" do
+        run = Flow::Run.start(alembic_diagnostics(:db_guide))
 
-        assert_includes response.guide.questions.map(&:id), :pick
+        assert_includes run.pinned_definition["nodes"].map { |node| node["id"] }, "pick"
       end
 
       test "discards the answer it last recorded" do
@@ -145,30 +145,30 @@ module Alembic
         end
       end
 
-      test "summarises from its pinned summary version rather than the diagnostic's newest" do
+      test "stays on the summary it was pinned to when a newer one is recorded" do
         diagnostic = scored_diagnostic
-        response = Flow::Run.start(diagnostic)
+        run = Flow::Run.start(diagnostic)
         diagnostic.record_summary("outputs" => [ { "id" => "score", "type" => "tally" } ])
 
-        assert_equal 5, response.reload.summary_of("budget" => "high").first.value
+        assert_equal "weighted_sum", run.reload.pinned_summary["outputs"].first["type"]
       end
 
-      test "summarises from its pinned flow version when option weights change" do
+      test "stays on the flow it was pinned to when the weights change" do
         diagnostic = scored_diagnostic
-        response = Flow::Run.start(diagnostic)
+        run = Flow::Run.start(diagnostic)
         diagnostic.record_definition(flowing("slug" => "scored", "entry" => "budget", "edges" => [],
           "nodes" => [ { "id" => "budget", "type" => "question", "text" => "Budget?",
                          "options" => [ { "value" => "high", "weight" => 99 } ] } ]))
 
-        assert_equal 5, response.reload.summary_of("budget" => "high").first.value
+        assert_equal 5, run.reload.pinned_definition["nodes"].first["options"].first["weight"]
       end
 
-      test "produces no outputs when its diagnostic has no summary" do
+      test "reads no summary when none was pinned" do
         diagnostic = Diagnostic.create!(slug: "unscored")
         diagnostic.record_definition("slug" => "unscored")
         diagnostic.publish
 
-        assert_empty Flow::Run.start(diagnostic).summary_of({})
+        assert_empty Flow::Run.start(diagnostic).pinned_summary
       end
 
       def scored_diagnostic

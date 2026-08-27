@@ -6,7 +6,7 @@ module Alembic
 
     def show
       @response = saved_session
-      @guide = @response.guide
+      @guide = Runner.new(@response.pinned_definition)
       @answers = @response.answers
       @question = @guide.next_question(@answers)
       return render :step if @question
@@ -24,12 +24,20 @@ module Alembic
 
     def render_completion
       @answered = @guide.answers_on_path(@answers)
-      @outputs = @response.summary_of(@answered.transform_keys(&:to_s))
+      @outputs = summarised(@answered.transform_keys(&:to_s))
       render template: "alembic/diagnostics/complete"
     end
 
+    def summarised(state)
+      return [] if @response.pinned_summary.blank?
+
+      Summary::Report.new(@response.pinned_summary)
+        .results(Summary::Run.new(state: state, steps: @response.pinned_steps))
+    end
+
     def record_submitted_answer(response)
-      question_id, value = params.fetch(:answers, {}).permit(*response.guide.questions.map(&:id)).to_h.first
+      asked = Runner.new(response.pinned_definition).questions.map(&:id)
+      question_id, value = params.fetch(:answers, {}).permit(*asked).to_h.first
       response.record_answer(question_id.to_sym, value)
     end
 
