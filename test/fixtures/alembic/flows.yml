@@ -1,3 +1,6 @@
+_fixture:
+  model_class: Alembic::Flow::Flow
+
 business_scorecard:
   slug: business-scorecard
   title: Business Blind-Spot Scorecard

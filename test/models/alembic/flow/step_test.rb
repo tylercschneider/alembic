@@ -4,13 +4,13 @@ module Alembic
   module Flow
     class StepTest < ActiveSupport::TestCase
       class Probe
-        include Flow::Step
+        include Step
 
         step_name "Probe step"
       end
 
       class Gate
-        include Flow::Step
+        include Step
 
         def route(node, state)
           state[node.config["answer"]].present? ? :yes : :no

@@ -1,6 +1,6 @@
 class PublishCurrentDefinitions < ActiveRecord::Migration[8.1]
   def up
-    Alembic::Diagnostic.find_each do |diagnostic|
+    Alembic::Flow::Flow.find_each do |diagnostic|
       current = diagnostic.current_definition_version
       next if current.nil?
 
@@ -9,6 +9,6 @@ class PublishCurrentDefinitions < ActiveRecord::Migration[8.1]
   end
 
   def down
-    Alembic::Diagnostic.update_all(published_version_id: nil)
+    Alembic::Flow::Flow.update_all(published_version_id: nil)
   end
 end

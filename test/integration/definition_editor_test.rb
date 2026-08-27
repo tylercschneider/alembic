@@ -3,7 +3,7 @@ require "test_helper"
 module Alembic
   class DefinitionEditorTest < ActionDispatch::IntegrationTest
     test "a branching definition saved in the builder runs in the stepper" do
-      diagnostic = Diagnostic.create!(slug: "flow")
+      diagnostic = Flow::Flow.create!(slug: "flow")
       diagnostic.record_definition("slug" => "flow")
 
       patch alembic.manage_diagnostic_definition_path(diagnostic), params: { definition: flowing({
@@ -29,7 +29,7 @@ module Alembic
     end
 
     test "the definition editor shows the current definition" do
-      diagnostic = Diagnostic.create!(slug: "doc")
+      diagnostic = Flow::Flow.create!(slug: "doc")
       diagnostic.record_definition("slug" => "doc", "questions" => [ { "id" => "need", "text" => "Need?" } ])
 
       get alembic.edit_manage_diagnostic_definition_path(diagnostic)
@@ -38,7 +38,7 @@ module Alembic
     end
 
     test "the editor shows the flow being edited, not the last version cut" do
-      fresh = Diagnostic.create!(slug: "fresh")
+      fresh = Flow::Flow.create!(slug: "fresh")
 
       get alembic.edit_manage_diagnostic_definition_path(fresh)
 
@@ -46,7 +46,7 @@ module Alembic
     end
 
     test "editing the definition changes the flow without cutting a version" do
-      fresh = Diagnostic.create!(slug: "fresh-edit")
+      fresh = Flow::Flow.create!(slug: "fresh-edit")
       edited = fresh.document.merge("headline" => "Edited by hand")
 
       assert_no_difference -> { fresh.definition_versions.count } do
@@ -57,7 +57,7 @@ module Alembic
     end
 
     test "editing the definition records that it changed" do
-      fresh = Diagnostic.create!(slug: "fresh-change")
+      fresh = Flow::Flow.create!(slug: "fresh-change")
 
       patch alembic.manage_diagnostic_definition_path(fresh), params: { definition: fresh.document.to_json }
 

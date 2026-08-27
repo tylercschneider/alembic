@@ -85,7 +85,7 @@ module Alembic
       end
 
       def diagnostic
-        @diagnostic ||= Diagnostic.find(params[:diagnostic_id])
+        @diagnostic ||= Flow::Flow.find(params[:diagnostic_id])
       end
 
       def document

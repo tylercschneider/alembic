@@ -3,7 +3,7 @@ require "test_helper"
 module Alembic
   class CanvasBuilderTest < ActionDispatch::IntegrationTest
     def diagnostic
-      @diagnostic ||= Diagnostic.create!(slug: "canvas").tap do |built|
+      @diagnostic ||= Flow::Flow.create!(slug: "canvas").tap do |built|
         built.record_definition(flowing(
           "slug" => "canvas", "entry" => "a",
           "nodes" => [ { "id" => "a", "type" => "question", "text" => "A", "answers" => [ { "value" => "yes" } ] },

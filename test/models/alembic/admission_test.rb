@@ -3,11 +3,11 @@ require "test_helper"
 module Alembic
   class AdmissionTest < ActiveSupport::TestCase
     def published
-      alembic_diagnostics(:db_guide)
+      alembic_flows(:db_guide)
     end
 
     test "it refuses a diagnostic with nothing published as unpublished" do
-      unpublished = Diagnostic.create!(slug: "nothing-published")
+      unpublished = Flow::Flow.create!(slug: "nothing-published")
 
       assert_raises(NotPublished) { Admission.of(unpublished, permitted: true) }
     end

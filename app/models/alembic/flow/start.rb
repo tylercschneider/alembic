@@ -1,7 +1,7 @@
 module Alembic
   module Flow
     class Start
-      include Flow::Step
+      include Step
 
       step_name "Start"
 

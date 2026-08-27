@@ -3,9 +3,9 @@ module Alembic
     class Summary < ApplicationRecord
       self.table_name = "alembic_flow_summaries"
 
-      belongs_to :flow, class_name: "Alembic::Diagnostic", foreign_key: :diagnostic_id
+      belongs_to :flow, class_name: "Alembic::Flow::Flow"
 
-      validates :number, uniqueness: { scope: :diagnostic_id }
+      validates :number, uniqueness: { scope: :flow_id }
 
       before_update { raise ActiveRecord::ReadOnlyRecord }
     end

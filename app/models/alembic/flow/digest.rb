@@ -1,7 +1,7 @@
 module Alembic
   module Flow
     class Digest
-      def initialize(document, registry: Flow.registry)
+      def initialize(document, registry: Alembic::Flow.registry)
         @document = document
         @registry = registry
       end

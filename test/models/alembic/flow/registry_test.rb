@@ -4,9 +4,9 @@ module Alembic
   module Flow
     class RegistryTest < ActiveSupport::TestCase
       test "declaring a step type puts it in the default registry" do
-        Flow.step(:probe) { step_name "Probe" }
+        Alembic::Flow.step(:probe) { step_name "Probe" }
 
-        assert_equal "Probe", Flow.registry.fetch("probe").step_name
+        assert_equal "Probe", Alembic::Flow.registry.fetch("probe").step_name
       end
 
       test "knows whether a step type is registered" do

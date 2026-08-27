@@ -32,7 +32,7 @@ module Alembic
       end
 
       test "is registered for the application to use" do
-        assert_equal :switch, Flow.registry.fetch("switch").id
+        assert_equal :switch, Alembic::Flow.registry.fetch("switch").id
       end
 
       test "cannot run without the step it directs on" do

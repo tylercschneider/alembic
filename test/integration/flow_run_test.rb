@@ -3,7 +3,7 @@ require "test_helper"
 module Alembic
   class FlowRunTest < ActionDispatch::IntegrationTest
     def flowed
-      @flowed ||= Diagnostic.create!(slug: "flowed").tap do |diagnostic|
+      @flowed ||= Flow::Flow.create!(slug: "flowed").tap do |diagnostic|
         diagnostic.record_definition(flowing(
           "slug" => "flowed", "entry" => "budget",
           "nodes" => [ { "id" => "budget", "type" => "question", "text" => "What is your budget?", "tag" => "money",

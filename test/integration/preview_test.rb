@@ -3,7 +3,7 @@ require "test_helper"
 module Alembic
   class PreviewTest < ActionDispatch::IntegrationTest
     def unpublished
-      @unpublished ||= Diagnostic.create!(slug: "unpublished").tap do |diagnostic|
+      @unpublished ||= Flow::Flow.create!(slug: "unpublished").tap do |diagnostic|
         diagnostic.edit_document(flowing(
           "slug" => "unpublished", "entry" => "budget",
           "nodes" => [ { "id" => "budget", "type" => "question", "question" => "Budget?",

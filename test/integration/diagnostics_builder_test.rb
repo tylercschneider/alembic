@@ -9,7 +9,7 @@ module Alembic
     end
 
     test "the builder shows a diagnostic" do
-      get alembic.manage_diagnostic_path(alembic_diagnostics(:business_scorecard))
+      get alembic.manage_diagnostic_path(alembic_flows(:business_scorecard))
 
       assert_includes response.body, "Business Blind-Spot Scorecard"
     end
@@ -17,11 +17,11 @@ module Alembic
     test "the builder index links each diagnostic to its hub" do
       get alembic.manage_diagnostics_path
 
-      assert_select "a[href=?]", alembic.manage_diagnostic_path(alembic_diagnostics(:business_scorecard))
+      assert_select "a[href=?]", alembic.manage_diagnostic_path(alembic_flows(:business_scorecard))
     end
 
     test "the edit form prefills how the diagnostic is introduced" do
-      diagnostic = Diagnostic.create!(slug: "editme", title: "Current title")
+      diagnostic = Flow::Flow.create!(slug: "editme", title: "Current title")
 
       get alembic.edit_manage_diagnostic_path(diagnostic)
 
@@ -29,7 +29,7 @@ module Alembic
     end
 
     test "updating saves how the diagnostic is introduced" do
-      diagnostic = Diagnostic.create!(slug: "editme", summary: "Old")
+      diagnostic = Flow::Flow.create!(slug: "editme", summary: "Old")
 
       patch alembic.manage_diagnostic_path(diagnostic), params: { diagnostic: { summary: "New summary" } }
 
@@ -37,7 +37,7 @@ module Alembic
     end
 
     test "the hub offers the flow the way to its details" do
-      diagnostic = alembic_diagnostics(:business_scorecard)
+      diagnostic = alembic_flows(:business_scorecard)
 
       get alembic.manage_diagnostic_path(diagnostic)
 
@@ -53,7 +53,7 @@ module Alembic
     end
 
     test "creating a diagnostic adds it" do
-      assert_difference -> { Diagnostic.count } do
+      assert_difference -> { Flow::Flow.count } do
         post alembic.manage_diagnostics_path, params: { diagnostic: { slug: "brand-new" } }
       end
     end
@@ -67,19 +67,19 @@ module Alembic
     test "the builder index offers a remove control per diagnostic" do
       get alembic.manage_diagnostics_path
 
-      assert_select "form[action=?]", alembic.manage_diagnostic_path(alembic_diagnostics(:business_scorecard))
+      assert_select "form[action=?]", alembic.manage_diagnostic_path(alembic_flows(:business_scorecard))
     end
 
     test "deleting a diagnostic removes it" do
-      diagnostic = Diagnostic.create!(slug: "deleteme")
+      diagnostic = Flow::Flow.create!(slug: "deleteme")
 
       delete alembic.manage_diagnostic_path(diagnostic)
 
-      assert_not Diagnostic.exists?(diagnostic.id)
+      assert_not Flow::Flow.exists?(diagnostic.id)
     end
 
     test "the hub offers the flow the way to its definition" do
-      diagnostic = alembic_diagnostics(:business_scorecard)
+      diagnostic = alembic_flows(:business_scorecard)
 
       get alembic.manage_diagnostic_path(diagnostic)
 
@@ -89,7 +89,7 @@ module Alembic
     end
 
     test "the definition editor offers the way back to the flow" do
-      diagnostic = alembic_diagnostics(:business_scorecard)
+      diagnostic = alembic_flows(:business_scorecard)
 
       get alembic.edit_manage_diagnostic_definition_path(diagnostic)
 
@@ -97,7 +97,7 @@ module Alembic
     end
 
     test "the details editor offers the way back to the flow" do
-      diagnostic = alembic_diagnostics(:business_scorecard)
+      diagnostic = alembic_flows(:business_scorecard)
 
       get alembic.edit_manage_diagnostic_path(diagnostic)
 
