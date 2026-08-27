@@ -12,8 +12,8 @@ module Alembic
     # Declared before :definition_versions so responses clear first, otherwise
     # destroying a diagnostic trips the responses -> definition_versions FK.
     has_many :runs, class_name: "Alembic::Flow::Run", dependent: :destroy
-    has_many :definition_versions, dependent: :destroy
-    has_many :summary_versions, dependent: :destroy
+    has_many :definition_versions, class_name: "Alembic::Flow::Version", dependent: :destroy
+    has_many :summary_versions, class_name: "Alembic::Flow::Summary", dependent: :destroy
 
     def self.upsert_definition(definition)
       find_or_initialize_by(slug: definition["slug"]).tap do |diagnostic|

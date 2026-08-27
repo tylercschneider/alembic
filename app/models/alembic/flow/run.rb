@@ -4,8 +4,8 @@ module Alembic
       self.table_name = "alembic_flow_runs"
 
       belongs_to :flow, class_name: "Alembic::Diagnostic", foreign_key: :diagnostic_id
-      belongs_to :definition_version
-      belongs_to :summary_version, optional: true
+      belongs_to :definition_version, class_name: "Alembic::Flow::Version"
+      belongs_to :summary_version, class_name: "Alembic::Flow::Summary", optional: true
       belongs_to :owner, polymorphic: true, optional: true
 
       def self.start(flow)

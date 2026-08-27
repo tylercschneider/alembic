@@ -10,19 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_234500) do
-  create_table "alembic_definition_versions", force: :cascade do |t|
-    t.json "changes_captured"
-    t.datetime "created_at", null: false
-    t.json "definition"
-    t.integer "diagnostic_id", null: false
-    t.integer "number", null: false
-    t.string "status", default: "draft", null: false
-    t.index ["diagnostic_id", "number"], name: "index_alembic_definition_versions_on_diagnostic_and_number", unique: true
-    t.index ["diagnostic_id"], name: "index_alembic_definition_versions_on_diagnostic_id"
-    t.index ["diagnostic_id"], name: "index_alembic_definition_versions_on_one_live_per_diagnostic", unique: true, where: "status = 'live'"
-  end
-
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_235500) do
   create_table "alembic_diagnostics", force: :cascade do |t|
     t.json "changes_since_version"
     t.datetime "created_at", null: false
@@ -58,18 +46,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_234500) do
     t.index ["summary_version_id"], name: "index_alembic_flow_runs_on_summary_version_id"
   end
 
-  create_table "alembic_summary_versions", force: :cascade do |t|
+  create_table "alembic_flow_summaries", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "diagnostic_id", null: false
     t.integer "number", null: false
     t.json "summary"
     t.index ["diagnostic_id", "number"], name: "index_alembic_summary_versions_on_diagnostic_and_number", unique: true
-    t.index ["diagnostic_id"], name: "index_alembic_summary_versions_on_diagnostic_id"
+    t.index ["diagnostic_id"], name: "index_alembic_flow_summaries_on_diagnostic_id"
   end
 
-  add_foreign_key "alembic_definition_versions", "alembic_diagnostics", column: "diagnostic_id"
-  add_foreign_key "alembic_flow_runs", "alembic_definition_versions", column: "definition_version_id"
+  create_table "alembic_flow_versions", force: :cascade do |t|
+    t.json "changes_captured"
+    t.datetime "created_at", null: false
+    t.json "definition"
+    t.integer "diagnostic_id", null: false
+    t.integer "number", null: false
+    t.string "status", default: "draft", null: false
+    t.index ["diagnostic_id", "number"], name: "index_alembic_definition_versions_on_diagnostic_and_number", unique: true
+    t.index ["diagnostic_id"], name: "index_alembic_definition_versions_on_one_live_per_diagnostic", unique: true, where: "status = 'live'"
+    t.index ["diagnostic_id"], name: "index_alembic_flow_versions_on_diagnostic_id"
+  end
+
   add_foreign_key "alembic_flow_runs", "alembic_diagnostics", column: "diagnostic_id"
-  add_foreign_key "alembic_flow_runs", "alembic_summary_versions", column: "summary_version_id"
-  add_foreign_key "alembic_summary_versions", "alembic_diagnostics", column: "diagnostic_id"
+  add_foreign_key "alembic_flow_runs", "alembic_flow_summaries", column: "summary_version_id"
+  add_foreign_key "alembic_flow_runs", "alembic_flow_versions", column: "definition_version_id"
+  add_foreign_key "alembic_flow_summaries", "alembic_diagnostics", column: "diagnostic_id"
+  add_foreign_key "alembic_flow_versions", "alembic_diagnostics", column: "diagnostic_id"
 end
