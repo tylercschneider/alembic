@@ -25,6 +25,10 @@ module Alembic
         definition_version.definition.to_h
       end
 
+      def pinned_summary
+        summary_version&.summary.to_h
+      end
+
       def next_step(state)
         digest.next_step(state.transform_keys(&:to_s))
       end

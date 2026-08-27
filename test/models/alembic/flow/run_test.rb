@@ -219,6 +219,18 @@ module Alembic
       test "reports the steps walked so far" do
         assert_equal({ "a" => "yes" }, pinned.walked("a" => "yes"))
       end
+
+      test "reads the summary it was pinned to" do
+        diagnostic = Diagnostic.create!(slug: "summarised")
+        diagnostic.record_definition(flowing("slug" => "summarised", "entry" => "a",
+          "nodes" => [ { "id" => "a", "type" => "question", "question" => "A?",
+                         "answers" => [ { "value" => "yes" } ] }, { "id" => "end", "type" => "terminal" } ],
+          "edges" => [ { "from" => "a", "to" => "end" } ]))
+        diagnostic.publish
+        diagnostic.record_summary("outputs" => [ { "id" => "counted", "type" => "tally" } ])
+
+        assert_equal "counted", Run.start(diagnostic).pinned_summary["outputs"].first["id"]
+      end
     end
   end
 end
