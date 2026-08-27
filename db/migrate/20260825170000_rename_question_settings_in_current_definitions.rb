@@ -2,7 +2,7 @@ class RenameQuestionSettingsInCurrentDefinitions < ActiveRecord::Migration[8.1]
   RENAMED = { "text" => "question", "options" => "answers", "tag" => "category" }.freeze
 
   def up
-    Alembic::Diagnostic.find_each do |diagnostic|
+    Alembic::Flow::Definition.find_each do |diagnostic|
       renamed = rename(diagnostic.definition)
       next if renamed.nil? || renamed == diagnostic.definition
 

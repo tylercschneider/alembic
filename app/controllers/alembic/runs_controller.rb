@@ -1,7 +1,7 @@
 module Alembic
-  class ResponsesController < ApplicationController
+  class RunsController < ApplicationController
     def create
-      redirect_to response_path(Flow::Run.start(diagnostic))
+      redirect_to run_path(Flow::Run.start(diagnostic))
     end
 
     def show
@@ -17,7 +17,7 @@ module Alembic
     def update
       response = saved_session
       params[:back] ? response.discard_last : record_submitted_answer(response)
-      redirect_to response_path(response)
+      redirect_to run_path(response)
     end
 
     private
@@ -25,7 +25,7 @@ module Alembic
     def render_completion
       @answered = @guide.answers_on_path(@answers)
       @outputs = summarised(@answered.transform_keys(&:to_s))
-      render template: "alembic/diagnostics/complete"
+      render template: "alembic/flows/complete"
     end
 
     def summarised(state)
@@ -48,7 +48,7 @@ module Alembic
     end
 
     def diagnostic
-      admit(Diagnostic.find_by(slug: params[:slug]))
+      admit(Flow::Definition.find_by(slug: params[:slug]))
     end
   end
 end

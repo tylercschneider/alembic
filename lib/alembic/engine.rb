@@ -8,8 +8,8 @@ module Alembic
         Alembic::Flow::Terminal.register
 
         Alembic::Steps::Question.register
-        Alembic::Steps::Condition.register
-        Alembic::Steps::Switch.register
+        Alembic::Flow::Condition.register
+        Alembic::Flow::Switch.register
 
         Alembic::Flow.check(:unrouted_value)
         Alembic::Flow.check(:unfollowed_path)

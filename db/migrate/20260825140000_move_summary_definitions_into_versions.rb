@@ -1,5 +1,5 @@
 class MoveSummaryDefinitionsIntoVersions < ActiveRecord::Migration[8.1]
-  class Diagnostic < ActiveRecord::Base
+  class Flow::Definition < ActiveRecord::Base
     self.table_name = "alembic_diagnostics"
   end
 
@@ -8,7 +8,7 @@ class MoveSummaryDefinitionsIntoVersions < ActiveRecord::Migration[8.1]
   end
 
   def up
-    Diagnostic.where.not(summary_definition: nil).find_each do |diagnostic|
+    Flow::Definition.where.not(summary_definition: nil).find_each do |diagnostic|
       version = SummaryVersion.create!(diagnostic_id: diagnostic.id, number: 1,
         summary: diagnostic.summary_definition, created_at: Time.current)
 
@@ -18,7 +18,7 @@ class MoveSummaryDefinitionsIntoVersions < ActiveRecord::Migration[8.1]
 
   def down
     SummaryVersion.where(number: 1).find_each do |version|
-      Diagnostic.where(id: version.diagnostic_id)
+      Flow::Definition.where(id: version.diagnostic_id)
         .update_all(summary_definition: version.summary, summary_cursor: nil)
       version.delete
     end

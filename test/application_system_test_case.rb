@@ -12,7 +12,7 @@ module Alembic
     end
 
     def canvas_for(diagnostic)
-      visit alembic.manage_diagnostic_path(diagnostic)
+      visit alembic.manage_flow_path(diagnostic)
       assert_selector "[data-flow-canvas]"
     end
 

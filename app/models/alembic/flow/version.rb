@@ -6,9 +6,9 @@ module Alembic
       enum :status, { draft: "draft", live: "live", superseded: "superseded",
                       retired: "retired", withdrawn: "withdrawn" }
 
-      belongs_to :flow, class_name: "Alembic::Diagnostic", foreign_key: :diagnostic_id
+      belongs_to :flow, class_name: "Alembic::Flow::Definition"
 
-      validates :number, uniqueness: { scope: :diagnostic_id }
+      validates :number, uniqueness: { scope: :flow_id }
 
       def out_of_service?
         retired? || withdrawn?
@@ -18,7 +18,7 @@ module Alembic
         changes_captured.to_a
       end
 
-      FROZEN = %w[definition number diagnostic_id changes_captured].freeze
+      FROZEN = %w[definition number flow_id changes_captured].freeze
 
       before_update { raise ActiveRecord::ReadOnlyRecord if changed.intersect?(FROZEN) }
     end

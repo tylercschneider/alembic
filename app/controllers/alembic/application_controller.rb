@@ -10,7 +10,7 @@ module Alembic
     private
 
     def flow_start_path(slug)
-      alembic.diagnostic_path(slug)
+      alembic.flow_path(slug)
     end
 
     def admit(diagnostic)

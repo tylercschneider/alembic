@@ -8,7 +8,7 @@
       <%= ui_button(label: @diagnostic.start_label.presence || "Start", href: flow_step_path(@diagnostic.slug)) %>
 
       <% if @diagnostic.definition.present? && !previewing? %>
-        <%= ui_form(action: alembic.diagnostic_responses_path(@diagnostic.slug), method: :post) do %>
+        <%= ui_form(action: alembic.flow_runs_path(@diagnostic.slug), method: :post) do %>
           <%= ui_button(label: "Start and save my progress", type: :submit, variant: :secondary) %>
         <% end %>
       <% end %>

@@ -1,9 +1,9 @@
 module Alembic
-  class DiagnosticsController < ApplicationController
+  class FlowsController < ApplicationController
     helper_method :flow_start_path, :flow_step_path, :previewing?
 
     def show
-      @diagnostic = admit(Diagnostic.find_by(slug: params[:slug]))
+      @diagnostic = admit(Flow::Definition.find_by(slug: params[:slug]))
     end
 
     def step
@@ -19,11 +19,11 @@ module Alembic
     private
 
     def flow_start_path(slug)
-      alembic.diagnostic_path(slug)
+      alembic.flow_path(slug)
     end
 
     def flow_step_path(slug)
-      alembic.diagnostic_step_path(slug)
+      alembic.flow_step_path(slug)
     end
 
     def previewing?
@@ -41,7 +41,7 @@ module Alembic
     end
 
     def runner
-      @stored_diagnostic = admit(Diagnostic.find_by(slug: params[:slug]))
+      @stored_diagnostic = admit(Flow::Definition.find_by(slug: params[:slug]))
       Runner.new(flowing_definition(@stored_diagnostic))
     end
 

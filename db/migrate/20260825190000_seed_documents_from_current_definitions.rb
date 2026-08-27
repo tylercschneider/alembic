@@ -1,6 +1,6 @@
 class SeedDocumentsFromCurrentDefinitions < ActiveRecord::Migration[8.1]
   def up
-    Alembic::Diagnostic.find_each do |diagnostic|
+    Alembic::Flow::Definition.find_each do |diagnostic|
       next if diagnostic.definition.blank?
 
       diagnostic.update_columns(document: diagnostic.definition)
@@ -8,6 +8,6 @@ class SeedDocumentsFromCurrentDefinitions < ActiveRecord::Migration[8.1]
   end
 
   def down
-    Alembic::Diagnostic.update_all(document: nil)
+    Alembic::Flow::Definition.update_all(document: nil)
   end
 end

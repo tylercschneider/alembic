@@ -3,10 +3,10 @@ require "test_helper"
 module Alembic
   class DefinitionEditorTest < ActionDispatch::IntegrationTest
     test "a branching definition saved in the builder runs in the stepper" do
-      diagnostic = Diagnostic.create!(slug: "flow")
+      diagnostic = Flow::Definition.create!(slug: "flow")
       diagnostic.record_definition("slug" => "flow")
 
-      patch alembic.manage_diagnostic_definition_path(diagnostic), params: { definition: flowing({
+      patch alembic.manage_flow_definition_path(diagnostic), params: { definition: flowing({
         "slug" => "flow", "entry" => "path",
         "nodes" => [
           { "id" => "path", "type" => "question", "text" => "Which path?", "options" => [ "left", "right" ] },
@@ -23,43 +23,43 @@ module Alembic
 
       diagnostic.reload.publish
 
-      get alembic.diagnostic_step_path("flow"), params: { answers: { path: "right" } }
+      get alembic.flow_step_path("flow"), params: { answers: { path: "right" } }
 
       assert_select "legend", text: /Right question/
     end
 
     test "the definition editor shows the current definition" do
-      diagnostic = Diagnostic.create!(slug: "doc")
+      diagnostic = Flow::Definition.create!(slug: "doc")
       diagnostic.record_definition("slug" => "doc", "questions" => [ { "id" => "need", "text" => "Need?" } ])
 
-      get alembic.edit_manage_diagnostic_definition_path(diagnostic)
+      get alembic.edit_manage_flow_definition_path(diagnostic)
 
       assert_select "textarea", text: /"id": "need"/
     end
 
     test "the editor shows the flow being edited, not the last version cut" do
-      fresh = Diagnostic.create!(slug: "fresh")
+      fresh = Flow::Definition.create!(slug: "fresh")
 
-      get alembic.edit_manage_diagnostic_definition_path(fresh)
+      get alembic.edit_manage_flow_definition_path(fresh)
 
       assert_select "textarea", text: /"type": "start"/
     end
 
     test "editing the definition changes the flow without cutting a version" do
-      fresh = Diagnostic.create!(slug: "fresh-edit")
+      fresh = Flow::Definition.create!(slug: "fresh-edit")
       edited = fresh.document.merge("headline" => "Edited by hand")
 
       assert_no_difference -> { fresh.definition_versions.count } do
-        patch alembic.manage_diagnostic_definition_path(fresh), params: { definition: edited.to_json }
+        patch alembic.manage_flow_definition_path(fresh), params: { definition: edited.to_json }
       end
 
       assert_equal "Edited by hand", fresh.reload.document["headline"]
     end
 
     test "editing the definition records that it changed" do
-      fresh = Diagnostic.create!(slug: "fresh-change")
+      fresh = Flow::Definition.create!(slug: "fresh-change")
 
-      patch alembic.manage_diagnostic_definition_path(fresh), params: { definition: fresh.document.to_json }
+      patch alembic.manage_flow_definition_path(fresh), params: { definition: fresh.document.to_json }
 
       assert_equal "edited", fresh.reload.changes_since_version.last["action"]
     end

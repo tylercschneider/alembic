@@ -3,7 +3,7 @@ require "test_helper"
 module Alembic
   class CanvasBuilderTest < ActionDispatch::IntegrationTest
     def diagnostic
-      @diagnostic ||= Diagnostic.create!(slug: "canvas").tap do |built|
+      @diagnostic ||= Flow::Definition.create!(slug: "canvas").tap do |built|
         built.record_definition(flowing(
           "slug" => "canvas", "entry" => "a",
           "nodes" => [ { "id" => "a", "type" => "question", "text" => "A", "answers" => [ { "value" => "yes" } ] },
@@ -15,7 +15,7 @@ module Alembic
     end
 
     def canvas_path
-      alembic.manage_diagnostic_canvas_path(diagnostic)
+      alembic.manage_flow_canvas_path(diagnostic)
     end
 
     def add_step_with_answers(id, from: nil, to: nil)
@@ -28,13 +28,13 @@ module Alembic
     end
 
     test "the diagnostic page mounts the flow canvas" do
-      get alembic.manage_diagnostic_path(diagnostic)
+      get alembic.manage_flow_path(diagnostic)
 
       assert_select "[data-flow-canvas]"
     end
 
     test "the diagnostic page points the canvas at its edit endpoints" do
-      get alembic.manage_diagnostic_path(diagnostic)
+      get alembic.manage_flow_path(diagnostic)
 
       assert_select "[data-flow-canvas][data-base=?]", canvas_path
     end
@@ -195,7 +195,7 @@ module Alembic
     test "the builder renders the document being edited, not the recorded version" do
       post "#{canvas_path}/steps", params: { id: "c", type: "question" }
 
-      get alembic.manage_diagnostic_path(diagnostic)
+      get alembic.manage_flow_path(diagnostic)
 
       drawn = JSON.parse(css_select("[data-flow-canvas]").first["data-flow"])
 
@@ -300,23 +300,23 @@ module Alembic
     test "the canvas carries where the definition is edited" do
       get canvas_path, headers: { "Accept" => "application/json" }
 
-      assert_equal alembic.edit_manage_diagnostic_definition_path(diagnostic), response.parsed_body["flow"]["definition_url"]
+      assert_equal alembic.edit_manage_flow_definition_path(diagnostic), response.parsed_body["flow"]["definition_url"]
     end
 
     test "the canvas carries where the details are edited" do
       get canvas_path, headers: { "Accept" => "application/json" }
 
-      assert_equal alembic.edit_manage_diagnostic_path(diagnostic), response.parsed_body["flow"]["details_url"]
+      assert_equal alembic.edit_manage_flow_path(diagnostic), response.parsed_body["flow"]["details_url"]
     end
 
     test "saving the details stores the flow's title" do
-      patch "#{canvas_path}/details", params: { diagnostic: { title: "A better name" } }
+      patch "#{canvas_path}/details", params: { flow: { title: "A better name" } }
 
       assert_equal "A better name", diagnostic.reload.title
     end
 
     test "saving the details says they were saved" do
-      patch "#{canvas_path}/details", params: { diagnostic: { title: "A better name" } }
+      patch "#{canvas_path}/details", params: { flow: { title: "A better name" } }
 
       assert_equal "Saved the flow's details.", response.parsed_body["notice"]
     end
@@ -392,7 +392,7 @@ module Alembic
       add_step_with_answers("c", from: "b", to: "end")
       post "#{canvas_path}/versions"
 
-      get alembic.manage_diagnostic_versions_path(diagnostic)
+      get alembic.manage_flow_versions_path(diagnostic)
 
       assert_select "[data-version]:first-of-type", text: /2/
     end
@@ -400,7 +400,7 @@ module Alembic
     test "the versions page marks the version visitors run" do
       post "#{canvas_path}/publish"
 
-      get alembic.manage_diagnostic_versions_path(diagnostic)
+      get alembic.manage_flow_versions_path(diagnostic)
 
       assert_select "[data-live]"
     end
@@ -409,13 +409,13 @@ module Alembic
       add_step_with_answers("c", from: "b", to: "end")
       post "#{canvas_path}/versions"
 
-      get alembic.manage_diagnostic_versions_path(diagnostic)
+      get alembic.manage_flow_versions_path(diagnostic)
 
       assert_select "[data-captured]", text: /Added/
     end
 
     test "the versions page lists a version that captured nothing" do
-      get alembic.manage_diagnostic_versions_path(diagnostic)
+      get alembic.manage_flow_versions_path(diagnostic)
 
       assert_select "[data-version]", count: 1
     end
@@ -424,7 +424,7 @@ module Alembic
       add_step_with_answers("c", from: "b", to: "end")
       post "#{canvas_path}/versions"
 
-      get alembic.manage_diagnostic_versions_path(diagnostic)
+      get alembic.manage_flow_versions_path(diagnostic)
 
       assert_select "[data-return]", count: 1
     end
@@ -434,7 +434,7 @@ module Alembic
       post "#{canvas_path}/versions"
       first = diagnostic.definition_versions.order(:number).first
 
-      post alembic.return_manage_diagnostic_version_path(diagnostic, first)
+      post alembic.return_manage_flow_version_path(diagnostic, first)
 
       assert_equal first.definition, diagnostic.reload.document
     end
@@ -460,9 +460,9 @@ module Alembic
     end
 
     test "the builder page offers a way to try the flow as a visitor" do
-      get alembic.manage_diagnostic_path(diagnostic)
+      get alembic.manage_flow_path(diagnostic)
 
-      assert_select "a[href=?]", alembic.manage_diagnostic_preview_path(diagnostic)
+      assert_select "a[href=?]", alembic.manage_flow_preview_path(diagnostic)
     end
   end
 end
