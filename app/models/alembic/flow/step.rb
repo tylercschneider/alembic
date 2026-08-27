@@ -29,7 +29,7 @@ module Alembic
             .map { |word| [ word, [], {}, ->(node, state) { new.public_send(word, node, state) } ] }
         end
 
-        def register(registry = Alembic::Flow.registry)
+        def register(registry = Flow.registry)
           registry.register(step_type)
         end
 

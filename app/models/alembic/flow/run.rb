@@ -3,9 +3,9 @@ module Alembic
     class Run < ApplicationRecord
       self.table_name = "alembic_flow_runs"
 
-      belongs_to :flow, class_name: "Alembic::Flow::Flow"
+      belongs_to :flow, class_name: "Alembic::Flow::Definition"
       belongs_to :definition_version, class_name: "Alembic::Flow::Version"
-      belongs_to :summary_version, class_name: "Alembic::Flow::Summary", optional: true
+      belongs_to :summary_version, class_name: "Alembic::Flow::SummaryVersion", optional: true
       belongs_to :owner, polymorphic: true, optional: true
 
       def self.start(flow)

@@ -1,7 +1,7 @@
 module Alembic
   module Flow
     class Document
-      def initialize(document, registry: Alembic::Flow.registry)
+      def initialize(document, registry: Flow.registry)
         @document = document
         @registry = registry
       end

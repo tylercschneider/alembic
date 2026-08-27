@@ -4,7 +4,7 @@ module Alembic
   module Flow
     class RunTest < ActiveSupport::TestCase
       test "going back removes the last answer along the path, not the last in list order" do
-        diagnostic = Flow.create!(slug: "jump")
+        diagnostic = Definition.create!(slug: "jump")
         diagnostic.definition_versions.create!(number: 1, definition: flowing({
           "slug" => "jump", "entry" => "a",
           "nodes" => [
@@ -24,7 +24,7 @@ module Alembic
       end
 
       test "pins to the diagnostic's current definition version when started" do
-        diagnostic = Flow.create!(slug: "demo")
+        diagnostic = Definition.create!(slug: "demo")
         version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
         diagnostic.publish_version(version)
 
@@ -34,7 +34,7 @@ module Alembic
       end
 
       test "pins to the newer version once that version is published" do
-        diagnostic = Flow.create!(slug: "demo")
+        diagnostic = Definition.create!(slug: "demo")
         diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
         diagnostic.publish_version(diagnostic.definition_versions.first)
         republished = diagnostic.definition_versions.create!(number: 2, definition: { "slug" => "demo" })
@@ -46,7 +46,7 @@ module Alembic
       end
 
       test "leaves an earlier response pinned to the version it began on" do
-        diagnostic = Flow.create!(slug: "demo")
+        diagnostic = Definition.create!(slug: "demo")
         began_on = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
         diagnostic.publish_version(began_on)
         response = Run.start(diagnostic)
@@ -57,10 +57,10 @@ module Alembic
       end
 
       test "takes an owner of any type the host application supplies" do
-        diagnostic = Flow.create!(slug: "demo")
+        diagnostic = Definition.create!(slug: "demo")
         version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
         diagnostic.publish_version(version)
-        owner = Flow.create!(slug: "owning-record")
+        owner = Definition.create!(slug: "owning-record")
 
         response = diagnostic.runs.create!(definition_version: version, owner: owner)
 
@@ -68,7 +68,7 @@ module Alembic
       end
 
       test "is valid with no owner at all" do
-        diagnostic = Flow.create!(slug: "demo")
+        diagnostic = Definition.create!(slug: "demo")
         version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
         diagnostic.publish_version(version)
 
@@ -110,14 +110,14 @@ module Alembic
       private
 
       def diagnostic_with_a_version
-        Flow.create!(slug: "demo").tap do |diagnostic|
+        Definition.create!(slug: "demo").tap do |diagnostic|
           version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
           diagnostic.publish_version(version)
         end
       end
 
       test "pins the summary version the diagnostic is on when it starts" do
-        diagnostic = Flow.create!(slug: "demo")
+        diagnostic = Definition.create!(slug: "demo")
         diagnostic.record_definition("slug" => "demo")
         diagnostic.publish
         diagnostic.record_summary("outputs" => [])
@@ -126,7 +126,7 @@ module Alembic
       end
 
       test "starts without a summary version when the diagnostic has no summary" do
-        diagnostic = Flow.create!(slug: "demo")
+        diagnostic = Definition.create!(slug: "demo")
         diagnostic.record_definition("slug" => "demo")
         diagnostic.publish
 
@@ -134,7 +134,7 @@ module Alembic
       end
 
       test "keeps its pinned summary version when the diagnostic records a newer one" do
-        diagnostic = Flow.create!(slug: "demo")
+        diagnostic = Definition.create!(slug: "demo")
         diagnostic.record_definition("slug" => "demo")
         diagnostic.publish
         diagnostic.record_summary("outputs" => [])
@@ -164,7 +164,7 @@ module Alembic
       end
 
       test "reads no summary when none was pinned" do
-        diagnostic = Flow.create!(slug: "unscored")
+        diagnostic = Definition.create!(slug: "unscored")
         diagnostic.record_definition("slug" => "unscored")
         diagnostic.publish
 
@@ -172,7 +172,7 @@ module Alembic
       end
 
       def scored_diagnostic
-        Flow.create!(slug: "scored").tap do |diagnostic|
+        Definition.create!(slug: "scored").tap do |diagnostic|
           diagnostic.record_definition("slug" => "scored", "entry" => "budget", "edges" => [],
             "nodes" => [ { "id" => "budget", "type" => "question", "text" => "Budget?",
                            "options" => [ { "value" => "high", "weight" => 5 } ] } ])
@@ -182,7 +182,7 @@ module Alembic
       end
 
       test "a run starts on the live version" do
-        diagnostic = Flow.create!(slug: "demo", document: { "slug" => "demo" })
+        diagnostic = Definition.create!(slug: "demo", document: { "slug" => "demo" })
         diagnostic.publish
 
         run = Run.start(diagnostic)
@@ -191,7 +191,7 @@ module Alembic
       end
 
       def pinned
-        diagnostic = Flow.create!(slug: "pinned")
+        diagnostic = Definition.create!(slug: "pinned")
         diagnostic.record_definition(flowing(
           "slug" => "pinned", "entry" => "a",
           "nodes" => [ { "id" => "a", "type" => "question", "question" => "A?",
@@ -221,7 +221,7 @@ module Alembic
       end
 
       test "reads the summary it was pinned to" do
-        diagnostic = Flow.create!(slug: "summarised")
+        diagnostic = Definition.create!(slug: "summarised")
         diagnostic.record_definition(flowing("slug" => "summarised", "entry" => "a",
           "nodes" => [ { "id" => "a", "type" => "question", "question" => "A?",
                          "answers" => [ { "value" => "yes" } ] }, { "id" => "end", "type" => "terminal" } ],

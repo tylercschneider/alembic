@@ -1,6 +1,6 @@
 class ChangeAlembicDiagnosticStatusToAvailability < ActiveRecord::Migration[8.1]
   def up
-    Alembic::Flow::Flow.update_all(status: "active")
+    Alembic::Flow::Definition.update_all(status: "active")
     change_column_default :alembic_diagnostics, :status, "active"
     change_column_null :alembic_diagnostics, :status, false, "active"
   end

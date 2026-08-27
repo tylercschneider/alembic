@@ -7,10 +7,10 @@ module Alembic
       end
 
       def create
-        @diagnostic = Flow::Flow.new(create_params)
+        @diagnostic = Flow::Definition.new(create_params)
 
         if @diagnostic.save
-          redirect_to manage_diagnostic_path(@diagnostic), notice: "Flow::Flow created."
+          redirect_to manage_diagnostic_path(@diagnostic), notice: "Flow::Definition created."
         else
           @diagnostics = ordered_diagnostics
           render :index, status: :unprocessable_entity
@@ -18,29 +18,29 @@ module Alembic
       end
 
       def show
-        @diagnostic = Flow::Flow.find(params[:id])
+        @diagnostic = Flow::Definition.find(params[:id])
         @canvas = canvas_payload(@diagnostic)
       end
 
       def edit
-        @diagnostic = Flow::Flow.find(params[:id])
+        @diagnostic = Flow::Definition.find(params[:id])
       end
 
       def update
-        @diagnostic = Flow::Flow.find(params[:id])
+        @diagnostic = Flow::Definition.find(params[:id])
         @diagnostic.update!(diagnostic_params)
         redirect_to manage_diagnostic_path(@diagnostic), notice: "Saved."
       end
 
       def destroy
-        Flow::Flow.find(params[:id]).destroy!
-        redirect_to manage_diagnostics_path, notice: "Flow::Flow removed."
+        Flow::Definition.find(params[:id]).destroy!
+        redirect_to manage_diagnostics_path, notice: "Flow::Definition removed."
       end
 
       private
 
       def ordered_diagnostics
-        Flow::Flow.order(:slug)
+        Flow::Definition.order(:slug)
       end
 
       def create_params

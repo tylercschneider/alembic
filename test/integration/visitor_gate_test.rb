@@ -3,7 +3,7 @@ require "test_helper"
 module Alembic
   class VisitorGateTest < ActionDispatch::IntegrationTest
     def published
-      @published ||= Flow::Flow.create!(slug: "gated").tap do |diagnostic|
+      @published ||= Flow::Definition.create!(slug: "gated").tap do |diagnostic|
         diagnostic.record_definition(
           "slug" => "gated", "entry" => "ask",
           "nodes" => [ { "id" => "ask", "type" => "question", "text" => "Ready?",
@@ -37,7 +37,7 @@ module Alembic
     end
 
     test "a visitor cannot reach a diagnostic with nothing published even when the host authorizes it" do
-      unpublished = Flow::Flow.create!(slug: "unpublished")
+      unpublished = Flow::Definition.create!(slug: "unpublished")
 
       get alembic.diagnostic_path(unpublished.slug)
 

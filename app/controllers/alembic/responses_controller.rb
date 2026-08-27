@@ -31,8 +31,8 @@ module Alembic
     def summarised(state)
       return [] if @response.pinned_summary.blank?
 
-      Alembic::Summary::Report.new(@response.pinned_summary)
-        .results(Alembic::Summary::Run.new(state: state, steps: @response.pinned_steps))
+      Summary::Report.new(@response.pinned_summary)
+        .results(Summary::Run.new(state: state, steps: @response.pinned_steps))
     end
 
     def record_submitted_answer(response)
@@ -48,7 +48,7 @@ module Alembic
     end
 
     def diagnostic
-      admit(Flow::Flow.find_by(slug: params[:slug]))
+      admit(Flow::Definition.find_by(slug: params[:slug]))
     end
   end
 end

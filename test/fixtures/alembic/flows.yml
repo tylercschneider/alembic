@@ -1,5 +1,5 @@
 _fixture:
-  model_class: Alembic::Flow::Flow
+  model_class: Alembic::Flow::Definition
 
 business_scorecard:
   slug: business-scorecard

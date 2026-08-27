@@ -3,7 +3,7 @@ module Alembic
     class Validator
       OPTIONAL = { unrouted_value: :unrouted_values, unfollowed_path: :unfollowed_paths, dead_end: :dead_ends }.freeze
 
-      def initialize(document, registry: Alembic::Flow.registry, checks: Alembic::Flow.checks)
+      def initialize(document, registry: Flow.registry, checks: Flow.checks)
         @document = document
         @registry = registry
         @checks = checks

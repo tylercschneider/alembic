@@ -1,7 +1,7 @@
 module Alembic
   module Flow
     module Name
-      def self.of(node, registry = Alembic::Flow.registry)
+      def self.of(node, registry = Flow.registry)
         return "" unless node
 
         named(node, registry) || node.id

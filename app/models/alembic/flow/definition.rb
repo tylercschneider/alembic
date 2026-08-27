@@ -1,6 +1,6 @@
 module Alembic
   module Flow
-    class Flow < ApplicationRecord
+    class Definition < ApplicationRecord
       self.table_name = "alembic_flows"
 
       enum :status, { active: "active", hidden: "hidden", inactive: "inactive" }
@@ -16,7 +16,7 @@ module Alembic
       # destroying a diagnostic trips the responses -> definition_versions FK.
       has_many :runs, class_name: "Alembic::Flow::Run", foreign_key: :flow_id, dependent: :destroy
       has_many :definition_versions, class_name: "Alembic::Flow::Version", foreign_key: :flow_id, dependent: :destroy
-      has_many :summary_versions, class_name: "Alembic::Flow::Summary", foreign_key: :flow_id, dependent: :destroy
+      has_many :summary_versions, class_name: "Alembic::Flow::SummaryVersion", foreign_key: :flow_id, dependent: :destroy
 
       def self.upsert_definition(definition)
         find_or_initialize_by(slug: definition["slug"]).tap do |diagnostic|
@@ -151,7 +151,7 @@ module Alembic
       end
 
       def summary_of(state)
-        Alembic::Summary::Report.new(summary_document).results(Alembic::Summary::Run.new(state: state, steps: steps_by_id))
+        Summary::Report.new(summary_document).results(Summary::Run.new(state: state, steps: steps_by_id))
       end
 
       private

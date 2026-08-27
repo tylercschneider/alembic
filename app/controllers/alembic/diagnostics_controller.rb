@@ -3,7 +3,7 @@ module Alembic
     helper_method :flow_start_path, :flow_step_path, :previewing?
 
     def show
-      @diagnostic = admit(Flow::Flow.find_by(slug: params[:slug]))
+      @diagnostic = admit(Flow::Definition.find_by(slug: params[:slug]))
     end
 
     def step
@@ -41,7 +41,7 @@ module Alembic
     end
 
     def runner
-      @stored_diagnostic = admit(Flow::Flow.find_by(slug: params[:slug]))
+      @stored_diagnostic = admit(Flow::Definition.find_by(slug: params[:slug]))
       Runner.new(flowing_definition(@stored_diagnostic))
     end
 

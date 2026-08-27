@@ -8,7 +8,7 @@ module Alembic
       end
 
       test "is registered for a flow to use" do
-        assert_equal :start, Alembic::Flow.registry.fetch("start").id
+        assert_equal :start, Flow.registry.fetch("start").id
       end
 
       test "is named simply as the beginning" do

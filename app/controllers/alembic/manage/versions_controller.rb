@@ -15,7 +15,7 @@ module Alembic
       private
 
       def diagnostic
-        @diagnostic ||= Flow::Flow.find(params[:diagnostic_id])
+        @diagnostic ||= Flow::Definition.find(params[:diagnostic_id])
       end
     end
   end

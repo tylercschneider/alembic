@@ -7,7 +7,7 @@ module Alembic
     end
 
     test "it refuses a diagnostic with nothing published as unpublished" do
-      unpublished = Flow::Flow.create!(slug: "nothing-published")
+      unpublished = Flow::Definition.create!(slug: "nothing-published")
 
       assert_raises(NotPublished) { Admission.of(unpublished, permitted: true) }
     end

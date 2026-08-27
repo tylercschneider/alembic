@@ -21,7 +21,7 @@ module Alembic
     end
 
     test "the edit form prefills how the diagnostic is introduced" do
-      diagnostic = Flow::Flow.create!(slug: "editme", title: "Current title")
+      diagnostic = Flow::Definition.create!(slug: "editme", title: "Current title")
 
       get alembic.edit_manage_diagnostic_path(diagnostic)
 
@@ -29,7 +29,7 @@ module Alembic
     end
 
     test "updating saves how the diagnostic is introduced" do
-      diagnostic = Flow::Flow.create!(slug: "editme", summary: "Old")
+      diagnostic = Flow::Definition.create!(slug: "editme", summary: "Old")
 
       patch alembic.manage_diagnostic_path(diagnostic), params: { diagnostic: { summary: "New summary" } }
 
@@ -53,7 +53,7 @@ module Alembic
     end
 
     test "creating a diagnostic adds it" do
-      assert_difference -> { Flow::Flow.count } do
+      assert_difference -> { Flow::Definition.count } do
         post alembic.manage_diagnostics_path, params: { diagnostic: { slug: "brand-new" } }
       end
     end
@@ -71,11 +71,11 @@ module Alembic
     end
 
     test "deleting a diagnostic removes it" do
-      diagnostic = Flow::Flow.create!(slug: "deleteme")
+      diagnostic = Flow::Definition.create!(slug: "deleteme")
 
       delete alembic.manage_diagnostic_path(diagnostic)
 
-      assert_not Flow::Flow.exists?(diagnostic.id)
+      assert_not Flow::Definition.exists?(diagnostic.id)
     end
 
     test "the hub offers the flow the way to its definition" do

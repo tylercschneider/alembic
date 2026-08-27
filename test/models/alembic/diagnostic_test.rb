@@ -3,33 +3,33 @@ require "test_helper"
 module Alembic
   class DiagnosticTest < ActiveSupport::TestCase
     test "begins with a step that starts the flow and one that ends it" do
-      diagnostic = Flow::Flow.create!(slug: "fresh")
+      diagnostic = Flow::Definition.create!(slug: "fresh")
 
       assert_equal [ "start", "terminal" ], diagnostic.document["nodes"].map { |node| node["type"] }
     end
 
     test "leads from where it begins to where it ends" do
-      diagnostic = Flow::Flow.create!(slug: "fresh")
+      diagnostic = Flow::Definition.create!(slug: "fresh")
 
       assert_equal [ { "from" => "start", "to" => "end" } ], diagnostic.document["edges"]
     end
 
     test "begins sound, with nothing to report" do
-      diagnostic = Flow::Flow.create!(slug: "fresh")
+      diagnostic = Flow::Definition.create!(slug: "fresh")
 
       assert_empty Flow::Validator.new(Flow::Document.new(diagnostic.document)).violations
     end
 
     test "reports when it is hidden" do
-      assert Flow::Flow.new(status: :hidden).hidden?
+      assert Flow::Definition.new(status: :hidden).hidden?
     end
 
     test "reports its kind" do
-      assert Flow::Flow.new(kind: :scored).scored?
+      assert Flow::Definition.new(kind: :scored).scored?
     end
 
     test "builds a runner from the version it published" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
       diagnostic.record_definition({ "slug" => "demo" })
       diagnostic.publish
 
@@ -37,7 +37,7 @@ module Alembic
     end
 
     test "recording a definition stores it as a version" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
 
       diagnostic.record_definition({ "slug" => "demo" })
 
@@ -45,7 +45,7 @@ module Alembic
     end
 
     test "recording a second definition takes the next version number" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
       diagnostic.record_definition({ "slug" => "first" })
 
       diagnostic.record_definition({ "slug" => "second" })
@@ -60,7 +60,7 @@ module Alembic
     end
 
     test "undoing puts back the document as it was before the change" do
-      diagnostic = Flow::Flow.create!(slug: "undo", document: { "entry" => "one" })
+      diagnostic = Flow::Definition.create!(slug: "undo", document: { "entry" => "one" })
       edited(diagnostic, "two", { "entry" => "one" })
 
       diagnostic.undo_change
@@ -69,7 +69,7 @@ module Alembic
     end
 
     test "redoing puts the change back" do
-      diagnostic = Flow::Flow.create!(slug: "undo", document: { "entry" => "one" })
+      diagnostic = Flow::Definition.create!(slug: "undo", document: { "entry" => "one" })
       edited(diagnostic, "two", { "entry" => "one" })
       diagnostic.undo_change
 
@@ -79,7 +79,7 @@ module Alembic
     end
 
     test "undoing records no version" do
-      diagnostic = Flow::Flow.create!(slug: "undo", document: { "entry" => "one" })
+      diagnostic = Flow::Definition.create!(slug: "undo", document: { "entry" => "one" })
       edited(diagnostic, "two", { "entry" => "one" })
 
       assert_no_difference -> { diagnostic.definition_versions.count } do
@@ -88,20 +88,20 @@ module Alembic
     end
 
     test "there is nothing to undo before anything is changed" do
-      diagnostic = Flow::Flow.create!(slug: "undo", document: { "entry" => "one" })
+      diagnostic = Flow::Definition.create!(slug: "undo", document: { "entry" => "one" })
 
       assert_not diagnostic.undoable?
     end
 
     test "there is nothing to redo until something is undone" do
-      diagnostic = Flow::Flow.create!(slug: "undo", document: { "entry" => "one" })
+      diagnostic = Flow::Definition.create!(slug: "undo", document: { "entry" => "one" })
       edited(diagnostic, "two", { "entry" => "one" })
 
       assert_not diagnostic.redoable?
     end
 
     test "undoing with nothing behind it leaves the document alone" do
-      diagnostic = Flow::Flow.create!(slug: "undo", document: { "entry" => "one" })
+      diagnostic = Flow::Definition.create!(slug: "undo", document: { "entry" => "one" })
 
       diagnostic.undo_change
 
@@ -109,7 +109,7 @@ module Alembic
     end
 
     test "creating a version leaves nothing to redo but keeps what can be undone" do
-      diagnostic = Flow::Flow.create!(slug: "undo", document: { "entry" => "one" })
+      diagnostic = Flow::Definition.create!(slug: "undo", document: { "entry" => "one" })
       edited(diagnostic, "two", { "entry" => "one" })
       diagnostic.undo_change
 
@@ -119,7 +119,7 @@ module Alembic
     end
 
     test "creating a version leaves the author able to undo past it" do
-      diagnostic = Flow::Flow.create!(slug: "undo", document: { "entry" => "one" })
+      diagnostic = Flow::Definition.create!(slug: "undo", document: { "entry" => "one" })
       edited(diagnostic, "two", { "entry" => "one" })
 
       diagnostic.create_version
@@ -128,7 +128,7 @@ module Alembic
     end
 
     test "reports its current definition as the highest-numbered version" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
       diagnostic.record_definition({ "slug" => "first" })
       diagnostic.record_definition({ "slug" => "second" })
 
@@ -136,40 +136,40 @@ module Alembic
     end
 
     test "upserting records the imported definition as a version" do
-      Flow::Flow.upsert_definition({ "slug" => "seeded", "headline" => "Hi" })
+      Flow::Definition.upsert_definition({ "slug" => "seeded", "headline" => "Hi" })
 
-      assert_equal({ "slug" => "seeded", "headline" => "Hi" }, Flow::Flow.find_by(slug: "seeded").definition_versions.last.definition)
+      assert_equal({ "slug" => "seeded", "headline" => "Hi" }, Flow::Definition.find_by(slug: "seeded").definition_versions.last.definition)
     end
 
     test "upserting an unchanged definition records no new version" do
-      2.times { Flow::Flow.upsert_definition({ "slug" => "seeded", "headline" => "Hi" }) }
+      2.times { Flow::Definition.upsert_definition({ "slug" => "seeded", "headline" => "Hi" }) }
 
-      assert_equal 1, Flow::Flow.find_by(slug: "seeded").definition_versions.count
+      assert_equal 1, Flow::Definition.find_by(slug: "seeded").definition_versions.count
     end
 
     test "upserts a diagnostic storing the definition keyed by its slug" do
-      Flow::Flow.upsert_definition({ "slug" => "seeded", "headline" => "Hi" })
+      Flow::Definition.upsert_definition({ "slug" => "seeded", "headline" => "Hi" })
 
-      assert_equal({ "slug" => "seeded", "headline" => "Hi" }, Flow::Flow.find_by(slug: "seeded").definition)
+      assert_equal({ "slug" => "seeded", "headline" => "Hi" }, Flow::Definition.find_by(slug: "seeded").definition)
     end
 
     test "upserting the same slug twice keeps a single diagnostic" do
-      2.times { Flow::Flow.upsert_definition({ "slug" => "seeded" }) }
+      2.times { Flow::Definition.upsert_definition({ "slug" => "seeded" }) }
 
-      assert_equal 1, Flow::Flow.where(slug: "seeded").count
+      assert_equal 1, Flow::Definition.where(slug: "seeded").count
     end
 
     test "can be deleted once a definition has been recorded" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
       diagnostic.record_definition("slug" => "demo")
 
-      assert_difference -> { Flow::Flow.count }, -1 do
+      assert_difference -> { Flow::Definition.count }, -1 do
         diagnostic.destroy!
       end
     end
 
     test "records a summary template as a numbered version" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
 
       diagnostic.record_summary("outputs" => [ { "id" => "score" } ])
 
@@ -177,7 +177,7 @@ module Alembic
     end
 
     test "numbers a second summary template after the first" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
       diagnostic.record_summary("outputs" => [])
 
       diagnostic.record_summary("outputs" => [ { "id" => "score" } ])
@@ -186,14 +186,14 @@ module Alembic
     end
 
     test "reads back the summary template at its cursor" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
       diagnostic.record_summary("outputs" => [ { "id" => "score" } ])
 
       assert_equal({ "outputs" => [ { "id" => "score" } ] }, diagnostic.summary_document)
     end
 
     test "recording a summary leaves the flow version untouched" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
       diagnostic.record_definition("slug" => "demo")
 
       assert_no_changes -> { diagnostic.reload.definition_cursor } do
@@ -202,13 +202,13 @@ module Alembic
     end
 
     test "reports no summary document when none has been recorded" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
 
       assert_nil diagnostic.summary_document
     end
 
     test "summarises from the recorded summary version" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
 
       diagnostic.record_summary("outputs" => [ { "id" => "score", "type" => "weighted_sum" } ])
 
@@ -216,7 +216,7 @@ module Alembic
     end
 
     test "holds a live document that can be edited" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
 
       diagnostic.update!(document: { "entry" => "a", "nodes" => [], "edges" => [] })
 
@@ -224,13 +224,13 @@ module Alembic
     end
 
     test "starts with nothing changed since its last version" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
 
       assert_empty diagnostic.changes_since_version.to_a
     end
 
     test "recording a first definition gives the diagnostic a document to edit" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
 
       diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
 
@@ -238,7 +238,7 @@ module Alembic
     end
 
     test "creating a version records the live document" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
       diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
       diagnostic.update!(document: { "entry" => "b", "nodes" => [], "edges" => [] })
 
@@ -248,7 +248,7 @@ module Alembic
     end
 
     test "creating a version clears what had changed since the last one" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
       diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
       diagnostic.update!(document: { "entry" => "b" }, changes_since_version: [ { "action" => "moved", "steps" => [ "a" ], "named" => [ "A" ] } ])
 
@@ -258,7 +258,7 @@ module Alembic
     end
 
     test "creating a version twice over records only one" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
       diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
 
       assert_no_difference -> { diagnostic.definition_versions.count } do
@@ -267,7 +267,7 @@ module Alembic
     end
 
     test "publishing marks the created version as the one visitors run" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
       diagnostic.record_definition("entry" => "a", "nodes" => [], "edges" => [])
       diagnostic.update!(document: { "entry" => "b", "nodes" => [], "edges" => [] })
 
@@ -277,7 +277,7 @@ module Alembic
     end
 
     test "a version carries the changes that produced it" do
-      diagnostic = Flow::Flow.create!(slug: "demo", document: { "entry" => "a" })
+      diagnostic = Flow::Definition.create!(slug: "demo", document: { "entry" => "a" })
       diagnostic.update!(changes_since_version: [ { "action" => "added", "steps" => [ "a" ], "named" => [ "A" ] } ])
 
       diagnostic.create_version
@@ -286,7 +286,7 @@ module Alembic
     end
 
     test "returning to a version makes its content the live document" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
       diagnostic.record_definition("entry" => "first")
       first = diagnostic.definition_versions.last
       diagnostic.update!(document: { "entry" => "later" })
@@ -325,7 +325,7 @@ module Alembic
 
     test "refuses a version belonging to another diagnostic" do
       diagnostic = returnable
-      stranger = Flow::Flow.create!(slug: "stranger")
+      stranger = Flow::Definition.create!(slug: "stranger")
       stranger.record_definition("entry" => "theirs")
 
       assert_raises(ActiveRecord::RecordNotFound) { diagnostic.return_to(stranger.definition_versions.last) }
@@ -351,14 +351,14 @@ module Alembic
     end
 
     def returnable
-      Flow::Flow.create!(slug: "returnable").tap do |diagnostic|
+      Flow::Definition.create!(slug: "returnable").tap do |diagnostic|
         diagnostic.record_definition("entry" => "first")
         diagnostic.record_definition("entry" => "second")
       end
     end
 
     test "publishing makes the version live" do
-      diagnostic = Flow::Flow.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic = Flow::Definition.create!(slug: "demo", document: { "slug" => "demo" })
 
       diagnostic.publish
 
@@ -366,7 +366,7 @@ module Alembic
     end
 
     test "publishing a newer version supersedes the one that was live" do
-      diagnostic = Flow::Flow.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic = Flow::Definition.create!(slug: "demo", document: { "slug" => "demo" })
       diagnostic.publish
       first = diagnostic.current_definition_version
 
@@ -377,7 +377,7 @@ module Alembic
     end
 
     test "publishing the version that is already live leaves it live" do
-      diagnostic = Flow::Flow.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic = Flow::Definition.create!(slug: "demo", document: { "slug" => "demo" })
       diagnostic.publish
 
       diagnostic.publish
@@ -386,7 +386,7 @@ module Alembic
     end
 
     test "a retired version is no longer the live one" do
-      diagnostic = Flow::Flow.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic = Flow::Definition.create!(slug: "demo", document: { "slug" => "demo" })
       diagnostic.publish
 
       diagnostic.retire_version(diagnostic.live_version)
@@ -395,7 +395,7 @@ module Alembic
     end
 
     test "a retired version cannot be published" do
-      diagnostic = Flow::Flow.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic = Flow::Definition.create!(slug: "demo", document: { "slug" => "demo" })
       diagnostic.publish
       retired = diagnostic.live_version
       diagnostic.retire_version(retired)
@@ -404,7 +404,7 @@ module Alembic
     end
 
     test "a retired version cannot be returned to" do
-      diagnostic = Flow::Flow.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic = Flow::Definition.create!(slug: "demo", document: { "slug" => "demo" })
       diagnostic.publish
       retired = diagnostic.live_version
       diagnostic.retire_version(retired)
@@ -413,25 +413,25 @@ module Alembic
     end
 
     test "a diagnostic is active until it is set otherwise" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
 
       assert_predicate diagnostic, :active?
     end
 
     test "a hidden diagnostic is left out of the listable ones" do
-      diagnostic = Flow::Flow.create!(slug: "demo", status: :hidden)
+      diagnostic = Flow::Definition.create!(slug: "demo", status: :hidden)
 
-      assert_not_includes Flow::Flow.listable, diagnostic
+      assert_not_includes Flow::Definition.listable, diagnostic
     end
 
     test "an active diagnostic is among the listable ones" do
-      diagnostic = Flow::Flow.create!(slug: "demo")
+      diagnostic = Flow::Definition.create!(slug: "demo")
 
-      assert_includes Flow::Flow.listable, diagnostic
+      assert_includes Flow::Definition.listable, diagnostic
     end
 
     test "only one version of a diagnostic can be live" do
-      diagnostic = Flow::Flow.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic = Flow::Definition.create!(slug: "demo", document: { "slug" => "demo" })
       diagnostic.publish
       other = diagnostic.definition_versions.create!(number: 2, definition: { "slug" => "demo" })
 
@@ -439,7 +439,7 @@ module Alembic
     end
 
     test "a withdrawn version cannot be published" do
-      diagnostic = Flow::Flow.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic = Flow::Definition.create!(slug: "demo", document: { "slug" => "demo" })
       diagnostic.publish
       withdrawn = diagnostic.live_version
       withdrawn.update!(status: :withdrawn)
@@ -448,7 +448,7 @@ module Alembic
     end
 
     test "a withdrawn version cannot be returned to" do
-      diagnostic = Flow::Flow.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic = Flow::Definition.create!(slug: "demo", document: { "slug" => "demo" })
       diagnostic.publish
       withdrawn = diagnostic.live_version
       withdrawn.update!(status: :withdrawn)
@@ -457,7 +457,7 @@ module Alembic
     end
 
     test "a version survives being withdrawn so a finished run stays readable" do
-      diagnostic = Flow::Flow.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic = Flow::Definition.create!(slug: "demo", document: { "slug" => "demo" })
       diagnostic.publish
       version = diagnostic.live_version
 
@@ -467,7 +467,7 @@ module Alembic
     end
 
     test "withdrawing a version takes it out of service" do
-      diagnostic = Flow::Flow.create!(slug: "demo", document: { "slug" => "demo" })
+      diagnostic = Flow::Definition.create!(slug: "demo", document: { "slug" => "demo" })
       diagnostic.publish
 
       diagnostic.withdraw_version(diagnostic.live_version)

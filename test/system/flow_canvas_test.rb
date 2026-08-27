@@ -3,7 +3,7 @@ require "application_system_test_case"
 module Alembic
   class FlowCanvasTest < ApplicationSystemTestCase
     def flow
-      @flow ||= Flow::Flow.create!(slug: "canvas-system").tap do |diagnostic|
+      @flow ||= Flow::Definition.create!(slug: "canvas-system").tap do |diagnostic|
         diagnostic.record_definition(flowing(
           "slug" => "canvas-system", "entry" => "first",
           "nodes" => [ { "id" => "first", "type" => "question", "question" => "First",
@@ -18,7 +18,7 @@ module Alembic
     end
 
     def wired
-      @wired ||= Flow::Flow.create!(slug: "canvas-wired").tap do |diagnostic|
+      @wired ||= Flow::Definition.create!(slug: "canvas-wired").tap do |diagnostic|
         diagnostic.record_definition(flowing(
           "slug" => "canvas-wired", "entry" => "first",
           "nodes" => [ { "id" => "first", "type" => "question", "question" => "First",
@@ -54,7 +54,7 @@ module Alembic
       steps = (1..12).map { |n| { "id" => "s#{n}", "type" => "question", "question" => "Step #{n}", "answers" => [ { "value" => "on" } ] } }
       links = (1...12).map { |n| { "from" => "s#{n}", "to" => "s#{n + 1}" } }
 
-      Flow::Flow.create!(slug: "long-flow").tap do |diagnostic|
+      Flow::Definition.create!(slug: "long-flow").tap do |diagnostic|
         diagnostic.record_definition(flowing("slug" => "long-flow", "entry" => "s1", "nodes" => steps, "edges" => links))
       end
     end

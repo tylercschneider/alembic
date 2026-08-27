@@ -6,7 +6,7 @@ module Alembic
       enum :status, { draft: "draft", live: "live", superseded: "superseded",
                       retired: "retired", withdrawn: "withdrawn" }
 
-      belongs_to :flow, class_name: "Alembic::Flow::Flow"
+      belongs_to :flow, class_name: "Alembic::Flow::Definition"
 
       validates :number, uniqueness: { scope: :flow_id }
 

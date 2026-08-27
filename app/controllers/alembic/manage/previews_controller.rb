@@ -27,7 +27,7 @@ module Alembic
       end
 
       def previewed
-        @previewed ||= Flow::Flow.find(params[:diagnostic_id])
+        @previewed ||= Flow::Definition.find(params[:diagnostic_id])
       end
 
       def admit(_diagnostic)
