@@ -1,7 +1,7 @@
 module Alembic
   class ResponsesController < ApplicationController
     def create
-      redirect_to response_path(Response.start(diagnostic))
+      redirect_to response_path(Flow::Run.start(diagnostic))
     end
 
     def show
@@ -34,7 +34,7 @@ module Alembic
     end
 
     def saved_session
-      run = Response.find(params[:id])
+      run = Flow::Run.find(params[:id])
 
       Admission.of_run(run, permitted: permitted?(run.diagnostic))
     end

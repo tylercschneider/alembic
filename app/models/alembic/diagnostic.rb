@@ -11,7 +11,7 @@ module Alembic
 
     # Declared before :definition_versions so responses clear first, otherwise
     # destroying a diagnostic trips the responses -> definition_versions FK.
-    has_many :responses, dependent: :destroy
+    has_many :runs, class_name: "Alembic::Flow::Run", dependent: :destroy
     has_many :definition_versions, dependent: :destroy
     has_many :summary_versions, dependent: :destroy
 
