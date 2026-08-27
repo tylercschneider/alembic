@@ -1,7 +1,7 @@
 module Alembic
-  module Steps
+  module Flow
     class Condition
-      include Flow::Step
+      include Step
 
       step_name "Condition"
 

@@ -1,10 +1,10 @@
 require "test_helper"
 
 module Alembic
-  module Steps
+  module Flow
     class ConditionTest < ActiveSupport::TestCase
       def branch(config)
-        Flow::Node.new(id: "branch", type: "condition", config: config)
+        Node.new(id: "branch", type: "condition", config: config)
       end
 
       test "requires the step whose answer it tests" do
@@ -18,7 +18,7 @@ module Alembic
       end
 
       test "registers through the public step-type API" do
-        registry = Flow::Registry.new
+        registry = Registry.new
 
         Condition.register(registry)
 

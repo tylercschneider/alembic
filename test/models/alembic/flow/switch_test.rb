@@ -1,10 +1,10 @@
 require "test_helper"
 
 module Alembic
-  module Steps
+  module Flow
     class SwitchTest < ActiveSupport::TestCase
       def switch(config)
-        Flow::Node.new(id: "fork", type: "switch", config: config)
+        Node.new(id: "fork", type: "switch", config: config)
       end
 
       test "declares the step it directs on" do
@@ -24,7 +24,7 @@ module Alembic
       end
 
       test "registers through the public step-type API" do
-        registry = Flow::Registry.new
+        registry = Registry.new
 
         Switch.register(registry)
 

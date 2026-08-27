@@ -10,7 +10,7 @@ module Alembic
         @diagnostic = Flow::Definition.new(create_params)
 
         if @diagnostic.save
-          redirect_to manage_flow_path(@diagnostic), notice: "Flow::Definition created."
+          redirect_to manage_flow_path(@diagnostic), notice: "Flow created."
         else
           @diagnostics = ordered_diagnostics
           render :index, status: :unprocessable_entity
@@ -34,7 +34,7 @@ module Alembic
 
       def destroy
         Flow::Definition.find(params[:id]).destroy!
-        redirect_to manage_flows_path, notice: "Flow::Definition removed."
+        redirect_to manage_flows_path, notice: "Flow removed."
       end
 
       private
