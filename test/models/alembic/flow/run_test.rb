@@ -189,6 +189,24 @@ module Alembic
 
         assert_equal diagnostic.live_version, run.definition_version
       end
+
+      def pinned
+        diagnostic = Diagnostic.create!(slug: "pinned")
+        diagnostic.record_definition(flowing(
+          "slug" => "pinned", "entry" => "a",
+          "nodes" => [ { "id" => "a", "type" => "question", "question" => "A?",
+                         "answers" => [ { "value" => "yes" } ] },
+                       { "id" => "b", "type" => "question", "question" => "B?",
+                         "answers" => [ { "value" => "yes" } ] },
+                       { "id" => "end", "type" => "terminal" } ],
+          "edges" => [ { "from" => "a", "to" => "b" }, { "from" => "b", "to" => "end" } ]))
+        diagnostic.publish
+        Run.start(diagnostic)
+      end
+
+      test "reads the flow it was pinned to" do
+        assert_equal "pinned", pinned.pinned_definition["slug"]
+      end
     end
   end
 end

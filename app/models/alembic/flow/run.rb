@@ -21,6 +21,10 @@ module Alembic
         super.to_h.symbolize_keys
       end
 
+      def pinned_definition
+        definition_version.definition.to_h
+      end
+
       def guide
         @guide ||= Alembic::Runner.new(definition_version.definition)
       end
