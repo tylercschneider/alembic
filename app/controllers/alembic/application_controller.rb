@@ -14,7 +14,7 @@ module Alembic
     end
 
     def admit(diagnostic)
-      Admission.of(diagnostic, permitted: permitted?(diagnostic))
+      Flow::Admission.of(diagnostic, permitted: permitted?(diagnostic))
     end
 
     def permitted?(diagnostic)

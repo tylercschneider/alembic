@@ -320,7 +320,7 @@ module Alembic
 
       diagnostic.return_to(first)
 
-      assert_equal "Returned to version 1", Change.phrase(diagnostic.reload.changes_since_version.last)
+      assert_equal "Returned to version 1", Flow::Change.phrase(diagnostic.reload.changes_since_version.last)
     end
 
     test "refuses a version belonging to another diagnostic" do

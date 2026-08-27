@@ -21,7 +21,7 @@
           <% if version.changes.any? %>
             <ul class="mt-2 space-y-0.5">
               <% version.changes.each do |change| %>
-                <li data-captured class="text-sm text-gray-600"><%= Alembic::Change.phrase(change) %></li>
+                <li data-captured class="text-sm text-gray-600"><%= Alembic::Flow::Change.phrase(change) %></li>
               <% end %>
             </ul>
           <% else %>

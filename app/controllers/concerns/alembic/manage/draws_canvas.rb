@@ -16,7 +16,7 @@ module Alembic
       end
 
       def listed_changes(diagnostic)
-        diagnostic.changes_since_version.to_a.map { |change| Change.phrase(change) }
+        diagnostic.changes_since_version.to_a.map { |change| Flow::Change.phrase(change) }
       end
 
       def flow_details(diagnostic)
