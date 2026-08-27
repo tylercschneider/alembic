@@ -207,6 +207,18 @@ module Alembic
       test "reads the flow it was pinned to" do
         assert_equal "pinned", pinned.pinned_definition["slug"]
       end
+
+      test "waits at the first step nothing has been recorded for" do
+        assert_equal "a", pinned.next_step({}).id
+      end
+
+      test "moves on once a step has been recorded" do
+        assert_equal "b", pinned.next_step("a" => "yes").id
+      end
+
+      test "reports the steps walked so far" do
+        assert_equal({ "a" => "yes" }, pinned.walked("a" => "yes"))
+      end
     end
   end
 end

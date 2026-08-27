@@ -25,6 +25,18 @@ module Alembic
         definition_version.definition.to_h
       end
 
+      def next_step(state)
+        digest.next_step(state.transform_keys(&:to_s))
+      end
+
+      def walked(state)
+        digest.state_on_path(state.transform_keys(&:to_s))
+      end
+
+      def digest
+        @digest ||= Digest.new(Document.new(pinned_definition))
+      end
+
       def guide
         @guide ||= Alembic::Runner.new(definition_version.definition)
       end
