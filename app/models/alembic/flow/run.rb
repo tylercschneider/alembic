@@ -13,11 +13,11 @@ module Alembic
           summary_version: flow.current_summary_version)
       end
 
-      def record_answer(step_id, value)
-        update!(answers: answers.merge(step_id => value))
+      def record(step_id, value)
+        update!(recorded: recorded.merge(step_id => value))
       end
 
-      def answers
+      def recorded
         super.to_h.symbolize_keys
       end
 
@@ -41,9 +41,9 @@ module Alembic
         @digest ||= Digest.new(Document.new(pinned_definition))
       end
 
-      def discard_last_answer
-        last = walked(answers).keys.map(&:to_sym).last
-        update!(answers: answers.except(last)) if last
+      def discard_last
+        last = walked(recorded).keys.map(&:to_sym).last
+        update!(recorded: recorded.except(last)) if last
       end
 
       def pinned_steps

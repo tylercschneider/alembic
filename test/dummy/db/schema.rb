@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_234500) do
   create_table "alembic_definition_versions", force: :cascade do |t|
     t.json "changes_captured"
     t.datetime "created_at", null: false
@@ -42,13 +42,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_230000) do
   end
 
   create_table "alembic_flow_runs", force: :cascade do |t|
-    t.json "answers"
     t.datetime "created_at", null: false
     t.integer "definition_version_id", null: false
     t.integer "diagnostic_id", null: false
     t.string "label"
     t.integer "owner_id"
     t.string "owner_type"
+    t.json "recorded"
     t.string "status"
     t.integer "summary_version_id"
     t.datetime "updated_at", null: false

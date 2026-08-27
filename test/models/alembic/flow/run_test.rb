@@ -16,11 +16,11 @@ module Alembic
         }))
         diagnostic.publish_version(diagnostic.definition_versions.first)
         response = Flow::Run.start(diagnostic)
-        response.update!(answers: { a: "x", c: "x", b: "x" })
+        response.update!(recorded: { a: "x", c: "x", b: "x" })
 
-        response.discard_last_answer
+        response.discard_last
 
-        assert_equal({ a: "x", c: "x" }, response.reload.answers)
+        assert_equal({ a: "x", c: "x" }, response.reload.recorded)
       end
 
       test "pins to the diagnostic's current definition version when started" do
@@ -80,16 +80,16 @@ module Alembic
       test "records an answer into its stored answers" do
         response = Flow::Run.start(diagnostic_with_a_version)
 
-        response.record_answer(:pick, "a")
+        response.record(:pick, "a")
 
-        assert_equal({ pick: "a" }, response.answers)
+        assert_equal({ pick: "a" }, response.recorded)
       end
 
       test "reads its answers back from the database with symbol keys" do
         response = Flow::Run.start(diagnostic_with_a_version)
-        response.record_answer(:pick, "a")
+        response.record(:pick, "a")
 
-        assert_equal({ pick: "a" }, response.reload.answers)
+        assert_equal({ pick: "a" }, response.reload.recorded)
       end
 
       test "reads the steps of the flow it is pinned to" do
@@ -100,11 +100,11 @@ module Alembic
 
       test "discards the answer it last recorded" do
         response = Flow::Run.start(alembic_diagnostics(:db_guide))
-        response.record_answer(:pick, "a")
+        response.record(:pick, "a")
 
-        response.discard_last_answer
+        response.discard_last
 
-        assert_empty response.reload.answers
+        assert_empty response.reload.recorded
       end
 
       private

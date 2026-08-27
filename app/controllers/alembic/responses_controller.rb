@@ -7,7 +7,7 @@ module Alembic
     def show
       @response = saved_session
       @guide = Runner.new(@response.pinned_definition)
-      @answers = @response.answers
+      @answers = @response.recorded
       @question = @guide.next_question(@answers)
       return render :step if @question
 
@@ -16,7 +16,7 @@ module Alembic
 
     def update
       response = saved_session
-      params[:back] ? response.discard_last_answer : record_submitted_answer(response)
+      params[:back] ? response.discard_last : record_submitted_answer(response)
       redirect_to response_path(response)
     end
 
@@ -38,7 +38,7 @@ module Alembic
     def record_submitted_answer(response)
       asked = Runner.new(response.pinned_definition).questions.map(&:id)
       question_id, value = params.fetch(:answers, {}).permit(*asked).to_h.first
-      response.record_answer(question_id.to_sym, value)
+      response.record(question_id.to_sym, value)
     end
 
     def saved_session

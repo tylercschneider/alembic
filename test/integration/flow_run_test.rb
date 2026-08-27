@@ -128,7 +128,7 @@ module Alembic
 
       patch alembic.response_path(response_record), params: { answers: { budget: "high" } }
 
-      assert_equal({ budget: "high" }, response_record.reload.answers)
+      assert_equal({ budget: "high" }, response_record.reload.recorded)
     end
 
     test "a visitor runs the published version, not what the author is editing" do
