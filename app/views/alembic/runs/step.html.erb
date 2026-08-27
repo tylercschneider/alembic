@@ -1,13 +1,13 @@
 <% content_for(:title, @guide.headline) %>
 
 <%= ui_page(max_width: :md) do %>
-  <%= link_to "← Start over", alembic.diagnostic_path(@guide.slug), class: "text-sm text-accent-600 hover:text-accent-700" %>
+  <%= link_to "← Start over", alembic.flow_path(@guide.slug), class: "text-sm text-accent-600 hover:text-accent-700" %>
 
   <div class="mt-6 mb-6">
     <%= ui_progress(value: @response.recorded.size, max: [ @response.recorded.size + 1, 1 ].max, label: "Question #{@response.recorded.size + 1}") %>
   </div>
 
-  <%= form_with url: alembic.response_path(@response), method: :patch, data: { turbo: false } do %>
+  <%= form_with url: alembic.run_path(@response), method: :patch, data: { turbo: false } do %>
     <fieldset>
       <legend class="mb-5 text-xl font-semibold leading-snug text-gray-900"><%= @question.text %></legend>
 

@@ -1,6 +1,6 @@
 module Alembic
   module Manage
-    class DiagnosticsController < BaseController
+    class FlowsController < BaseController
       include DrawsCanvas
       def index
         @diagnostics = ordered_diagnostics
@@ -10,7 +10,7 @@ module Alembic
         @diagnostic = Flow::Definition.new(create_params)
 
         if @diagnostic.save
-          redirect_to manage_diagnostic_path(@diagnostic), notice: "Flow::Definition created."
+          redirect_to manage_flow_path(@diagnostic), notice: "Flow::Definition created."
         else
           @diagnostics = ordered_diagnostics
           render :index, status: :unprocessable_entity
@@ -29,12 +29,12 @@ module Alembic
       def update
         @diagnostic = Flow::Definition.find(params[:id])
         @diagnostic.update!(diagnostic_params)
-        redirect_to manage_diagnostic_path(@diagnostic), notice: "Saved."
+        redirect_to manage_flow_path(@diagnostic), notice: "Saved."
       end
 
       def destroy
         Flow::Definition.find(params[:id]).destroy!
-        redirect_to manage_diagnostics_path, notice: "Flow::Definition removed."
+        redirect_to manage_flows_path, notice: "Flow::Definition removed."
       end
 
       private
@@ -44,11 +44,11 @@ module Alembic
       end
 
       def create_params
-        params.require(:diagnostic).permit(:slug, :kind)
+        params.require(:flow).permit(:slug, :kind)
       end
 
       def diagnostic_params
-        params.require(:diagnostic).permit(:title, :summary, :start_label)
+        params.require(:flow).permit(:title, :summary, :start_label)
       end
     end
   end

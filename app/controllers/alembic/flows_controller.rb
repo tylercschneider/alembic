@@ -1,5 +1,5 @@
 module Alembic
-  class DiagnosticsController < ApplicationController
+  class FlowsController < ApplicationController
     helper_method :flow_start_path, :flow_step_path, :previewing?
 
     def show
@@ -19,11 +19,11 @@ module Alembic
     private
 
     def flow_start_path(slug)
-      alembic.diagnostic_path(slug)
+      alembic.flow_path(slug)
     end
 
     def flow_step_path(slug)
-      alembic.diagnostic_step_path(slug)
+      alembic.flow_step_path(slug)
     end
 
     def previewing?

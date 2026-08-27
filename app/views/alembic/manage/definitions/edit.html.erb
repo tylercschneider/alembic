@@ -1,11 +1,11 @@
 <%= ui_page(max_width: :lg) do %>
   <p class="mb-4">
-    <%= link_to "← Back to the flow", alembic.manage_diagnostic_path(@diagnostic), class: "text-sm text-accent-600 hover:text-accent-700" %>
+    <%= link_to "← Back to the flow", alembic.manage_flow_path(@diagnostic), class: "text-sm text-accent-600 hover:text-accent-700" %>
   </p>
 
-  <%= ui_form_page(title: "Definition", back_url: alembic.manage_diagnostic_path(@diagnostic), subtitle: @diagnostic.slug) %>
+  <%= ui_form_page(title: "Definition", back_url: alembic.manage_flow_path(@diagnostic), subtitle: @diagnostic.slug) %>
 
-  <%= ui_form(action: alembic.manage_diagnostic_definition_path(@diagnostic), method: :patch) do %>
+  <%= ui_form(action: alembic.manage_flow_definition_path(@diagnostic), method: :patch) do %>
     <%= ui_textarea(name: "definition", value: JSON.pretty_generate(@diagnostic.document), rows: 30) %>
 
     <%= ui_button(label: "Save", type: :submit) %>

@@ -85,7 +85,7 @@ module Alembic
       end
 
       def diagnostic
-        @diagnostic ||= Flow::Definition.find(params[:diagnostic_id])
+        @diagnostic ||= Flow::Definition.find(params[:flow_id])
       end
 
       def document
@@ -93,7 +93,7 @@ module Alembic
       end
 
       def details_params
-        params.require(:diagnostic).permit(:title, :summary, :start_label)
+        params.require(:flow).permit(:title, :summary, :start_label)
       end
 
       def recorded(action, edited, steps, before)

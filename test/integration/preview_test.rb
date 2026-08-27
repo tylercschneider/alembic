@@ -15,16 +15,16 @@ module Alembic
     end
 
     test "trying a flow that has never been published asks its first question" do
-      get alembic.step_manage_diagnostic_preview_path(unpublished)
+      get alembic.step_manage_flow_preview_path(unpublished)
 
       assert_select "form", /Budget\?/
     end
 
     test "reaching the end of a flow being tried offers a way to start over" do
-      get alembic.step_manage_diagnostic_preview_path(unpublished), params: { answers: { budget: "high" } }
+      get alembic.step_manage_flow_preview_path(unpublished), params: { answers: { budget: "high" } }
 
       assert_response :success
-      assert_select "a[href=?]", alembic.manage_diagnostic_preview_path(unpublished)
+      assert_select "a[href=?]", alembic.manage_flow_preview_path(unpublished)
     end
   end
 end

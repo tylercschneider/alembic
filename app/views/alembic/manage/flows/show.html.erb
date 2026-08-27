@@ -13,9 +13,9 @@
               onclick="document.dispatchEvent(new CustomEvent('alembic:open-flow'))"
               class="inline-flex items-center justify-center font-semibold rounded-lg border-0 cursor-pointer bg-accent-600 text-white hover:bg-accent-700 text-base px-4 py-2">This flow</button>
 
-      <%= ui_button(label: "Try it", href: alembic.manage_diagnostic_preview_path(@diagnostic), variant: :secondary) %>
+      <%= ui_button(label: "Try it", href: alembic.manage_flow_preview_path(@diagnostic), variant: :secondary) %>
 
-      <%= ui_button(label: "All diagnostics", href: alembic.manage_diagnostics_path, variant: :secondary) %>
+      <%= ui_button(label: "All diagnostics", href: alembic.manage_flows_path, variant: :secondary) %>
     </div>
   </header>
 
@@ -27,7 +27,7 @@
 
   <div class="min-h-0 flex-1"
        data-flow-canvas
-       data-base="<%= alembic.manage_diagnostic_canvas_path(@diagnostic) %>"
+       data-base="<%= alembic.manage_flow_canvas_path(@diagnostic) %>"
        data-csrf-token="<%= form_authenticity_token %>"
        data-flow="<%= @canvas.to_json %>"></div>
 </div>

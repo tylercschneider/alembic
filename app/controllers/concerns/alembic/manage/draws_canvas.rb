@@ -26,9 +26,9 @@ module Alembic
           "start_label" => diagnostic.start_label,
           "version" => diagnostic.current_definition_version&.number,
           "published" => diagnostic.live_version&.number,
-          "definition_url" => edit_manage_diagnostic_definition_path(diagnostic),
-          "details_url" => edit_manage_diagnostic_path(diagnostic),
-          "history_url" => manage_diagnostic_versions_path(diagnostic) }
+          "definition_url" => edit_manage_flow_definition_path(diagnostic),
+          "details_url" => edit_manage_flow_path(diagnostic),
+          "history_url" => manage_flow_versions_path(diagnostic) }
       end
     end
   end

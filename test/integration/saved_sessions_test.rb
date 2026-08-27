@@ -19,15 +19,15 @@ module Alembic
     end
 
     test "starting a saved session sends the visitor to its durable URL" do
-      post alembic.diagnostic_responses_path(saved.slug)
+      post alembic.flow_runs_path(saved.slug)
 
-      assert_redirected_to alembic.response_path(Flow::Run.last)
+      assert_redirected_to alembic.run_path(Flow::Run.last)
     end
 
     test "a saved session renders the step it is waiting on" do
       run = Flow::Run.start(saved)
 
-      get alembic.response_path(run)
+      get alembic.run_path(run)
 
       assert_select "legend", text: /Budget\?/
     end
@@ -35,7 +35,7 @@ module Alembic
     test "answering a step stores the answer against it" do
       run = Flow::Run.start(saved)
 
-      patch alembic.response_path(run), params: { answers: { budget: "high" } }
+      patch alembic.run_path(run), params: { answers: { budget: "high" } }
 
       assert_equal({ budget: "high" }, run.reload.recorded)
     end
@@ -43,16 +43,16 @@ module Alembic
     test "a saved session submits its answers back to itself" do
       run = Flow::Run.start(saved)
 
-      get alembic.response_path(run)
+      get alembic.run_path(run)
 
-      assert_select "form[action=?]", alembic.response_path(run)
+      assert_select "form[action=?]", alembic.run_path(run)
     end
 
     test "an answer sends the visitor down the branch it selects" do
       run = Flow::Run.start(saved)
 
-      patch alembic.response_path(run), params: { answers: { budget: "high" } }
-      get alembic.response_path(run)
+      patch alembic.run_path(run), params: { answers: { budget: "high" } }
+      get alembic.run_path(run)
 
       assert_select "legend", text: /Premium tier\?/
     end
@@ -61,7 +61,7 @@ module Alembic
       run = Flow::Run.start(saved)
       run.record(:budget, "high")
 
-      patch alembic.response_path(run), params: { back: "1" }
+      patch alembic.run_path(run), params: { back: "1" }
 
       assert_empty run.reload.recorded
     end
@@ -70,7 +70,7 @@ module Alembic
       run = Flow::Run.start(saved)
       run.record(:budget, "low")
 
-      get alembic.response_path(run)
+      get alembic.run_path(run)
 
       assert_select "legend", text: /Basic tier\?/
     end
@@ -80,7 +80,7 @@ module Alembic
       run.record(:budget, "low")
       run.record(:plain, "bronze")
 
-      get alembic.response_path(run)
+      get alembic.run_path(run)
 
       assert_select "[data-answer=?]", "budget"
     end
@@ -90,15 +90,15 @@ module Alembic
       saved.record_definition(flowing(branching).merge(
         "nodes" => branching["nodes"].map { |node| node["id"] == "budget" ? node.merge("text" => "Changed") : node }))
 
-      get alembic.response_path(run)
+      get alembic.run_path(run)
 
       assert_select "legend", text: /Budget\?/
     end
 
     test "the intro offers to start a saved session" do
-      get alembic.diagnostic_path(saved.slug)
+      get alembic.flow_path(saved.slug)
 
-      assert_select "form[action=?]", alembic.diagnostic_responses_path(saved.slug)
+      assert_select "form[action=?]", alembic.flow_runs_path(saved.slug)
     end
 
     test "a completed saved session shows its pinned summary's outputs" do
@@ -108,7 +108,7 @@ module Alembic
       run.record(:plain, "bronze")
       saved.record_summary("outputs" => [ { "id" => "other", "type" => "tally", "label" => "Something else" } ])
 
-      get alembic.response_path(run)
+      get alembic.run_path(run)
 
       assert_select "[data-output=?]", "answered"
     end
@@ -118,7 +118,7 @@ module Alembic
       response = Flow::Run.start(saved)
       response.definition_version.update!(status: :withdrawn)
 
-      get alembic.response_path(response)
+      get alembic.run_path(response)
 
       assert_equal "Alembic::Withdrawn", @response.headers["X-Refusal"]
     ensure
@@ -130,7 +130,7 @@ module Alembic
       response.record(:budget, "low")
       response.definition_version.update!(status: :withdrawn)
 
-      get alembic.response_path(response)
+      get alembic.run_path(response)
 
       assert_equal({ budget: "low" }, response.reload.recorded)
     end
@@ -140,7 +140,7 @@ module Alembic
       saved.update!(document: branching.merge("entry" => "gate"))
       saved.publish
 
-      get alembic.response_path(response)
+      get alembic.run_path(response)
 
       assert_response :success
     end
@@ -149,7 +149,7 @@ module Alembic
       response = Flow::Run.start(saved)
       saved.retire_version(response.definition_version)
 
-      get alembic.response_path(response)
+      get alembic.run_path(response)
 
       assert_response :success
     end

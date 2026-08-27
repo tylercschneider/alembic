@@ -1,6 +1,6 @@
 Alembic::Engine.routes.draw do
   namespace :manage do
-    resources :diagnostics, only: [ :index, :create, :show, :edit, :update, :destroy ] do
+    resources :flows, only: [ :index, :create, :show, :edit, :update, :destroy ] do
       resource :definition, only: [ :edit, :update ]
       resource :preview, only: :show, controller: "previews" do
         get :step
@@ -25,10 +25,10 @@ Alembic::Engine.routes.draw do
     end
   end
 
-  post ":slug/responses", to: "responses#create", as: :diagnostic_responses
-  get "responses/:id", to: "responses#show", as: :response
-  patch "responses/:id", to: "responses#update"
+  post ":slug/runs", to: "runs#create", as: :flow_runs
+  get "runs/:id", to: "runs#show", as: :run
+  patch "runs/:id", to: "runs#update"
 
-  get ":slug", to: "diagnostics#show", as: :diagnostic
-  get ":slug/step", to: "diagnostics#step", as: :diagnostic_step
+  get ":slug", to: "flows#show", as: :flow
+  get ":slug/step", to: "flows#step", as: :flow_step
 end

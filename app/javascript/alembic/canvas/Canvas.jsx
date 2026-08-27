@@ -175,7 +175,7 @@ const Canvas = ({ base, token, initial }) => {
                onClose={() => setShowing(false)}
                onCreate={() => send("/versions", "POST")}
                onPublish={() => send("/publish", "POST")}
-               onSaveDetails={(details) => send("/details", "PATCH", { diagnostic: details })} />
+               onSaveDetails={(details) => send("/details", "PATCH", { flow: details })} />
       )}
 
       {selectedNode && (
