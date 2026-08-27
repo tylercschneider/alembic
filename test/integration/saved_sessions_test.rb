@@ -21,11 +21,11 @@ module Alembic
     test "starting a saved session sends the visitor to its durable URL" do
       post alembic.diagnostic_responses_path(saved.slug)
 
-      assert_redirected_to alembic.response_path(Response.last)
+      assert_redirected_to alembic.response_path(Flow::Run.last)
     end
 
     test "a saved session renders the step it is waiting on" do
-      run = Response.start(saved)
+      run = Flow::Run.start(saved)
 
       get alembic.response_path(run)
 
@@ -33,15 +33,15 @@ module Alembic
     end
 
     test "answering a step stores the answer against it" do
-      run = Response.start(saved)
+      run = Flow::Run.start(saved)
 
       patch alembic.response_path(run), params: { answers: { budget: "high" } }
 
-      assert_equal({ budget: "high" }, run.reload.answers)
+      assert_equal({ budget: "high" }, run.reload.recorded)
     end
 
     test "a saved session submits its answers back to itself" do
-      run = Response.start(saved)
+      run = Flow::Run.start(saved)
 
       get alembic.response_path(run)
 
@@ -49,7 +49,7 @@ module Alembic
     end
 
     test "an answer sends the visitor down the branch it selects" do
-      run = Response.start(saved)
+      run = Flow::Run.start(saved)
 
       patch alembic.response_path(run), params: { answers: { budget: "high" } }
       get alembic.response_path(run)
@@ -58,17 +58,17 @@ module Alembic
     end
 
     test "going back removes the last answer along the walked path" do
-      run = Response.start(saved)
-      run.record_answer(:budget, "high")
+      run = Flow::Run.start(saved)
+      run.record(:budget, "high")
 
       patch alembic.response_path(run), params: { back: "1" }
 
-      assert_empty run.reload.answers
+      assert_empty run.reload.recorded
     end
 
     test "returning resumes at the step still waiting" do
-      run = Response.start(saved)
-      run.record_answer(:budget, "low")
+      run = Flow::Run.start(saved)
+      run.record(:budget, "low")
 
       get alembic.response_path(run)
 
@@ -76,9 +76,9 @@ module Alembic
     end
 
     test "a completed saved session lists what was said" do
-      run = Response.start(saved)
-      run.record_answer(:budget, "low")
-      run.record_answer(:plain, "bronze")
+      run = Flow::Run.start(saved)
+      run.record(:budget, "low")
+      run.record(:plain, "bronze")
 
       get alembic.response_path(run)
 
@@ -86,7 +86,7 @@ module Alembic
     end
 
     test "a session started before an edit still serves the version it began on" do
-      run = Response.start(saved)
+      run = Flow::Run.start(saved)
       saved.record_definition(flowing(branching).merge(
         "nodes" => branching["nodes"].map { |node| node["id"] == "budget" ? node.merge("text" => "Changed") : node }))
 
@@ -103,9 +103,9 @@ module Alembic
 
     test "a completed saved session shows its pinned summary's outputs" do
       saved.record_summary("outputs" => [ { "id" => "answered", "type" => "tally", "label" => "Steps answered" } ])
-      run = Response.start(saved)
-      run.record_answer(:budget, "low")
-      run.record_answer(:plain, "bronze")
+      run = Flow::Run.start(saved)
+      run.record(:budget, "low")
+      run.record(:plain, "bronze")
       saved.record_summary("outputs" => [ { "id" => "other", "type" => "tally", "label" => "Something else" } ])
 
       get alembic.response_path(run)
@@ -115,7 +115,7 @@ module Alembic
 
     test "a visitor part way through a withdrawn version is told it was withdrawn" do
       Alembic.refusal_method = :note_the_refusal
-      response = Response.start(saved)
+      response = Flow::Run.start(saved)
       response.definition_version.update!(status: :withdrawn)
 
       get alembic.response_path(response)
@@ -126,17 +126,17 @@ module Alembic
     end
 
     test "a withdrawn version keeps the answers already recorded" do
-      response = Response.start(saved)
-      response.record_answer(:budget, "low")
+      response = Flow::Run.start(saved)
+      response.record(:budget, "low")
       response.definition_version.update!(status: :withdrawn)
 
       get alembic.response_path(response)
 
-      assert_equal({ budget: "low" }, response.reload.answers)
+      assert_equal({ budget: "low" }, response.reload.recorded)
     end
 
     test "a run carries on after its version is superseded" do
-      response = Response.start(saved)
+      response = Flow::Run.start(saved)
       saved.update!(document: branching.merge("entry" => "gate"))
       saved.publish
 
@@ -146,7 +146,7 @@ module Alembic
     end
 
     test "a run carries on after its version is retired" do
-      response = Response.start(saved)
+      response = Flow::Run.start(saved)
       saved.retire_version(response.definition_version)
 
       get alembic.response_path(response)

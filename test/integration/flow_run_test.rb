@@ -115,7 +115,7 @@ module Alembic
     end
 
     test "a saved session walks the same flow" do
-      response_record = Response.start(flowed)
+      response_record = Flow::Run.start(flowed)
 
       patch alembic.response_path(response_record), params: { answers: { budget: "high" } }
       get alembic.response_path(response_record)
@@ -124,11 +124,11 @@ module Alembic
     end
 
     test "a saved session records the answer against the step that asked it" do
-      response_record = Response.start(flowed)
+      response_record = Flow::Run.start(flowed)
 
       patch alembic.response_path(response_record), params: { answers: { budget: "high" } }
 
-      assert_equal({ budget: "high" }, response_record.reload.answers)
+      assert_equal({ budget: "high" }, response_record.reload.recorded)
     end
 
     test "a visitor runs the published version, not what the author is editing" do

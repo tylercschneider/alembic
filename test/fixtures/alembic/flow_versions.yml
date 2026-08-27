@@ -1,5 +1,8 @@
+_fixture:
+  model_class: Alembic::Flow::Version
+
 db_guide_v1:
-  diagnostic: db_guide
+  flow: db_guide
   number: 1
   status: live
   definition:

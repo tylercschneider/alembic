@@ -9,7 +9,7 @@ module Alembic
 
     def self.of_run(run, permitted: true)
       raise Withdrawn if run.definition_version.withdrawn?
-      raise NotPermitted unless permitted && run.diagnostic.available?
+      raise NotPermitted unless permitted && run.flow.available?
 
       run
     end

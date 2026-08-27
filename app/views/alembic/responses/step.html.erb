@@ -4,7 +4,7 @@
   <%= link_to "← Start over", alembic.diagnostic_path(@guide.slug), class: "text-sm text-accent-600 hover:text-accent-700" %>
 
   <div class="mt-6 mb-6">
-    <%= ui_progress(value: @response.answers.size, max: [ @response.answers.size + 1, 1 ].max, label: "Question #{@response.answers.size + 1}") %>
+    <%= ui_progress(value: @response.recorded.size, max: [ @response.recorded.size + 1, 1 ].max, label: "Question #{@response.recorded.size + 1}") %>
   </div>
 
   <%= form_with url: alembic.response_path(@response), method: :patch, data: { turbo: false } do %>
@@ -21,7 +21,7 @@
     <div class="mt-8 flex items-center gap-4">
       <%= ui_button(label: "Next", type: :submit) %>
 
-      <% if @response.answers.any? %>
+      <% if @response.recorded.any? %>
         <button type="submit" name="back" value="1" formnovalidate class="cursor-pointer text-sm text-gray-500 underline underline-offset-2 hover:text-gray-900">← Back</button>
       <% end %>
     </div>

@@ -61,7 +61,7 @@ module Alembic
     end
 
     test "a visitor cannot resume a saved session on a diagnostic the host has not authorized" do
-      response = Response.start(published)
+      response = Flow::Run.start(published)
 
       without_host_configuration do
         get alembic.response_path(response)
@@ -71,7 +71,7 @@ module Alembic
     end
 
     test "a visitor cannot answer into a saved session on a diagnostic the host has not authorized" do
-      response = Response.start(published)
+      response = Flow::Run.start(published)
 
       without_host_configuration do
         patch alembic.response_path(response), params: { answers: { ask: "yes" } }
