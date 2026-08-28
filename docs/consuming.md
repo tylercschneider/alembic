@@ -153,7 +153,8 @@ Alembic::Flow.registry.register(MyApp::AGENT)
 | `names_by :prompt` | which setting titles the node on the canvas |
 | `requires { \|node\| }` | returns ids this node's config depends on |
 | `route { \|node, state\| }` | returns which port to leave by |
-| `process { \|node, state\| }` | **declared but not yet called — see §8** |
+| `ends_here` | this step ends the walk that reaches it |
+| `process { \|node, state\| }` | what the step does, run for an ending by `conclude` — see §10 |
 
 ### Setting types
 
@@ -260,6 +261,8 @@ records; the engine never inspects them except through a step type's hooks.
 | `steps` | every `Node` in the document |
 | `requirements(id)` | the ids that node depends on |
 | `next_step(state)` | the next node awaiting input, or `nil` when finished |
+| `ending(state)` | the `ends_here` node a finished walk rested at, or `nil` |
+| `conclude(state)` | runs that ending's `process` and returns what it returns |
 | `state_on_path(state)` | `state` reduced to what is still on the walked path |
 
 A host's runner is this loop:
@@ -272,7 +275,13 @@ while (step = digest.next_step(state))
 end
 
 finished = digest.state_on_path(state)
+reached = digest.ending(state)
 ```
+
+A flow may have more than one `ends_here` node, so `ending` is how a host learns
+which one this run finished at — its config carries whatever the author set
+there, and `conclude` runs its `process`. `ending` is pure and safe to call
+again; `conclude` is not, so call it once per run.
 
 `next_step` walks from `entry`, evaluating conditions against `state` as it
 goes, and stops at the first node whose type `awaits_input` and which has no
@@ -525,8 +534,9 @@ refusals are.
 
 ## 9. What ships built in
 
-Two step types, both registered by the engine:
+Step types registered by the engine:
 
+- **`terminal`** — `heading`, `message`. Ends the walk that reaches it.
 - **`question`** — `question`, `answers` (a list of `value`/`label`/`weight`
   entries), `category`. Awaits input.
 - **`condition`** — `answer`, and either `equals` or `in` (a list of `value`
@@ -552,9 +562,10 @@ host would use, and a host can add its own or ignore them entirely.
 
 Documented so nobody builds against something that isn't there:
 
-- **`process` is not called.** The DSL accepts a `process` block and
-  `StepType#process` will invoke it, but nothing in `Digest` calls it. A step
-  type that needs to *do* something must have the host do it in its runner loop.
+- **`process` is called only for an ending.** `Digest#conclude` runs the
+  `process` of the node a finished walk rested at. Nothing calls `process` for a
+  step passed through mid-walk, so a step type that needs to *do* something on
+  the way must have the host do it in its runner loop.
 - **`single_output?` is unused** — `Digest` infers the same thing from whether
   `route` returns a port.
 - The engine's own `Runner` is a thin diagnostics-flavoured wrapper over
