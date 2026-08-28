@@ -80,6 +80,12 @@ module Alembic
         rested if step_type(rested)&.ends_here?
       end
 
+      def conclude(state)
+        rested = ending(state)
+
+        step_type(rested)&.process(rested, state)
+      end
+
       private
 
       Walk = Data.define(:recorded, :pending, :visited)
