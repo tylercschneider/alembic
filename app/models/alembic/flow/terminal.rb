@@ -8,6 +8,7 @@ module Alembic
       ends_here
 
       setting :heading, type: :string
+      setting :message, type: :string
 
       names_by { |_node| "End" }
     end
