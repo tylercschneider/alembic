@@ -1,9 +1,11 @@
 <% content_for(:title, "Complete") %>
 
 <% starting_over = flow_start_path(@guide.slug) %>
+<% finish = @guide.ending(@answers)&.config.to_h %>
 
 <%= ui_page(max_width: :md) do %>
-  <%= ui_page_header(title: "That's everything", subtitle: "Thanks — here's what you told us") do |header| %>
+  <%= ui_page_header(title: finish["heading"].presence || "That's everything",
+                     subtitle: finish["message"].presence || "Thanks — here's what you told us") do |header| %>
     <% header.action do %>
       <%= ui_button(label: "Start over", href: starting_over, variant: :secondary) %>
     <% end %>

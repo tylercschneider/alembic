@@ -23,6 +23,10 @@ module Alembic
       question_from(asked) if asked
     end
 
+    def ending(answers)
+      @digest.ending(named(answers))
+    end
+
     def answers_on_path(answers)
       @digest.state_on_path(named(answers)).symbolize_keys
     end

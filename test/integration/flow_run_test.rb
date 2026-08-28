@@ -36,6 +36,29 @@ module Alembic
       end
     end
 
+    def finishing
+      @finishing ||= Flow::Definition.create!(slug: "finishing").tap do |diagnostic|
+        diagnostic.record_definition(flowing(
+          "slug" => "finishing", "entry" => "budget",
+          "nodes" => [ { "id" => "budget", "type" => "question", "text" => "What is your budget?",
+                         "options" => [ { "value" => "low" }, { "value" => "high" } ] },
+                       { "id" => "gate", "type" => "condition", "step" => "budget", "output" => "answer", "comparison" => "is", "answer" => "high" },
+                       { "id" => "rich", "type" => "terminal", "heading" => "Premium wrap-up" },
+                       { "id" => "thrifty", "type" => "terminal", "heading" => "Modest wrap-up" } ],
+          "edges" => [ { "from" => "budget", "to" => "gate" },
+                       { "from" => "gate", "to" => "rich", "on" => true },
+                       { "from" => "gate", "to" => "thrifty", "on" => false } ]
+        ))
+        diagnostic.publish
+      end
+    end
+
+    test "a finished run shows the heading of the ending its path reached" do
+      get alembic.flow_step_path(finishing.slug), params: { answers: { budget: "high" } }
+
+      assert_select "h1", text: /Premium wrap-up/
+    end
+
     test "a finished run shows what its summary makes of it" do
       get alembic.flow_step_path(summarised.slug), params: { answers: { budget: "high", posh: "a" } }
 
