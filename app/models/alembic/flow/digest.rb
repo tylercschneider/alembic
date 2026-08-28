@@ -65,14 +65,24 @@ module Alembic
       end
 
       def next_step(state)
-        walk(state).last
+        walk(state).pending
       end
 
       def state_on_path(state)
-        state.slice(*walk(state).first)
+        state.slice(*walk(state).recorded)
+      end
+
+      def ending(state)
+        walked = walk(state)
+        return if walked.pending
+
+        rested = step(walked.visited.last)
+        rested if step_type(rested)&.ends_here?
       end
 
       private
+
+      Walk = Data.define(:recorded, :pending, :visited)
 
       def walk(state)
         recorded = []
@@ -80,14 +90,14 @@ module Alembic
         cursor = entry
 
         while cursor && !visited.include?(cursor.id)
-          return [ recorded, cursor ] if pending?(cursor, state)
+          return Walk.new(recorded: recorded, pending: cursor, visited: visited) if pending?(cursor, state)
 
           recorded << cursor.id if state.key?(cursor.id)
           visited << cursor.id
           cursor = successor(cursor, state)
         end
 
-        [ recorded, nil ]
+        Walk.new(recorded: recorded, pending: nil, visited: visited)
       end
 
       def pending?(node, state)

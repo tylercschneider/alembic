@@ -11,6 +11,7 @@ module Alembic
             output :result, type: :boolean, values: [ true, false ]
             route { |_node, state| state["a"] == "yes" }
           end)
+          built.register(StepType.define(:stop) { ends_here })
           built.register(StepType.define(:branch) do
             setting :answer, type: :string
             requires { |node| [ node.config["answer"] ].compact }
@@ -128,6 +129,17 @@ module Alembic
         document = { "entry" => "a", "nodes" => [ { "id" => "a", "type" => "pick" } ], "edges" => [] }
 
         assert_equal [ { "value" => "answer", "label" => "Answer" } ], digest(document).outputs_of("a")
+      end
+
+      def ending
+        { "entry" => "first",
+          "nodes" => [ { "id" => "first", "type" => "ask" },
+                       { "id" => "done", "type" => "stop" } ],
+          "edges" => [ { "from" => "first", "to" => "done" } ] }
+      end
+
+      test "reports the ending a finished flow came to rest at" do
+        assert_equal "done", digest(ending).ending("first" => "yes").id
       end
 
       test "reports the values one named output of a step can take" do
