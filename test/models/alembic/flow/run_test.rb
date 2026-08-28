@@ -23,6 +23,23 @@ module Alembic
         assert_equal({ a: "x", c: "x" }, response.reload.recorded)
       end
 
+      test "reports the ending it came to rest at from answers keyed as it records them" do
+        diagnostic = Definition.create!(slug: "resting")
+        diagnostic.definition_versions.create!(number: 1, definition: flowing({
+          "slug" => "resting", "entry" => "a",
+          "nodes" => [
+            { "id" => "a", "type" => "question", "text" => "A", "options" => [ "x" ] },
+            { "id" => "done", "type" => "terminal", "heading" => "All set" }
+          ],
+          "edges" => [ { "from" => "a", "to" => "done" } ]
+        }))
+        diagnostic.publish_version(diagnostic.definition_versions.first)
+        response = Run.start(diagnostic)
+        response.update!(recorded: { a: "x" })
+
+        assert_equal "done", response.ending(response.recorded).id
+      end
+
       test "pins to the diagnostic's current definition version when started" do
         diagnostic = Definition.create!(slug: "demo")
         version = diagnostic.definition_versions.create!(number: 1, definition: { "slug" => "demo" })
