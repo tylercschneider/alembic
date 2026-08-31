@@ -3,6 +3,12 @@ require "test_helper"
 module Alembic
   module Steps
     class QuestionTest < ActiveSupport::TestCase
+      test "displays itself as what it asks" do
+        node = Flow::Node.new(id: "budget", type: "question", config: { "question" => "Budget?" })
+
+        assert_equal "Budget?", Question.step_type.display_of(node).text
+      end
+
       test "declares a setting for the question it asks" do
         assert_equal :string, Question.step_type.fields[:question]
       end
