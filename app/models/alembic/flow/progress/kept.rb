@@ -10,6 +10,13 @@ module Alembic
           @run.pinned_definition
         end
 
+        def summary_of(state)
+          return [] if @run.pinned_summary.blank?
+
+          Summary::Report.new(@run.pinned_summary)
+            .results(Summary::Run.new(state: state, steps: @run.pinned_steps))
+        end
+
         def recorded
           @run.recorded
         end
