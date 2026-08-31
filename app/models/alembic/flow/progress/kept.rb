@@ -13,6 +13,10 @@ module Alembic
         def record(id, value)
           @run.record(id.to_sym, value)
         end
+
+        def discard_last
+          @run.discard_last
+        end
       end
     end
   end
