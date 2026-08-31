@@ -1,0 +1,51 @@
+module Alembic
+  module Flow
+    class Runner
+      def initialize(document, registry: Flow.registry)
+        @document = document.to_h
+        @registry = registry
+        @digest = Digest.new(Document.new(@document, registry: registry), registry: registry)
+      end
+
+      def slug
+        @document["slug"]
+      end
+
+      def headline
+        @document["headline"]
+      end
+
+      def steps
+        @digest.steps
+      end
+
+      def step(id)
+        @digest.step(id.to_s)
+      end
+
+      def next_step(state)
+        shown(@digest.next_step(named(state)))
+      end
+
+      def state_on_path(state)
+        @digest.state_on_path(named(state)).symbolize_keys
+      end
+
+      def steps_on_path(state)
+        state_on_path(state).keys.map { |id| shown(@digest.step(id.to_s)) }
+      end
+
+      private
+
+      def shown(node)
+        return node unless node && @registry.registered?(node.type)
+
+        @registry.fetch(node.type).display_of(node) || node
+      end
+
+      def named(state)
+        state.transform_keys(&:to_s)
+      end
+    end
+  end
+end

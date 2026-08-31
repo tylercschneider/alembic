@@ -18,6 +18,8 @@ module Alembic
       names_by :question
       awaits_input
 
+      displays_by { |node| Asked.new(id: node.id.to_sym, text: asked(node.config), choices: choices_in(node)) }
+
       def self.asked(step)
         step.to_h["question"] || step.to_h["text"]
       end
@@ -30,6 +32,16 @@ module Alembic
         answers_of(step).map do |answer|
           { "value" => answer["value"], "label" => answer["label"].presence || answer["value"] }
         end
+      end
+
+      def self.choices_in(node)
+        answers_of(node.config).map { |answer| choice_from(answer) }
+      end
+
+      def self.choice_from(answer)
+        return Choice.new(value: answer) unless answer.is_a?(Hash)
+
+        Choice.new(value: answer["value"], label: answer["label"], hint: answer["hint"])
       end
 
       def self.category_of(step)

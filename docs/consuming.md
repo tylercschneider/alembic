@@ -153,6 +153,7 @@ Alembic::Flow.registry.register(MyApp::AGENT)
 | `names_by :prompt` | which setting titles the node on the canvas |
 | `requires { \|node\| }` | returns ids this node's config depends on |
 | `route { \|node, state\| }` | returns which port to leave by |
+| `displays_by { \|node\| }` | what the runner hands back for this step. Omit and it hands back the node |
 | `process { \|node, state\| }` | **declared but not yet called — see §8** |
 
 ### Setting types
@@ -262,7 +263,36 @@ records; the engine never inspects them except through a step type's hooks.
 | `next_step(state)` | the next node awaiting input, or `nil` when finished |
 | `state_on_path(state)` | `state` reduced to what is still on the walked path |
 
-A host's runner is this loop:
+### The runner
+
+`Flow::Runner` is that walk with the loop already written. A host builds one
+from a document and asks it what to show next.
+
+```ruby
+runner = Alembic::Flow::Runner.new(document)
+
+runner.next_step(state)      # the step to show now, or nil when finished
+runner.state_on_path(state)  # state reduced to the path walked
+runner.steps_on_path(state)  # the steps that path reached
+runner.step("budget")        # one step by id
+runner.steps                 # every step in the document
+```
+
+`next_step` hands back whatever the step's own type declares it displays, and
+the `Node` itself when it declares nothing. That declaration is `displays_by`,
+and it is how a host puts its own shape on a run without writing a walk:
+
+```ruby
+class Question
+  include Alembic::Flow::Step
+
+  awaits_input
+
+  displays_by { |node| Asked.new(id: node.id.to_sym, text: asked(node.config)) }
+end
+```
+
+A host wanting the loop itself still has it:
 
 ```ruby
 state = {}
@@ -557,10 +587,6 @@ Documented so nobody builds against something that isn't there:
   type that needs to *do* something must have the host do it in its runner loop.
 - **`single_output?` is unused** — `Digest` infers the same thing from whether
   `route` returns a port.
-- The engine's own `Runner` is a thin diagnostics-flavoured wrapper over
-  `Digest` (`questions`, `next_question`, `choice_label`). It is a consumer of
-  this interface, not part of it — a host orchestrating agents should use
-  `Digest` directly.
 
 ## 11. A non-diagnostic example
 

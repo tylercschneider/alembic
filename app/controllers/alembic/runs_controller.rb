@@ -8,7 +8,7 @@ module Alembic
       @response = saved_session
       @guide = Runner.new(@response.pinned_definition)
       @answers = @response.recorded
-      @question = @guide.next_question(@answers)
+      @question = @guide.next_step(@answers)
       return render :step if @question
 
       render_completion
@@ -23,7 +23,7 @@ module Alembic
     private
 
     def render_completion
-      @answered = @guide.answers_on_path(@answers)
+      @answered = @guide.state_on_path(@answers)
       @outputs = summarised(@answered.transform_keys(&:to_s))
       render template: "alembic/flows/complete"
     end
@@ -36,7 +36,7 @@ module Alembic
     end
 
     def record_submitted_answer(response)
-      asked = Runner.new(response.pinned_definition).questions.map(&:id)
+      asked = Runner.new(response.pinned_definition).steps.map(&:id)
       question_id, value = params.fetch(:answers, {}).permit(*asked).to_h.first
       response.record(question_id.to_sym, value)
     end

@@ -7,7 +7,7 @@ module Alembic
 
       attr_reader :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :naming_field, :naming, :drawn_from, :outputs_of, :outputs, :required
 
-      def initialize(id:, step_name:, fields:, awaits_input:, ends_here: false, begins_here: false, requirements:, behaviour:, routing:, naming_field: nil, naming: nil, drawn_from: {}, outputs_of: {}, outputs: [], required: [], record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
+      def initialize(id:, step_name:, fields:, awaits_input:, ends_here: false, begins_here: false, requirements:, behaviour:, routing:, display: nil, naming_field: nil, naming: nil, drawn_from: {}, outputs_of: {}, outputs: [], required: [], record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
         @id = id
         @step_name = step_name
         @fields = fields
@@ -17,6 +17,7 @@ module Alembic
         @requirements = requirements
         @behaviour = behaviour
         @routing = routing
+        @display = display
         @naming_field = naming_field
         @naming = naming
         @drawn_from = drawn_from
@@ -29,6 +30,10 @@ module Alembic
         @choices = choices
         @limits = limits
         @checks = checks
+      end
+
+      def display_of(node)
+        @display&.call(node)
       end
 
       def process(node, state)
@@ -144,6 +149,10 @@ module Alembic
           @declared_outputs += [ Output.new(name: name, type: type, label: label, values: values, from: from) ]
         end
 
+        def displays_by(&display)
+          @display = display
+        end
+
         def process(&behaviour)
           @behaviour = behaviour
         end
@@ -212,7 +221,7 @@ module Alembic
         public
 
         def to_step_type
-          StepType.new(id: @id, step_name: @step_name, fields: @fields, awaits_input: @awaits_input, ends_here: @ends_here, begins_here: @begins_here, requirements: @requirements, behaviour: @behaviour, routing: @routing, naming_field: @naming_field, naming: @naming, drawn_from: @drawn_from, outputs_of: @outputs_of, outputs: @declared_outputs, required: @required, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
+          StepType.new(id: @id, step_name: @step_name, fields: @fields, awaits_input: @awaits_input, ends_here: @ends_here, begins_here: @begins_here, requirements: @requirements, behaviour: @behaviour, routing: @routing, display: @display, naming_field: @naming_field, naming: @naming, drawn_from: @drawn_from, outputs_of: @outputs_of, outputs: @declared_outputs, required: @required, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
         end
       end
     end
