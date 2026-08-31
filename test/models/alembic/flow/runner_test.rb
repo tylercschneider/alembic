@@ -54,6 +54,10 @@ module Alembic
         assert_equal %w[opening first gate yes_step no_step], runner.steps.map(&:id)
       end
 
+      test "finds a step by the id it was given" do
+        assert_equal "First?", runner.step("first").config["text"]
+      end
+
       test "holds only the steps the walked path reached" do
         walked = { first: "yes", no_step: "stale", yes_step: "kept" }
 

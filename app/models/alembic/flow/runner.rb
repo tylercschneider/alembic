@@ -11,6 +11,10 @@ module Alembic
         @digest.steps
       end
 
+      def step(id)
+        @digest.step(id.to_s)
+      end
+
       def next_step(state)
         shown(@digest.next_step(named(state)))
       end
