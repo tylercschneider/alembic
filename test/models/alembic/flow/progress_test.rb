@@ -11,6 +11,12 @@ module Alembic
         end
       end
 
+      test "a flow keeping a run only at the end stores it when the flow finishes" do
+        progress = Progress.for(flow(:on_finish), answers: { a: "yes" })
+
+        assert_equal({ a: "yes" }, progress.finish({ a: "yes" }).recorded)
+      end
+
       test "a kept run drops the last answer stored against it" do
         run = Flow::Run.start(flow(:each_step))
         run.record(:a, "yes")

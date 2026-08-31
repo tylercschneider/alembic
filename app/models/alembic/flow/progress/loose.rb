@@ -15,6 +15,12 @@ module Alembic
           @answers = @answers.merge(id.to_sym => value)
         end
 
+        def finish(state)
+          return unless @flow.on_finish?
+
+          Run.start(@flow).tap { |run| run.update!(recorded: state) }
+        end
+
         def discard_last
           last = Runner.new(@flow.live_definition).state_on_path(@answers).keys.last
 
