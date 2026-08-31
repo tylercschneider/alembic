@@ -96,6 +96,22 @@ module Alembic
       assert_select "a[href=?]", alembic.manage_flow_path(diagnostic)
     end
 
+    test "saving the details stores what the flow keeps of a run" do
+      diagnostic = alembic_flows(:business_scorecard)
+
+      patch alembic.manage_flow_path(diagnostic), params: { flow: { persists: "on_finish" } }
+
+      assert_predicate diagnostic.reload, :on_finish?
+    end
+
+    test "the details editor offers what the flow keeps of a run" do
+      diagnostic = alembic_flows(:business_scorecard)
+
+      get alembic.edit_manage_flow_path(diagnostic)
+
+      assert_select "select[name=?]", "flow[persists]"
+    end
+
     test "the details editor offers the way back to the flow" do
       diagnostic = alembic_flows(:business_scorecard)
 
