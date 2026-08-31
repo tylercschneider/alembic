@@ -11,6 +11,13 @@ module Alembic
         end
       end
 
+      test "a flow keeping every step reads the answers stored against its run" do
+        run = Flow::Run.start(flow(:each_step))
+        run.record(:a, "yes")
+
+        assert_equal({ a: "yes" }, Progress.for(run.flow, run: run).recorded)
+      end
+
       test "a flow keeping nothing reads the answers it was handed" do
         progress = Progress.for(flow(:unsaved), answers: { a: "yes" })
 
