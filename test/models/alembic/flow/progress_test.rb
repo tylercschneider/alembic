@@ -17,6 +17,12 @@ module Alembic
         assert_equal run.pinned_definition, Progress.for(run.flow, run: run).definition
       end
 
+      test "a loose run runs the definition it was given over the live one" do
+        given = { "entry" => "a", "nodes" => [], "edges" => [] }
+
+        assert_equal given, Progress.for(flow(:unsaved), answers: {}, definition: given).definition
+      end
+
       test "a loose run runs the flow's live definition" do
         built = flow(:unsaved)
 

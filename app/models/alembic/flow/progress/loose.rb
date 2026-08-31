@@ -2,13 +2,14 @@ module Alembic
   module Flow
     module Progress
       class Loose
-        def initialize(flow, answers)
+        def initialize(flow, answers, definition = nil)
           @flow = flow
           @answers = answers.to_h.symbolize_keys
+          @definition = definition
         end
 
         def definition
-          @flow.live_definition
+          @definition || @flow.live_definition
         end
 
         def recorded
