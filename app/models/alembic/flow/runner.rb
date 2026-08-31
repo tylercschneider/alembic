@@ -7,6 +7,10 @@ module Alembic
         @digest = Digest.new(Document.new(@document, registry: registry), registry: registry)
       end
 
+      def steps
+        @digest.steps
+      end
+
       def next_step(state)
         @digest.next_step(named(state))
       end

@@ -35,6 +35,10 @@ module Alembic
         assert_equal "first", runner.next_step({}).id
       end
 
+      test "holds every step the flow document carries" do
+        assert_equal %w[opening first gate yes_step no_step], runner.steps.map(&:id)
+      end
+
       test "drops state stranded off the branch taken" do
         wandered = { first: "yes", no_step: "stale", yes_step: "kept" }
 
