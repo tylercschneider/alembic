@@ -6,6 +6,10 @@ module Alembic
           @run = run
         end
 
+        def definition
+          @run.pinned_definition
+        end
+
         def recorded
           @run.recorded
         end

@@ -11,6 +11,12 @@ module Alembic
         end
       end
 
+      test "a kept run runs the definition its run was pinned to" do
+        run = Flow::Run.start(flow(:each_step))
+
+        assert_equal run.pinned_definition, Progress.for(run.flow, run: run).definition
+      end
+
       test "a loose run runs the flow's live definition" do
         built = flow(:unsaved)
 
