@@ -14,6 +14,12 @@ module Alembic
         def record(id, value)
           @answers = @answers.merge(id.to_sym => value)
         end
+
+        def discard_last
+          last = Runner.new(@flow.live_definition).state_on_path(@answers).keys.last
+
+          @answers = @answers.except(last) if last
+        end
       end
     end
   end

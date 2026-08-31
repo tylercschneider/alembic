@@ -11,6 +11,13 @@ module Alembic
         end
       end
 
+      test "a loose run drops the last answer on the path it walked" do
+        progress = Progress.for(flow(:unsaved), answers: { a: "yes" })
+        progress.discard_last
+
+        assert_empty progress.recorded
+      end
+
       test "a kept run stores a new answer against itself" do
         run = Flow::Run.start(flow(:each_step))
         Progress.for(run.flow, run: run).record(:a, "yes")
