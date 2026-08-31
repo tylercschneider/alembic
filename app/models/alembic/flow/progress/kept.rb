@@ -9,6 +9,10 @@ module Alembic
         def recorded
           @run.recorded
         end
+
+        def record(id, value)
+          @run.record(id.to_sym, value)
+        end
       end
     end
   end

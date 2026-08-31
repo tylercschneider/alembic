@@ -11,6 +11,13 @@ module Alembic
         end
       end
 
+      test "a kept run stores a new answer against itself" do
+        run = Flow::Run.start(flow(:each_step))
+        Progress.for(run.flow, run: run).record(:a, "yes")
+
+        assert_equal({ a: "yes" }, run.reload.recorded)
+      end
+
       test "a loose run carries a new answer without storing it" do
         progress = Progress.for(flow(:unsaved), answers: { a: "yes" })
         progress.record(:b, "no")
