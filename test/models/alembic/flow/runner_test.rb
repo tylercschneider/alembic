@@ -46,6 +46,14 @@ module Alembic
         assert_equal "first", runner.next_step({}).id
       end
 
+      test "carries the slug of the flow it runs" do
+        assert_equal "r", runner.slug
+      end
+
+      test "carries the headline of the flow it runs" do
+        assert_equal "A run", runner.headline
+      end
+
       test "shows a step the way its own type declares" do
         assert_equal "Asked: Budget?", runner(showing).next_step({})
       end

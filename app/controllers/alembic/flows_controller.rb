@@ -10,7 +10,7 @@ module Alembic
       @guide = runner
       @answers = submitted_answers
       @answers = without_last_answer(@answers) if params[:back]
-      @question = @guide.next_question(@answers)
+      @question = @guide.next_step(@answers)
       return render :step if @question
 
       render_completion
@@ -31,7 +31,7 @@ module Alembic
     end
 
     def render_completion
-      @answered = @guide.answers_on_path(@answers)
+      @answered = @guide.state_on_path(@answers)
       @outputs = summarising_diagnostic&.summary_of(@answered.transform_keys(&:to_s)).to_a
       render :complete
     end
@@ -50,11 +50,11 @@ module Alembic
     end
 
     def submitted_answers
-      params.fetch(:answers, {}).permit(*@guide.questions.map(&:id)).to_h.symbolize_keys
+      params.fetch(:answers, {}).permit(*@guide.steps.map(&:id)).to_h.symbolize_keys
     end
 
     def without_last_answer(answers)
-      last = @guide.answers_on_path(answers).keys.last
+      last = @guide.state_on_path(answers).keys.last
 
       last ? answers.except(last) : answers
     end

@@ -7,6 +7,14 @@ module Alembic
         @digest = Digest.new(Document.new(@document, registry: registry), registry: registry)
       end
 
+      def slug
+        @document["slug"]
+      end
+
+      def headline
+        @document["headline"]
+      end
+
       def steps
         @digest.steps
       end
