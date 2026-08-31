@@ -11,6 +11,12 @@ module Alembic
         end
       end
 
+      test "a kept run is already stored when the flow finishes" do
+        run = Flow::Run.start(flow(:each_step))
+
+        assert_equal run, Progress.for(run.flow, run: run).finish({ a: "yes" })
+      end
+
       test "a flow keeping nothing stores nothing when the flow finishes" do
         assert_nil Progress.for(flow(:unsaved), answers: { a: "yes" }).finish({ a: "yes" })
       end
