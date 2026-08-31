@@ -11,6 +11,10 @@ module Alembic
         end
       end
 
+      test "a flow keeping nothing stores nothing when the flow finishes" do
+        assert_nil Progress.for(flow(:unsaved), answers: { a: "yes" }).finish({ a: "yes" })
+      end
+
       test "a flow keeping a run only at the end stores it when the flow finishes" do
         progress = Progress.for(flow(:on_finish), answers: { a: "yes" })
 
