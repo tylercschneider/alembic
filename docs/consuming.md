@@ -292,6 +292,31 @@ class Question
 end
 ```
 
+### What a run keeps
+
+The walk is the same wherever state lives, so where it lives is a strategy
+rather than a second code path. `Flow::Progress` holds it, and a flow names
+which one it uses:
+
+| Strategy | State lives in | Buys | Costs |
+|---|---|---|---|
+| `unsaved` | what the host hands in | no storage at all | nothing survives the request |
+| `each_step` | a `Flow::Run`, written per answer | resuming from a durable url | a write per step |
+| `on_finish` | a `Flow::Run`, written once at the end | nothing stored for an abandoned run | no resuming |
+
+```ruby
+progress = Alembic::Flow::Progress.for(flow, run: run, answers: answers)
+
+progress.recorded            # the state so far
+progress.record(id, value)   # take one answer
+progress.discard_last        # step back
+progress.finish(state)       # the run, or nil when the flow keeps none
+progress.definition          # what this run walks — pinned for a kept run
+```
+
+A run handed in wins over the flow's setting, so a run already under way
+keeps behaving as it started.
+
 A host wanting the loop itself still has it:
 
 ```ruby
