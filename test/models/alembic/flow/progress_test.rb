@@ -11,6 +11,12 @@ module Alembic
         end
       end
 
+      test "a loose run runs the flow's live definition" do
+        built = flow(:unsaved)
+
+        assert_equal built.live_definition, Progress.for(built, answers: {}).definition
+      end
+
       test "a kept run is already stored when the flow finishes" do
         run = Flow::Run.start(flow(:each_step))
 

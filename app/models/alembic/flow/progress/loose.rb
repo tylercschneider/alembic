@@ -7,6 +7,10 @@ module Alembic
           @answers = answers.to_h.symbolize_keys
         end
 
+        def definition
+          @flow.live_definition
+        end
+
         def recorded
           @answers
         end
