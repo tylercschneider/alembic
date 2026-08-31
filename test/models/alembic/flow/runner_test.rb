@@ -7,6 +7,11 @@ module Alembic
         @registry ||= Registry.new.tap do |built|
           built.register(StepType.define(:opening) { begins_here })
           built.register(StepType.define(:ask) { setting :text, type: :string; awaits_input })
+          built.register(StepType.define(:shown) do
+            setting :text, type: :string
+            awaits_input
+            displays_by { |node| "Asked: #{node.config['text']}" }
+          end)
           built.register(StepType.define(:gate) do
             setting :of, type: :string
             route { |node, state| state[node.config["of"]] == "yes" ? "yes" : "no" }
@@ -27,12 +32,22 @@ module Alembic
                        { "from" => "gate", "to" => "no_step", "on" => "no" } ] }
       end
 
+      def showing
+        { "nodes" => [ { "id" => "opening", "type" => "opening" },
+                       { "id" => "shown", "type" => "shown", "text" => "Budget?" } ],
+          "edges" => [ { "from" => "opening", "to" => "shown" } ] }
+      end
+
       def runner(document = branching)
         Runner.new(document, registry: registry)
       end
 
       test "stops at the first step awaiting input" do
         assert_equal "first", runner.next_step({}).id
+      end
+
+      test "shows a step the way its own type declares" do
+        assert_equal "Asked: Budget?", runner(showing).next_step({})
       end
 
       test "holds every step the flow document carries" do

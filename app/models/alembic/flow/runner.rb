@@ -12,7 +12,7 @@ module Alembic
       end
 
       def next_step(state)
-        @digest.next_step(named(state))
+        shown(@digest.next_step(named(state)))
       end
 
       def state_on_path(state)
@@ -20,6 +20,12 @@ module Alembic
       end
 
       private
+
+      def shown(node)
+        return node unless node && @registry.registered?(node.type)
+
+        @registry.fetch(node.type).display_of(node) || node
+      end
 
       def named(state)
         state.transform_keys(&:to_s)
