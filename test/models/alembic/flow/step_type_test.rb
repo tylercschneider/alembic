@@ -7,6 +7,12 @@ module Alembic
         Node.new(id: "branch", type: "condition", config: { "answer" => id })
       end
 
+      test "carries the display it declares" do
+        step_type = StepType.define(:ask) { displays_by { |node| node.config["text"] } }
+
+        assert_equal "Budget?", step_type.display_of(Node.new(id: "a", type: "ask", config: { "text" => "Budget?" }))
+      end
+
       test "carries the behaviour it declares" do
         step_type = StepType.define(:agent) { process { |node, state| { "out" => state["in"] } } }
 
