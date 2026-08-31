@@ -7,9 +7,11 @@
     <%= ui_progress(value: @answers.size, max: [ @guide.steps_on_path(@answers).size, 1 ].max, label: "Question #{@answers.size + 1}") %>
   </div>
 
-  <%= form_with url: flow_step_path(@guide.slug), method: :get, data: { turbo: false } do %>
-    <% @answers.each do |key, value| %>
-      <%= hidden_field_tag "answers[#{key}]", value %>
+  <%= form_with url: step_form[:url], method: step_form[:method], data: { turbo: false } do %>
+    <% if carries_answers? %>
+      <% @answers.each do |key, value| %>
+        <%= hidden_field_tag "answers[#{key}]", value %>
+      <% end %>
     <% end %>
 
     <fieldset>

@@ -52,17 +52,14 @@ module Alembic
     def render_completion
       @answered = @guide.state_on_path(@answers)
       @progress.finish(@answered)
-      @outputs = summarising&.summary_of(@answered.transform_keys(&:to_s)).to_a
+      @outputs = @progress.summary_of(@answered.transform_keys(&:to_s))
       render :complete
     end
 
-    def summarising
-      @stored_flow if @stored_flow&.summarises?
-    end
-
     def progress
-      @progress ||= Flow::Progress.for(@stored_flow, run: run, answers: submitted_answers,
-        definition: running_definition)
+      return @progress ||= Flow::Progress.for(run.flow, run: run) if run
+
+      @progress ||= Flow::Progress.for(flow, answers: submitted_answers, definition: running_definition)
     end
 
     def running_definition
@@ -72,7 +69,13 @@ module Alembic
     def run
       return unless params[:id]
 
-      @run ||= Flow::Admission.of_run(Flow::Run.find(params[:id]), permitted: permitted?(Flow::Run.find(params[:id]).flow))
+      @run ||= admitted_run
+    end
+
+    def admitted_run
+      found = Flow::Run.find(params[:id])
+
+      Flow::Admission.of_run(found, permitted: permitted?(found.flow))
     end
 
     def flow

@@ -5,12 +5,12 @@
 
   <%= ui_section do %>
     <div class="flex flex-wrap items-center gap-3">
-      <%= ui_button(label: @diagnostic.start_label.presence || "Start", href: flow_step_path(@diagnostic.slug)) %>
-
-      <% if @diagnostic.definition.present? && !previewing? %>
+      <% if @diagnostic.each_step? && @diagnostic.definition.present? && !previewing? %>
         <%= ui_form(action: alembic.flow_runs_path(@diagnostic.slug), method: :post) do %>
-          <%= ui_button(label: "Start and save my progress", type: :submit, variant: :secondary) %>
+          <%= ui_button(label: @diagnostic.start_label.presence || "Start", type: :submit) %>
         <% end %>
+      <% else %>
+        <%= ui_button(label: @diagnostic.start_label.presence || "Start", href: flow_step_path(@diagnostic.slug)) %>
       <% end %>
     </div>
   <% end %>

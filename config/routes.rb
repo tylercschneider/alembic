@@ -25,9 +25,9 @@ Alembic::Engine.routes.draw do
     end
   end
 
-  post ":slug/runs", to: "runs#create", as: :flow_runs
-  get "runs/:id", to: "runs#show", as: :run
-  patch "runs/:id", to: "runs#update"
+  post ":slug/runs", to: "flows#start", as: :flow_runs
+  get "runs/:id", to: "flows#step", as: :run
+  patch "runs/:id", to: "flows#update"
 
   get ":slug", to: "flows#show", as: :flow
   get ":slug/step", to: "flows#step", as: :flow_step
