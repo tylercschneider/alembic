@@ -17,6 +17,13 @@ module Alembic
         assert_equal run.pinned_definition, Progress.for(run.flow, run: run).definition
       end
 
+      test "a loose run summarises from the flow's live summary" do
+        built = flow(:unsaved)
+        built.record_summary("outputs" => [ { "id" => "answered", "type" => "tally", "label" => "Steps answered" } ])
+
+        assert_equal [ "Steps answered" ], Progress.for(built, answers: {}).summary_of({ "a" => "yes" }).map(&:label)
+      end
+
       test "a loose run runs the definition it was given over the live one" do
         given = { "entry" => "a", "nodes" => [], "edges" => [] }
 

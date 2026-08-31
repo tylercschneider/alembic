@@ -12,6 +12,12 @@ module Alembic
           @definition || @flow.live_definition
         end
 
+        def summary_of(state)
+          return [] unless @flow.summarises?
+
+          @flow.summary_of(state)
+        end
+
         def recorded
           @answers
         end
