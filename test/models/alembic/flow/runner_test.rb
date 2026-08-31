@@ -34,6 +34,12 @@ module Alembic
       test "stops at the first step awaiting input" do
         assert_equal "first", runner.next_step({}).id
       end
+
+      test "drops state stranded off the branch taken" do
+        wandered = { first: "yes", no_step: "stale", yes_step: "kept" }
+
+        assert_equal({ first: "yes", yes_step: "kept" }, runner.state_on_path(wandered))
+      end
     end
   end
 end

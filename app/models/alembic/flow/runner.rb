@@ -11,6 +11,10 @@ module Alembic
         @digest.next_step(named(state))
       end
 
+      def state_on_path(state)
+        @digest.state_on_path(named(state)).symbolize_keys
+      end
+
       private
 
       def named(state)
