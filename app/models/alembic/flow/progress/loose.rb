@@ -10,6 +10,10 @@ module Alembic
         def recorded
           @answers
         end
+
+        def record(id, value)
+          @answers = @answers.merge(id.to_sym => value)
+        end
       end
     end
   end
