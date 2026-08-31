@@ -315,6 +315,12 @@ module Alembic
       assert_equal "A better name", diagnostic.reload.title
     end
 
+    test "saving the details stores what the flow keeps of a run" do
+      patch "#{canvas_path}/details", params: { flow: { persists: "each_step" } }
+
+      assert_predicate diagnostic.reload, :each_step?
+    end
+
     test "saving the details says they were saved" do
       patch "#{canvas_path}/details", params: { flow: { title: "A better name" } }
 
