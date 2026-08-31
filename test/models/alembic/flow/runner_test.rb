@@ -54,6 +54,12 @@ module Alembic
         assert_equal %w[opening first gate yes_step no_step], runner.steps.map(&:id)
       end
 
+      test "holds only the steps the walked path reached" do
+        walked = { first: "yes", no_step: "stale", yes_step: "kept" }
+
+        assert_equal %w[first yes_step], runner.steps_on_path(walked).map(&:id)
+      end
+
       test "drops state stranded off the branch taken" do
         wandered = { first: "yes", no_step: "stale", yes_step: "kept" }
 

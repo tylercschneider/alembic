@@ -19,6 +19,10 @@ module Alembic
         @digest.state_on_path(named(state)).symbolize_keys
       end
 
+      def steps_on_path(state)
+        state_on_path(state).keys.map { |id| shown(@digest.step(id.to_s)) }
+      end
+
       private
 
       def shown(node)
