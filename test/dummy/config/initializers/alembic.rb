@@ -4,4 +4,5 @@ Alembic.visitor_authorization_method = :alembic_visitor_permitted?
 
 Rails.application.config.to_prepare do
   Steps::Notify.register
+  Steps::Stamp.register
 end

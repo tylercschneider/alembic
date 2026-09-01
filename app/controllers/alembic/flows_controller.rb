@@ -13,6 +13,7 @@ module Alembic
     def step
       @guide = Runner.new(running_definition)
       @progress = progress
+      @guide.run(@progress)
       @answers = @progress.recorded
       @question = @guide.next_step(@answers)
       @drawing = @guide.drawing_at(@answers)
