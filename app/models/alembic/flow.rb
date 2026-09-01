@@ -14,8 +14,12 @@ module Alembic
     DRAWING = "alembic/flow/steps/choosing".freeze
 
     class << self
+      def draws_with(template)
+        @drawing = template
+      end
+
       def drawing
-        @drawing ||= DRAWING
+        @drawing.presence || DRAWING
       end
 
       def step(id, &declaration)
