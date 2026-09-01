@@ -206,7 +206,7 @@ setting :channels, type: :multi_select, options: %w[email sms push], limit: 2,
   check: ->(chosen) { "Channels needs at least one" if chosen.blank? }
 ```
 
-`StepType#objections(config)` returns the messages for a configuration. Alembic's
+`StepType#settings.objections(config)` returns the messages for a configuration. Alembic's
 builder calls it when a step is configured and refuses the edit if any come back,
 so a rejected value never reaches the document.
 

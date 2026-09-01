@@ -123,7 +123,7 @@ module Alembic
       end
 
       def offered_to(node, source)
-        naming = @registry.fetch(node.type).outputs_of[source]
+        naming = @registry.fetch(node.type).settings.outputs_of[source]
 
         digest.values_of(node.config[naming.to_s], node.config[source.to_s]).map { |value| value["value"].to_s }
       end
@@ -131,7 +131,7 @@ module Alembic
       def drawn_of(node)
         return {} unless @registry.registered?(node.type)
 
-        @registry.fetch(node.type).drawn_from
+        @registry.fetch(node.type).settings.drawn_from
       end
 
       def missing_settings
@@ -144,13 +144,13 @@ module Alembic
       def required_of(node)
         return [] unless @registry.registered?(node.type)
 
-        @registry.fetch(node.type).required
+        @registry.fetch(node.type).settings.required
       end
 
       def requirements_for(node)
         return [] unless @registry.registered?(node.type)
 
-        @registry.fetch(node.type).requirements_for(node)
+        @registry.fetch(node.type).settings.requirements_for(node.config)
       end
 
       def precedes_every_path?(required, id)

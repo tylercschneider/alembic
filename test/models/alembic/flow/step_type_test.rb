@@ -10,13 +10,13 @@ module Alembic
       test "insists on a value for the earlier step it names" do
         step_type = StepType.define(:act) { setting :of, type: :previous_step }
 
-        assert_equal [ :of ], step_type.required
+        assert_equal [ :of ], step_type.settings.required
       end
 
       test "depends on the step its previous step setting names" do
         step_type = StepType.define(:act) { setting :of, type: :previous_step }
 
-        assert_equal [ "earlier" ], step_type.requirements_for(Node.new(id: "a", type: "act", config: { "of" => "earlier" }))
+        assert_equal [ "earlier" ], step_type.settings.requirements_for({ "of" => "earlier" })
       end
 
       test "carries the template it declares" do
@@ -60,7 +60,7 @@ module Alembic
       test "depends on nothing when it names no earlier step" do
         step_type = StepType.define(:agent) { }
 
-        assert_empty step_type.requirements_for(node_testing("a"))
+        assert_empty step_type.settings.requirements_for(node_testing("a").config)
       end
 
       test "awaits external input when it declares so" do
@@ -78,7 +78,7 @@ module Alembic
       test "declares a setting naming a step that comes before it" do
         step_type = StepType.define(:branch) { setting :step, type: :previous_step }
 
-        assert_equal :previous_step, step_type.fields[:step]
+        assert_equal :previous_step, step_type.settings.fields[:step]
       end
 
       test "declares a setting whose choices come from the step another setting names" do
@@ -87,7 +87,7 @@ module Alembic
           setting :answer, from: :step
         end
 
-        assert_equal :step, step_type.drawn_from[:answer]
+        assert_equal :step, step_type.settings.drawn_from[:answer]
       end
 
       test "declares a named output a later step may read" do
@@ -126,7 +126,7 @@ module Alembic
       test "declares a setting it cannot run without" do
         step_type = StepType.define(:branch) { setting :step, type: :string, required: true }
 
-        assert_equal [ :step ], step_type.required
+        assert_equal [ :step ], step_type.settings.required
       end
 
       test "can name an instance from a block over its whole config" do
@@ -142,7 +142,7 @@ module Alembic
           setting :output, outputs_of: :step
         end
 
-        assert_equal :step, step_type.outputs_of[:output]
+        assert_equal :step, step_type.settings.outputs_of[:output]
       end
 
       test "declares itself a step a flow ends at" do
@@ -176,13 +176,13 @@ module Alembic
       test "declares a setting holding a repeating group" do
         step_type = StepType.define(:ask) { setting(:options, type: :list) { setting :value, type: :string; setting :weight, type: :integer } }
 
-        assert_equal :list, step_type.fields[:options]
+        assert_equal :list, step_type.settings.fields[:options]
       end
 
       test "carries what each record in the list holds" do
         step_type = StepType.define(:ask) { setting(:options, type: :list) { setting :value, type: :string; setting :weight, type: :integer } }
 
-        assert_equal({ value: :string, weight: :integer }, step_type.record_fields[:options])
+        assert_equal({ value: :string, weight: :integer }, step_type.settings.record_fields[:options])
       end
 
       test "refuses a list of records that does not say what a record holds" do
@@ -200,7 +200,7 @@ module Alembic
       test "carries the fields it declares" do
         step_type = StepType.define(:agent) { setting :prompt, type: :string }
 
-        assert_equal({ prompt: :string }, step_type.fields)
+        assert_equal({ prompt: :string }, step_type.settings.fields)
       end
 
       test "refuses a field type outside the vocabulary" do
@@ -230,7 +230,7 @@ module Alembic
       test "declares a configurable value with setting" do
         step_type = StepType.define(:probe) { setting :prompt, type: :string }
 
-        assert_equal({ prompt: :string }, step_type.fields)
+        assert_equal({ prompt: :string }, step_type.settings.fields)
       end
 
       test "refuses a setting whose type it does not know" do
@@ -263,7 +263,7 @@ module Alembic
           end
         end
 
-        assert_equal({ value: :string, weight: :integer }, step_type.record_fields[:answers])
+        assert_equal({ value: :string, weight: :integer }, step_type.settings.record_fields[:answers])
       end
 
       test "declares the name a step type is known by" do
@@ -275,19 +275,19 @@ module Alembic
       test "labels a setting after its key" do
         step_type = StepType.define(:ask) { setting :question, type: :string }
 
-        assert_equal "Question", step_type.labels[:question]
+        assert_equal "Question", step_type.settings.labels[:question]
       end
 
       test "prefers a label a setting states for itself" do
         step_type = StepType.define(:ask) { setting :tag, type: :string, label: "Grouping tag" }
 
-        assert_equal "Grouping tag", step_type.labels[:tag]
+        assert_equal "Grouping tag", step_type.settings.labels[:tag]
       end
 
       test "stores an integer setting as a number" do
         step_type = StepType.define(:ask) { setting :weight, type: :integer }
 
-        assert_equal({ "weight" => 5 }, step_type.coerce("weight" => "5"))
+        assert_equal({ "weight" => 5 }, step_type.settings.coerce("weight" => "5"))
       end
 
       test "stores a list entry's integer as a number" do
@@ -298,7 +298,7 @@ module Alembic
           end
         end
 
-        coerced = step_type.coerce("options" => [ { "value" => "low", "weight" => "3" } ])
+        coerced = step_type.settings.coerce("options" => [ { "value" => "low", "weight" => "3" } ])
 
         assert_equal 3, coerced["options"].first["weight"]
       end
@@ -310,13 +310,13 @@ module Alembic
       test "objects to a value outside the options it offers" do
         step_type = StepType.define(:probe) { setting :channels, type: :multi_select, options: %w[email sms] }
 
-        assert_equal [ "Channels does not offer post" ], step_type.objections("channels" => %w[email post])
+        assert_equal [ "Channels does not offer post" ], step_type.settings.objections("channels" => %w[email post])
       end
 
       test "objects to more choices than its limit allows" do
         step_type = StepType.define(:probe) { setting :channels, type: :multi_select, options: %w[a b c], limit: 2 }
 
-        assert_equal [ "Channels takes at most 2" ], step_type.objections("channels" => %w[a b c])
+        assert_equal [ "Channels takes at most 2" ], step_type.settings.objections("channels" => %w[a b c])
       end
 
       test "objects to more list entries than its limit allows" do
@@ -326,7 +326,7 @@ module Alembic
           end
         end
 
-        assert_equal [ "Answers takes at most 1" ], step_type.objections("answers" => [ { "value" => "a" }, { "value" => "b" } ])
+        assert_equal [ "Answers takes at most 1" ], step_type.settings.objections("answers" => [ { "value" => "a" }, { "value" => "b" } ])
       end
 
       test "objects with the message a check returns" do
@@ -335,7 +335,7 @@ module Alembic
             check: ->(chosen) { "Channels needs at least one" if chosen.empty? }
         end
 
-        assert_equal [ "Channels needs at least one" ], step_type.objections("channels" => [])
+        assert_equal [ "Channels needs at least one" ], step_type.settings.objections("channels" => [])
       end
 
       test "accepts a value its check returns nothing for" do
@@ -344,7 +344,7 @@ module Alembic
             check: ->(chosen) { "Channels needs at least one" if chosen.empty? }
         end
 
-        assert_empty step_type.objections("channels" => %w[a])
+        assert_empty step_type.settings.objections("channels" => %w[a])
       end
     end
   end

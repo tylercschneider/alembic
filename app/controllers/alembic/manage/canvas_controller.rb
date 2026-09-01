@@ -187,8 +187,8 @@ module Alembic
       end
 
       def settled(step_type)
-        step_type.coerce(configuration).tap do |values|
-          objections = step_type.objections(values)
+        step_type.settings.coerce(configuration).tap do |values|
+          objections = step_type.settings.objections(values)
           raise Flow::InvalidEdit, objections.join(", ") if objections.any?
         end
       end

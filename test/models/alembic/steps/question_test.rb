@@ -10,19 +10,19 @@ module Alembic
       end
 
       test "declares a setting for the question it asks" do
-        assert_equal :string, Question.step_type.fields[:question]
+        assert_equal :string, Question.step_type.settings.fields[:question]
       end
 
       test "declares a setting for the answers it offers" do
-        assert_equal :list, Question.step_type.fields[:answers]
+        assert_equal :list, Question.step_type.settings.fields[:answers]
       end
 
       test "an answer carries the weight the summary scores it by" do
-        assert_equal :integer, Question.step_type.record_fields[:answers][:weight]
+        assert_equal :integer, Question.step_type.settings.record_fields[:answers][:weight]
       end
 
       test "declares a category the summary can group it by" do
-        assert_equal :string, Question.step_type.fields[:category]
+        assert_equal :string, Question.step_type.settings.fields[:category]
       end
 
       test "offers its answers as the values of its answer output" do
@@ -57,7 +57,7 @@ module Alembic
       end
 
       test "cannot run without the answers it offers" do
-        assert_equal [ :answers ], Question.step_type.required
+        assert_equal [ :answers ], Question.step_type.settings.required
       end
     end
   end
