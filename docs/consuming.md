@@ -304,7 +304,7 @@ class Deliver
   include Alembic::Flow::Step
 
   setting :message, type: :string
-  setting :to, type: :string
+  setting :to, type: :previous_step, required: true
 
   requires { |node| [ node.config["to"] ].compact }
 

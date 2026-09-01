@@ -5,7 +5,7 @@ module Steps
     step_name "Deliver"
 
     setting :message, type: :string
-    setting :to, type: :string
+    setting :to, type: :previous_step, required: true
 
     requires { |node| [ node.config["to"] ].compact }
 
