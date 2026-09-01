@@ -14,6 +14,18 @@ module Alembic
         Node.new(id: "a", type: type, config: {})
       end
 
+      test "falls back to the overall template when a step type names none" do
+        assert_equal Flow.drawing, Drawing.of(node("plain"), registry)
+      end
+
+      test "prefers the step type's own template to the overall one" do
+        Flow.draws_with("host/steps/panel")
+
+        assert_equal "flows/steps/tiles", Drawing.of(node("tiled"), registry)
+      ensure
+        Flow.draws_with(nil)
+      end
+
       test "draws a step with the template its own type names" do
         assert_equal "flows/steps/tiles", Drawing.of(node("tiled"), registry)
       end
