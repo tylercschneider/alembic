@@ -300,13 +300,16 @@ than waiting for input. The walk stops at it the same way it stops at a step
 awaiting input, and `Flow::Runner#run` is what runs it:
 
 ```ruby
-class Stamp
+class Deliver
   include Alembic::Flow::Step
 
-  setting :with, type: :string
+  setting :message, type: :string
+  setting :to, type: :string
 
-  def process(node, _state)
-    node.config["with"]
+  requires { |node| [ node.config["to"] ].compact }
+
+  def process(node, state)
+    Mailer.deliver(node.config["message"], to: state[node.config["to"]])
   end
 end
 ```
