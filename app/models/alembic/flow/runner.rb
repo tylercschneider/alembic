@@ -27,6 +27,10 @@ module Alembic
         shown(@digest.next_step(named(state)))
       end
 
+      def drawing_at(state)
+        Drawing.of(@digest.next_step(named(state)), @registry)
+      end
+
       def state_on_path(state)
         @digest.state_on_path(named(state)).symbolize_keys
       end

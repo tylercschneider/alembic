@@ -11,7 +11,17 @@ module Alembic
     class UnknownCheck < ArgumentError; end
     class InvalidEdit < StandardError; end
 
+    DRAWING = "alembic/flow/steps/choosing".freeze
+
     class << self
+      def draws_with(template)
+        @drawing = template
+      end
+
+      def drawing
+        @drawing.presence || DRAWING
+      end
+
       def step(id, &declaration)
         registry.register(StepType.define(id, &declaration))
       end
