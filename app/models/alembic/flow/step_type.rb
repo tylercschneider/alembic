@@ -49,6 +49,10 @@ module Alembic
         @naming&.call(node).presence || node.config[naming_field.to_s].presence
       end
 
+      def acts?
+        @behaviour.present?
+      end
+
       def routes?
         @routing.present?
       end
