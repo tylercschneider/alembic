@@ -61,7 +61,7 @@ module Alembic
 
       def requirements(id)
         node = step(id)
-        step_type(node)&.requirements_for(node).to_a
+        step_type(node)&.settings&.requirements_for(node.config).to_a
       end
 
       def next_step(state)

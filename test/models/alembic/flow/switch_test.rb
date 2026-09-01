@@ -8,7 +8,7 @@ module Alembic
       end
 
       test "declares the step it directs on" do
-        assert_equal :previous_step, Switch.step_type.fields[:step]
+        assert_equal :previous_step, Switch.step_type.settings.fields[:step]
       end
 
       test "directs on the values the step it names outputs" do
@@ -20,7 +20,7 @@ module Alembic
       end
 
       test "requires the step it directs on" do
-        assert_equal [ "budget" ], Switch.step_type.requirements_for(switch({ "step" => "budget" }))
+        assert_equal [ "budget" ], Switch.step_type.settings.requirements_for(switch({ "step" => "budget" }).config)
       end
 
       test "registers through the public step-type API" do
@@ -36,7 +36,7 @@ module Alembic
       end
 
       test "cannot run without the step it directs on" do
-        assert_equal [ :step ], Switch.step_type.required
+        assert_equal [ :step ], Switch.step_type.settings.required
       end
     end
   end

@@ -10,11 +10,11 @@ module Alembic
       test "requires the step whose answer it tests" do
         node = branch({ "step" => "budget", "answer" => "high" })
 
-        assert_equal [ "budget" ], Condition.step_type.requirements_for(node)
+        assert_equal [ "budget" ], Condition.step_type.settings.requirements_for(node.config)
       end
 
       test "requires nothing when it names no step to test" do
-        assert_empty Condition.step_type.requirements_for(branch({}))
+        assert_empty Condition.step_type.settings.requirements_for(branch({}).config)
       end
 
       test "registers through the public step-type API" do
@@ -48,11 +48,11 @@ module Alembic
       end
 
       test "declares the step whose answer it tests as one that comes before it" do
-        assert_equal :previous_step, Condition.step_type.fields[:step]
+        assert_equal :previous_step, Condition.step_type.settings.fields[:step]
       end
 
       test "draws the answer it tests from the output it names" do
-        assert_equal :output, Condition.step_type.drawn_from[:answer]
+        assert_equal :output, Condition.step_type.settings.drawn_from[:answer]
       end
 
       test "declares the result it decides as an output" do
@@ -60,11 +60,11 @@ module Alembic
       end
 
       test "cannot run without the step, output, comparison and answer it tests" do
-        assert_equal [ :step, :output, :comparison, :answer ], Condition.step_type.required
+        assert_equal [ :step, :output, :comparison, :answer ], Condition.step_type.settings.required
       end
 
       test "offers a comparison deciding which way the test falls" do
-        assert_equal [ "is", "is not" ], Condition.step_type.choices[:comparison]
+        assert_equal [ "is", "is not" ], Condition.step_type.settings.choices[:comparison]
       end
 
       test "decides false when the step gave the answer it tests for and is not" do
@@ -86,7 +86,7 @@ module Alembic
       end
 
       test "names which output of that step it reads" do
-        assert_equal :step, Condition.step_type.outputs_of[:output]
+        assert_equal :step, Condition.step_type.settings.outputs_of[:output]
       end
     end
   end

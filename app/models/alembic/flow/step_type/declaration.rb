@@ -101,7 +101,16 @@ module Alembic
         public
 
         def to_step_type
-          StepType.new(id: @id, step_name: @step_name, fields: @fields, awaits_input: @awaits_input, ends_here: @ends_here, begins_here: @begins_here, behaviour: @behaviour, routing: @routing, display: @display, drawn_by: @drawn_by, naming_field: @naming_field, naming: @naming, drawn_from: @drawn_from, outputs_of: @outputs_of, outputs: @declared_outputs, required: @required, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
+          StepType.new(id: @id, step_name: @step_name, settings: settings, awaits_input: @awaits_input,
+            ends_here: @ends_here, begins_here: @begins_here, behaviour: @behaviour, routing: @routing,
+            display: @display, drawn_by: @drawn_by, naming_field: @naming_field, naming: @naming,
+            outputs: @declared_outputs)
+        end
+
+        def settings
+          Settings.new(fields: @fields, labels: @labels, record_fields: @record_fields,
+            record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks,
+            required: @required, drawn_from: @drawn_from, outputs_of: @outputs_of)
         end
       end
     end

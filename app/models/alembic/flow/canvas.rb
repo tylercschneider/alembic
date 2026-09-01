@@ -84,17 +84,17 @@ module Alembic
       def palette
         @registry.step_types.reject(&:begins_here?).map do |step_type|
           { "type" => step_type.id.to_s, "label" => step_type.step_name,
-            "fields" => step_type.fields.transform_keys(&:to_s).transform_values(&:to_s),
-            "labels" => step_type.labels.transform_keys(&:to_s),
-            "choices" => step_type.choices.transform_keys(&:to_s),
+            "fields" => step_type.settings.fields.transform_keys(&:to_s).transform_values(&:to_s),
+            "labels" => step_type.settings.labels.transform_keys(&:to_s),
+            "choices" => step_type.settings.choices.transform_keys(&:to_s),
             "records" => holdings_of(step_type),
-            "record_labels" => step_type.record_labels.to_h { |name, held| [ name.to_s, held.transform_keys(&:to_s) ] },
+            "record_labels" => step_type.settings.record_labels.to_h { |name, held| [ name.to_s, held.transform_keys(&:to_s) ] },
             "awaits_input" => step_type.awaits_input? }
         end
       end
 
       def holdings_of(step_type)
-        step_type.record_fields.to_h do |name, holds|
+        step_type.settings.record_fields.to_h do |name, holds|
           [ name.to_s, holds.transform_keys(&:to_s).transform_values(&:to_s) ]
         end
       end
@@ -114,19 +114,19 @@ module Alembic
       end
 
       def named_outputs_by(node)
-        step_type_for(node)&.outputs_of.to_h.to_h do |name, source|
+        step_type_for(node)&.settings&.outputs_of.to_h.to_h do |name, source|
           [ name.to_s, digest.outputs_of(node.config[source.to_s]) ]
         end
       end
 
       def drawn_by(node)
-        step_type_for(node)&.drawn_from.to_h.to_h do |name, source|
+        step_type_for(node)&.settings&.drawn_from.to_h.to_h do |name, source|
           [ name.to_s, digest.values_of(step_named_by(node, source), node.config[source.to_s]) ]
         end
       end
 
       def step_named_by(node, source)
-        node.config[step_type_for(node).outputs_of[source].to_s]
+        node.config[step_type_for(node).settings.outputs_of[source].to_s]
       end
 
       def digest
@@ -134,7 +134,7 @@ module Alembic
       end
 
       def naming_steps(node)
-        step_type_for(node)&.fields.to_h.select { |_name, type| type == :previous_step }.keys.map(&:to_s)
+        step_type_for(node)&.settings&.naming_steps.to_a.map(&:to_s)
       end
 
       def earlier_than(node)
