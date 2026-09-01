@@ -154,6 +154,7 @@ Alembic::Flow.registry.register(MyApp::AGENT)
 | `requires { \|node\| }` | returns ids this node's config depends on |
 | `route { \|node, state\| }` | returns which port to leave by |
 | `displays_by { \|node\| }` | what the runner hands back for this step. Omit and it hands back the node |
+| `drawn_by "steps/tiles"` | the template that draws this step. Omit and the overall one draws it |
 | `process { \|node, state\| }` | **declared but not yet called — see §8** |
 
 ### Setting types
@@ -291,6 +292,34 @@ class Question
   displays_by { |node| Asked.new(id: node.id.to_sym, text: asked(node.config)) }
 end
 ```
+
+### Drawing a step
+
+`displays_by` says what a step hands back; `drawn_by` says what draws it. A
+template is picked from the first of these that names one:
+
+1. the step type's own `drawn_by`
+2. the overall template, `Flow.draws_with("steps/panel")`
+3. the one the flow system ships, which draws a step offering options
+
+The template is rendered with the display as `step`, inside the form the host's
+controller already set up, so it draws the step and nothing around it:
+
+```erb
+<%# app/views/steps/_tiles.html.erb %>
+<fieldset>
+  <legend><%= step.text %></legend>
+
+  <% step.choices.each do |choice| %>
+    <%= radio_button_tag "answers[#{step.id}]", choice.value %>
+    <%= label_tag "answers[#{step.id}]_#{choice.value}", choice.label %>
+  <% end %>
+</fieldset>
+```
+
+The shipped template reads `text`, `id` and `choices`, and each choice's
+`value`, `label` and `hint`. A step type whose display answers those is drawn by
+it with no template of its own; one that does not name its own.
 
 ### What a run keeps
 
