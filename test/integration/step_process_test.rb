@@ -13,6 +13,23 @@ module Alembic
       end
     end
 
+    def loose
+      @loose ||= Flow::Definition.create!(slug: "loosely").tap do |flow|
+        flow.record_definition(flowing({ "slug" => "loosely", "entry" => "mark",
+          "nodes" => [ { "id" => "mark", "type" => "stamp", "with" => "seen" },
+                       { "id" => "after", "type" => "question", "question" => "And then?",
+                         "answers" => [ { "value" => "ok" } ] } ],
+          "edges" => [ { "from" => "mark", "to" => "after" } ] }))
+        flow.publish
+      end
+    end
+
+    test "carries a process result forward so a flow keeping nothing does not run it twice" do
+      get alembic.flow_step_path(loose.slug)
+
+      assert_select "input[name=?][value=?]", "answers[mark]", "seen"
+    end
+
     test "records what a step's process returned against the run" do
       run = Flow::Run.start(stamping)
 

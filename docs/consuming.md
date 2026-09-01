@@ -155,7 +155,7 @@ Alembic::Flow.registry.register(MyApp::AGENT)
 | `route { \|node, state\| }` | returns which port to leave by |
 | `displays_by { \|node\| }` | what the runner hands back for this step. Omit and it hands back the node |
 | `drawn_by "steps/tiles"` | the template that draws this step. Omit and the overall one draws it |
-| `process { \|node, state\| }` | **declared but not yet called — see §8** |
+| `process { \|node, state\| }` | what this step does when the runner reaches it. Its return value is recorded against the step |
 
 ### Setting types
 
@@ -292,6 +292,40 @@ class Question
   displays_by { |node| Asked.new(id: node.id.to_sym, text: asked(node.config)) }
 end
 ```
+
+### A step that acts
+
+A step type declaring `process` does something when the runner reaches it rather
+than waiting for input. The walk stops at it the same way it stops at a step
+awaiting input, and `Flow::Runner#run` is what runs it:
+
+```ruby
+class Stamp
+  include Alembic::Flow::Step
+
+  setting :with, type: :string
+
+  def process(node, _state)
+    node.config["with"]
+  end
+end
+```
+
+```ruby
+runner.run(progress)         # runs every process reached, recording each result
+runner.next_step(state)      # the next step awaiting input
+```
+
+What a process returns is recorded against its own step id, exactly as an answer
+is, so a later condition reads it through `state` like any other value.
+
+**`run` is the only call that has effects, and it is called once per request.**
+`next_step`, `state_on_path` and `steps_on_path` are called several times while
+one page is built, so a process running inside the walk would run several times.
+Keep effects in `run`.
+
+A process result is recorded through the same strategy an answer is, so a flow
+keeping nothing carries it forward in the request rather than running it again.
 
 ### Drawing a step
 
@@ -636,9 +670,6 @@ host would use, and a host can add its own or ignore them entirely.
 
 Documented so nobody builds against something that isn't there:
 
-- **`process` is not called.** The DSL accepts a `process` block and
-  `StepType#process` will invoke it, but nothing in `Digest` calls it. A step
-  type that needs to *do* something must have the host do it in its runner loop.
 - **`single_output?` is unused** — `Digest` infers the same thing from whether
   `route` returns a port.
 
