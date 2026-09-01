@@ -5,16 +5,15 @@ module Alembic
         Declaration.new(id).tap { |decl| decl.instance_eval(&declaration) }.to_step_type
       end
 
-      attr_reader :drawn_by, :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :naming_field, :naming, :drawn_from, :outputs_of, :outputs, :required
+      attr_reader :drawn_by, :id, :step_name, :fields, :labels, :choices, :limits, :checks, :record_fields, :record_labels, :naming_field, :naming, :drawn_from, :outputs_of, :outputs
 
-      def initialize(id:, step_name:, fields:, awaits_input:, ends_here: false, begins_here: false, requirements:, behaviour:, routing:, display: nil, drawn_by: nil, naming_field: nil, naming: nil, drawn_from: {}, outputs_of: {}, outputs: [], required: [], record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
+      def initialize(id:, step_name:, fields:, awaits_input:, ends_here: false, begins_here: false, behaviour:, routing:, display: nil, drawn_by: nil, naming_field: nil, naming: nil, drawn_from: {}, outputs_of: {}, outputs: [], required: [], record_fields: {}, labels: {}, record_labels: {}, choices: {}, limits: {}, checks: {})
         @id = id
         @step_name = step_name
         @fields = fields
         @awaits_input = awaits_input
         @ends_here = ends_here
         @begins_here = begins_here
-        @requirements = requirements
         @behaviour = behaviour
         @routing = routing
         @display = display
@@ -49,12 +48,24 @@ module Alembic
         @naming&.call(node).presence || node.config[naming_field.to_s].presence
       end
 
+      def acts?
+        @behaviour.present?
+      end
+
       def routes?
         @routing.present?
       end
 
       def requirements_for(node)
-        Array(@requirements&.call(node))
+        naming_steps.map { |name| node.config[name.to_s] }.compact_blank
+      end
+
+      def naming_steps
+        fields.select { |_name, type| type == :previous_step }.keys
+      end
+
+      def required
+        fields.keys.select { |name| @required.include?(name) || naming_steps.include?(name) }
       end
 
       def values_of(name, node)
@@ -142,10 +153,6 @@ module Alembic
           @begins_here = false
         end
 
-        def requires(&derivation)
-          @requirements = derivation
-        end
-
         def output(name, type: :string, label: nil, values: nil, from: nil)
           @declared_outputs += [ Output.new(name: name, type: type, label: label, values: values, from: from) ]
         end
@@ -226,7 +233,7 @@ module Alembic
         public
 
         def to_step_type
-          StepType.new(id: @id, step_name: @step_name, fields: @fields, awaits_input: @awaits_input, ends_here: @ends_here, begins_here: @begins_here, requirements: @requirements, behaviour: @behaviour, routing: @routing, display: @display, drawn_by: @drawn_by, naming_field: @naming_field, naming: @naming, drawn_from: @drawn_from, outputs_of: @outputs_of, outputs: @declared_outputs, required: @required, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
+          StepType.new(id: @id, step_name: @step_name, fields: @fields, awaits_input: @awaits_input, ends_here: @ends_here, begins_here: @begins_here, behaviour: @behaviour, routing: @routing, display: @display, drawn_by: @drawn_by, naming_field: @naming_field, naming: @naming, drawn_from: @drawn_from, outputs_of: @outputs_of, outputs: @declared_outputs, required: @required, record_fields: @record_fields, labels: @labels, record_labels: @record_labels, choices: @choices, limits: @limits, checks: @checks)
         end
       end
     end

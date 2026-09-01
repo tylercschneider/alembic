@@ -11,12 +11,23 @@ module Alembic
             output :result, type: :boolean, values: [ true, false ]
             route { |_node, state| state["a"] == "yes" }
           end)
+          built.register(StepType.define(:act) { process { |node, _state| "ran #{node.id}" } })
           built.register(StepType.define(:branch) do
-            setting :answer, type: :string
-            requires { |node| [ node.config["answer"] ].compact }
+            setting :answer, type: :previous_step
             route { |node, state| state[node.config["answer"]] == "yes" ? :yes : :no }
           end)
         end
+      end
+
+      def acting
+        { "entry" => "work",
+          "nodes" => [ { "id" => "work", "type" => "act" },
+                       { "id" => "after", "type" => "ask" } ],
+          "edges" => [ { "from" => "work", "to" => "after" } ] }
+      end
+
+      test "stops at a step whose process has not run" do
+        assert_equal "work", digest(acting).next_step({}).id
       end
 
       def deciding

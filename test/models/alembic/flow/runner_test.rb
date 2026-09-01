@@ -12,6 +12,8 @@ module Alembic
             awaits_input
             displays_by { |node| "Asked: #{node.config['text']}" }
           end)
+          built.register(StepType.define(:act) { process { |node, _state| "ran #{node.id}" } })
+          built.register(StepType.define(:approve) { process { |_node, _state| "yes" } })
           built.register(StepType.define(:gate) do
             setting :of, type: :string
             route { |node, state| state[node.config["of"]] == "yes" ? "yes" : "no" }
@@ -38,6 +40,14 @@ module Alembic
           "edges" => [ { "from" => "opening", "to" => "shown" } ] }
       end
 
+      def acting
+        { "nodes" => [ { "id" => "opening", "type" => "opening" },
+                       { "id" => "work", "type" => "act" },
+                       { "id" => "after", "type" => "ask", "text" => "After?" } ],
+          "edges" => [ { "from" => "opening", "to" => "work" },
+                       { "from" => "work", "to" => "after" } ] }
+      end
+
       def runner(document = branching)
         Runner.new(document, registry: registry)
       end
@@ -52,6 +62,33 @@ module Alembic
 
       test "carries the headline of the flow it runs" do
         assert_equal "A run", runner.headline
+      end
+
+      def gating
+        { "nodes" => [ { "id" => "opening", "type" => "opening" },
+                       { "id" => "work", "type" => "approve" },
+                       { "id" => "gate", "type" => "gate", "of" => "work" },
+                       { "id" => "yes_step", "type" => "ask", "text" => "Yes?" },
+                       { "id" => "no_step", "type" => "ask", "text" => "No?" } ],
+          "edges" => [ { "from" => "opening", "to" => "work" },
+                       { "from" => "work", "to" => "gate" },
+                       { "from" => "gate", "to" => "yes_step", "on" => "yes" },
+                       { "from" => "gate", "to" => "no_step", "on" => "no" } ] }
+      end
+
+      test "carries a process result on to a condition that reads it" do
+        kept = Progress::Loose.new(nil, {}, gating)
+        built = runner(gating)
+        built.run(kept)
+
+        assert_equal "yes_step", built.next_step(kept.recorded).id
+      end
+
+      test "records what a step's process returned against that step" do
+        kept = Progress::Loose.new(nil, {}, acting)
+        runner(acting).run(kept)
+
+        assert_equal "ran work", kept.recorded[:work]
       end
 
       test "names the template that draws the step it stops at" do

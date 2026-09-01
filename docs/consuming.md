@@ -151,11 +151,10 @@ Alembic::Flow.registry.register(MyApp::AGENT)
 | `outputs :pass, :fail` | named output ports. Omit for a single unnamed output |
 | `awaits_input` | this step stops the walk until the host records a value for it |
 | `names_by :prompt` | which setting titles the node on the canvas |
-| `requires { \|node\| }` | returns ids this node's config depends on |
 | `route { \|node, state\| }` | returns which port to leave by |
 | `displays_by { \|node\| }` | what the runner hands back for this step. Omit and it hands back the node |
 | `drawn_by "steps/tiles"` | the template that draws this step. Omit and the overall one draws it |
-| `process { \|node, state\| }` | **declared but not yet called — see §8** |
+| `process { \|node, state\| }` | what this step does when the runner reaches it. Its return value is recorded against the step |
 
 ### Setting types
 
@@ -224,7 +223,7 @@ class Gate
 
   outputs :pass, :fail
 
-  requires { |node| [ node.config["answer"] ].compact }
+  setting :answer, type: :previous_step
 
   def route(node, state)
     state[node.config["answer"]] == node.config["expects"] ? :pass : :fail
@@ -238,10 +237,15 @@ port with no matching edge, the walk ends there.
 
 ### Requirements
 
-`requires` returns the node ids this node's config leans on. It is not a
-hint — the validator enforces it as **graph dominance**: a requirement is met
-only if removing the required node makes this node unreachable. A dependency
-that merely happens to sit upstream on *one* branch is a violation.
+A `previous_step` setting holds the id of a step this one depends on, and that
+is the whole declaration — nothing else names the dependency.
+
+Three things follow from it. The builder offers the steps that come before this
+one rather than a box to type an id into. The validator refuses a node that
+leaves it blank. And the validator enforces the dependency as **graph
+dominance**: it is met only if removing the named node makes this node
+unreachable, so a step that merely happens to sit upstream on *one* branch is a
+violation.
 
 ## 3. Driving a run
 
@@ -292,6 +296,41 @@ class Question
   displays_by { |node| Asked.new(id: node.id.to_sym, text: asked(node.config)) }
 end
 ```
+
+### A step that acts
+
+A step type declaring `process` does something when the runner reaches it rather
+than waiting for input. The walk stops at it the same way it stops at a step
+awaiting input, and `Flow::Runner#run` is what runs it:
+
+```ruby
+class Deliver
+  include Alembic::Flow::Step
+
+  setting :message, type: :string
+  setting :to, type: :previous_step
+
+  def process(node, state)
+    Mailer.deliver(node.config["message"], to: state[node.config["to"]])
+  end
+end
+```
+
+```ruby
+runner.run(progress)         # runs every process reached, recording each result
+runner.next_step(state)      # the next step awaiting input
+```
+
+What a process returns is recorded against its own step id, exactly as an answer
+is, so a later condition reads it through `state` like any other value.
+
+**`run` is the only call that has effects, and it is called once per request.**
+`next_step`, `state_on_path` and `steps_on_path` are called several times while
+one page is built, so a process running inside the walk would run several times.
+Keep effects in `run`.
+
+A process result is recorded through the same strategy an answer is, so a flow
+keeping nothing carries it forward in the request rather than running it again.
 
 ### Drawing a step
 
@@ -387,7 +426,7 @@ Each `Violation` carries `node`, `problem`, and sometimes `detail`.
 | `:missing_edge_target` / `:missing_edge_source` | an edge points at an unknown node |
 | `:duplicate_id` | two nodes share an id |
 | `:unreachable` | a node no walk from `entry` can arrive at |
-| `:unmet_requirement` | a `requires` id does not dominate this node |
+| `:unmet_requirement` | a `previous_step` id does not dominate this node |
 
 Three levels, narrowest first: `malformations` (broken references — the
 document is not usable), `structural_violations` (adds unreachable nodes), and
@@ -636,9 +675,6 @@ host would use, and a host can add its own or ignore them entirely.
 
 Documented so nobody builds against something that isn't there:
 
-- **`process` is not called.** The DSL accepts a `process` block and
-  `StepType#process` will invoke it, but nothing in `Digest` calls it. A step
-  type that needs to *do* something must have the host do it in its runner loop.
 - **`single_output?` is unused** — `Digest` infers the same thing from whether
   `route` returns a port.
 
@@ -661,10 +697,8 @@ class Review
   include Alembic::Flow::Step
 
   step_name "Review gate"
-  setting :of, type: :string
+  setting :of, type: :previous_step
   outputs :approved, :rejected
-
-  requires { |node| [ node.config["of"] ].compact }
 
   def route(node, state)
     state[node.config["of"]][:ok] ? :approved : :rejected

@@ -91,7 +91,13 @@ module Alembic
       end
 
       def pending?(node, state)
-        step_type(node)&.awaits_input? && !state.key?(node.id)
+        return false if state.key?(node.id)
+
+        step_type(node)&.awaits_input? || acts?(node)
+      end
+
+      def acts?(node)
+        step_type(node)&.acts? || false
       end
 
       def successor(node, state)

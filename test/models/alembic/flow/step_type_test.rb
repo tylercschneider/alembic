@@ -7,6 +7,18 @@ module Alembic
         Node.new(id: "branch", type: "condition", config: { "answer" => id })
       end
 
+      test "insists on a value for the earlier step it names" do
+        step_type = StepType.define(:act) { setting :of, type: :previous_step }
+
+        assert_equal [ :of ], step_type.required
+      end
+
+      test "depends on the step its previous step setting names" do
+        step_type = StepType.define(:act) { setting :of, type: :previous_step }
+
+        assert_equal [ "earlier" ], step_type.requirements_for(Node.new(id: "a", type: "act", config: { "of" => "earlier" }))
+      end
+
       test "carries the template it declares" do
         step_type = StepType.define(:ask) { drawn_by "flows/steps/tiles" }
 
@@ -45,13 +57,7 @@ module Alembic
         assert_nil step_type.route(node_testing("a"), {})
       end
 
-      test "derives its required predecessors from a node's configuration" do
-        step_type = StepType.define(:condition) { requires { |node| [ node.config["answer"] ] } }
-
-        assert_equal [ "a" ], step_type.requirements_for(node_testing("a"))
-      end
-
-      test "requires nothing when it declares no requirements" do
+      test "depends on nothing when it names no earlier step" do
         step_type = StepType.define(:agent) { }
 
         assert_empty step_type.requirements_for(node_testing("a"))
