@@ -15,6 +15,7 @@ module Alembic
       @progress = progress
       @answers = @progress.recorded
       @question = @guide.next_step(@answers)
+      @drawing = @guide.drawing_at(@answers)
       return render :step if @question
 
       render_completion
