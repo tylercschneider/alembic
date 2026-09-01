@@ -54,6 +54,10 @@ module Alembic
         assert_equal "A run", runner.headline
       end
 
+      test "names the template that draws the step it stops at" do
+        assert_equal Flow.drawing, runner.drawing_at({})
+      end
+
       test "shows a step the way its own type declares" do
         assert_equal "Asked: Budget?", runner(showing).next_step({})
       end

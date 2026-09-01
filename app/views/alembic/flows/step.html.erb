@@ -14,15 +14,7 @@
       <% end %>
     <% end %>
 
-    <fieldset>
-      <legend class="mb-5 text-xl font-semibold leading-snug text-gray-900"><%= @question.text %></legend>
-
-      <div class="space-y-3">
-        <% @question.choices.each do |choice| %>
-          <%= ui_radio_card(name: "answers[#{@question.id}]", value: choice.value, label: choice.label.presence || choice.value, hint: choice.hint) %>
-        <% end %>
-      </div>
-    </fieldset>
+    <%= render @drawing, step: @question %>
 
     <div class="mt-8 flex items-center gap-4">
       <%= ui_button(label: "Next", type: :submit) %>
