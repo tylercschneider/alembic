@@ -3,6 +3,22 @@ require "test_helper"
 module Alembic
   module Flow
     class DocumentTest < ActiveSupport::TestCase
+      def foreign
+        @foreign ||= Registry.new.tap do |built|
+          built.register(StepType.define(:opening) { begins_here })
+          built.register(StepType.define(:draft) { awaits_input })
+        end
+      end
+
+      def drafting
+        Document.new({ "nodes" => [ { "id" => "o", "type" => "opening" }, { "id" => "a", "type" => "draft" } ],
+                       "edges" => [ { "from" => "o", "to" => "a" } ] }, registry: foreign)
+      end
+
+      test "still knows where it begins after it is edited" do
+        assert_equal "o", drafting.add({ "id" => "b", "type" => "draft" }).entry
+      end
+
       test "reports what stays reachable from the entry when a step is left out" do
         document = Document.new(flowing({ "entry" => "a",
                                           "nodes" => [ { "id" => "a" }, { "id" => "b" }, { "id" => "c" } ],

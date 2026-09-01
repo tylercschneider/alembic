@@ -121,8 +121,8 @@ module Alembic
       end
 
       def with(nodes:, edges:)
-        Document.new(@document.merge("nodes" => nodes, "edges" => edges)).tap do |edited|
-          broken = Validator.new(edited).malformations
+        Document.new(@document.merge("nodes" => nodes, "edges" => edges), registry: @registry).tap do |edited|
+          broken = Validator.new(edited, registry: @registry).malformations
           raise InvalidEdit, broken.map { |violation| "#{violation.node}: #{violation.problem}" }.join(", ") if broken.any?
         end
       end
