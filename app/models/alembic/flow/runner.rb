@@ -27,6 +27,12 @@ module Alembic
         shown(@digest.next_step(named(state)))
       end
 
+      def run(progress)
+        while (node = @digest.next_step(named(progress.recorded))) && acts?(node)
+          progress.record(node.id, @registry.fetch(node.type).process(node, named(progress.recorded)))
+        end
+      end
+
       def drawing_at(state)
         Drawing.of(@digest.next_step(named(state)), @registry)
       end
@@ -40,6 +46,10 @@ module Alembic
       end
 
       private
+
+      def acts?(node)
+        @registry.registered?(node.type) && @registry.fetch(node.type).acts?
+      end
 
       def shown(node)
         return node unless node && @registry.registered?(node.type)

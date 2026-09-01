@@ -12,6 +12,7 @@ module Alembic
             awaits_input
             displays_by { |node| "Asked: #{node.config['text']}" }
           end)
+          built.register(StepType.define(:act) { process { |node, _state| "ran #{node.id}" } })
           built.register(StepType.define(:gate) do
             setting :of, type: :string
             route { |node, state| state[node.config["of"]] == "yes" ? "yes" : "no" }
@@ -38,6 +39,14 @@ module Alembic
           "edges" => [ { "from" => "opening", "to" => "shown" } ] }
       end
 
+      def acting
+        { "nodes" => [ { "id" => "opening", "type" => "opening" },
+                       { "id" => "work", "type" => "act" },
+                       { "id" => "after", "type" => "ask", "text" => "After?" } ],
+          "edges" => [ { "from" => "opening", "to" => "work" },
+                       { "from" => "work", "to" => "after" } ] }
+      end
+
       def runner(document = branching)
         Runner.new(document, registry: registry)
       end
@@ -52,6 +61,13 @@ module Alembic
 
       test "carries the headline of the flow it runs" do
         assert_equal "A run", runner.headline
+      end
+
+      test "records what a step's process returned against that step" do
+        kept = Progress::Loose.new(nil, {}, acting)
+        runner(acting).run(kept)
+
+        assert_equal "ran work", kept.recorded[:work]
       end
 
       test "names the template that draws the step it stops at" do
