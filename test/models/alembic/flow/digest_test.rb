@@ -13,8 +13,7 @@ module Alembic
           end)
           built.register(StepType.define(:act) { process { |node, _state| "ran #{node.id}" } })
           built.register(StepType.define(:branch) do
-            setting :answer, type: :string
-            requires { |node| [ node.config["answer"] ].compact }
+            setting :answer, type: :previous_step
             route { |node, state| state[node.config["answer"]] == "yes" ? :yes : :no }
           end)
         end

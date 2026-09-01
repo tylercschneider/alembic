@@ -9,7 +9,7 @@ module Alembic
 
       def needy_registry
         Registry.new.tap do |registry|
-          registry.register(StepType.define(:needy) { requires { |node| [ node.config["needs"] ].compact } })
+          registry.register(StepType.define(:needy) { setting :needs, type: :previous_step })
           registry.register(StepType.define(:plain) { })
           registry.register(StepType.define(:forks) do
             output :way, values: [ "r", "x" ]

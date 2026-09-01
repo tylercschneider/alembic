@@ -151,7 +151,6 @@ Alembic::Flow.registry.register(MyApp::AGENT)
 | `outputs :pass, :fail` | named output ports. Omit for a single unnamed output |
 | `awaits_input` | this step stops the walk until the host records a value for it |
 | `names_by :prompt` | which setting titles the node on the canvas |
-| `requires { \|node\| }` | returns ids this node's config depends on |
 | `route { \|node, state\| }` | returns which port to leave by |
 | `displays_by { \|node\| }` | what the runner hands back for this step. Omit and it hands back the node |
 | `drawn_by "steps/tiles"` | the template that draws this step. Omit and the overall one draws it |
@@ -224,7 +223,7 @@ class Gate
 
   outputs :pass, :fail
 
-  requires { |node| [ node.config["answer"] ].compact }
+  setting :answer, type: :previous_step
 
   def route(node, state)
     state[node.config["answer"]] == node.config["expects"] ? :pass : :fail
@@ -238,10 +237,15 @@ port with no matching edge, the walk ends there.
 
 ### Requirements
 
-`requires` returns the node ids this node's config leans on. It is not a
-hint — the validator enforces it as **graph dominance**: a requirement is met
-only if removing the required node makes this node unreachable. A dependency
-that merely happens to sit upstream on *one* branch is a violation.
+A `previous_step` setting holds the id of a step this one depends on, and that
+is the whole declaration — nothing else names the dependency.
+
+Three things follow from it. The builder offers the steps that come before this
+one rather than a box to type an id into. The validator refuses a node that
+leaves it blank. And the validator enforces the dependency as **graph
+dominance**: it is met only if removing the named node makes this node
+unreachable, so a step that merely happens to sit upstream on *one* branch is a
+violation.
 
 ## 3. Driving a run
 
@@ -304,9 +308,7 @@ class Deliver
   include Alembic::Flow::Step
 
   setting :message, type: :string
-  setting :to, type: :previous_step, required: true
-
-  requires { |node| [ node.config["to"] ].compact }
+  setting :to, type: :previous_step
 
   def process(node, state)
     Mailer.deliver(node.config["message"], to: state[node.config["to"]])
@@ -424,7 +426,7 @@ Each `Violation` carries `node`, `problem`, and sometimes `detail`.
 | `:missing_edge_target` / `:missing_edge_source` | an edge points at an unknown node |
 | `:duplicate_id` | two nodes share an id |
 | `:unreachable` | a node no walk from `entry` can arrive at |
-| `:unmet_requirement` | a `requires` id does not dominate this node |
+| `:unmet_requirement` | a `previous_step` id does not dominate this node |
 
 Three levels, narrowest first: `malformations` (broken references — the
 document is not usable), `structural_violations` (adds unreachable nodes), and
@@ -695,10 +697,8 @@ class Review
   include Alembic::Flow::Step
 
   step_name "Review gate"
-  setting :of, type: :string
+  setting :of, type: :previous_step
   outputs :approved, :rejected
-
-  requires { |node| [ node.config["of"] ].compact }
 
   def route(node, state)
     state[node.config["of"]][:ok] ? :approved : :rejected

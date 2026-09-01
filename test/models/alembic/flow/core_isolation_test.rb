@@ -12,9 +12,8 @@ module Alembic
             names_by :prompt
           end)
           built.register(StepType.define(:gate) do
-            setting :of, type: :string
+            setting :of, type: :previous_step
             output :verdict, label: "Verdict", values: [ { "value" => "approved" }, { "value" => "rejected" } ]
-            requires { |node| [ node.config["of"] ].compact }
             route { |node, state| state[node.config["of"]] == "ok" ? "approved" : "rejected" }
           end)
         end

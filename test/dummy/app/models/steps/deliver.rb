@@ -5,9 +5,7 @@ module Steps
     step_name "Deliver"
 
     setting :message, type: :string
-    setting :to, type: :previous_step, required: true
-
-    requires { |node| [ node.config["to"] ].compact }
+    setting :to, type: :previous_step
 
     def process(node, state)
       state[node.config["to"]].present?
