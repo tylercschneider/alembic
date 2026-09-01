@@ -17,6 +17,13 @@
       <%= ui_input(name: "flow[start_label]", value: @diagnostic.start_label) %>
     <% end %>
 
+    <%= ui_section(title: "What this keeps of a run") do %>
+      <%= ui_select(name: "flow[persists]", selected: @diagnostic.persists,
+            options: [ [ "Nothing", "unsaved" ],
+                       [ "Every answer as it is given", "each_step" ],
+                       [ "The whole run once it finishes", "on_finish" ] ]) %>
+    <% end %>
+
     <%= ui_button(label: "Save", type: :submit) %>
   <% end %>
 <% end %>

@@ -15,7 +15,7 @@ module Alembic
     end
 
     def saved
-      @saved ||= Flow::Definition.create!(slug: "saved").tap { |diagnostic| diagnostic.record_definition(flowing(branching)); diagnostic.publish }
+      @saved ||= Flow::Definition.create!(slug: "saved", persists: :each_step).tap { |diagnostic| diagnostic.record_definition(flowing(branching)); diagnostic.publish }
     end
 
     test "starting a saved session sends the visitor to its durable URL" do

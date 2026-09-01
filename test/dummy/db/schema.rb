@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_27_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_31_000000) do
   create_table "alembic_flow_runs", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "definition_version_id", null: false
@@ -55,6 +55,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_000000) do
     t.integer "definition_cursor"
     t.json "document"
     t.string "kind"
+    t.string "persists", default: "unsaved", null: false
     t.string "slug"
     t.string "start_label"
     t.string "status", default: "active", null: false

@@ -36,6 +36,20 @@ module Alembic
       end
     end
 
+    test "a flow keeping a run at the end stores it once the flow finishes" do
+      flowed.update!(persists: :on_finish)
+
+      assert_difference -> { Flow::Run.count }, 1 do
+        get alembic.flow_step_path(flowed.slug), params: { answers: { budget: "high", posh: "a" } }
+      end
+    end
+
+    test "a flow keeping nothing stores no run when it finishes" do
+      assert_no_difference -> { Flow::Run.count } do
+        get alembic.flow_step_path(flowed.slug), params: { answers: { budget: "high", posh: "a" } }
+      end
+    end
+
     test "a finished run shows what its summary makes of it" do
       get alembic.flow_step_path(summarised.slug), params: { answers: { budget: "high", posh: "a" } }
 

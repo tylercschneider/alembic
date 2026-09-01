@@ -48,7 +48,7 @@ module Alembic
       end
 
       def diagnostic_params
-        params.require(:flow).permit(:title, :summary, :start_label)
+        params.require(:flow).permit(:title, :summary, :start_label, :persists)
       end
     end
   end

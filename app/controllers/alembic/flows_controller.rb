@@ -1,19 +1,28 @@
 module Alembic
   class FlowsController < ApplicationController
-    helper_method :flow_start_path, :flow_step_path, :previewing?
+    helper_method :flow_start_path, :flow_step_path, :previewing?, :step_form, :carries_answers?
 
     def show
-      @diagnostic = admit(Flow::Definition.find_by(slug: params[:slug]))
+      @diagnostic = flow
+    end
+
+    def start
+      redirect_to alembic.run_path(Flow::Run.start(flow))
     end
 
     def step
-      @guide = runner
-      @answers = submitted_answers
-      @answers = without_last_answer(@answers) if params[:back]
+      @guide = Runner.new(running_definition)
+      @progress = progress
+      @answers = @progress.recorded
       @question = @guide.next_step(@answers)
       return render :step if @question
 
       render_completion
+    end
+
+    def update
+      params[:back] ? progress.discard_last : record_submitted
+      redirect_to alembic.run_path(run)
     end
 
     private
@@ -30,19 +39,47 @@ module Alembic
       false
     end
 
+    def step_form
+      return { url: alembic.run_path(run), method: :patch } if run
+
+      { url: flow_step_path(@guide.slug), method: :get }
+    end
+
+    def carries_answers?
+      run.nil?
+    end
+
     def render_completion
       @answered = @guide.state_on_path(@answers)
-      @outputs = summarising_diagnostic&.summary_of(@answered.transform_keys(&:to_s)).to_a
+      @progress.finish(@answered)
+      @outputs = @progress.summary_of(@answered.transform_keys(&:to_s))
       render :complete
     end
 
-    def summarising_diagnostic
-      @stored_diagnostic if @stored_diagnostic&.summarises?
+    def progress
+      return @progress ||= Flow::Progress.for(run.flow, run: run) if run
+
+      @progress ||= Flow::Progress.for(flow, answers: submitted_answers, definition: running_definition)
     end
 
-    def runner
-      @stored_diagnostic = admit(Flow::Definition.find_by(slug: params[:slug]))
-      Runner.new(flowing_definition(@stored_diagnostic))
+    def running_definition
+      @running_definition ||= run ? run.pinned_definition : flowing_definition(flow)
+    end
+
+    def run
+      return unless params[:id]
+
+      @run ||= admitted_run
+    end
+
+    def admitted_run
+      found = Flow::Run.find(params[:id])
+
+      Flow::Admission.of_run(found, permitted: permitted?(found.flow))
+    end
+
+    def flow
+      @stored_flow ||= admit(Flow::Definition.find_by(slug: params[:slug]))
     end
 
     def flowing_definition(diagnostic)
@@ -53,10 +90,13 @@ module Alembic
       params.fetch(:answers, {}).permit(*@guide.steps.map(&:id)).to_h.symbolize_keys
     end
 
-    def without_last_answer(answers)
-      last = @guide.state_on_path(answers).keys.last
+    def record_submitted
+      id, value = params.fetch(:answers, {}).permit(*asked).to_h.first
+      progress.record(id, value)
+    end
 
-      last ? answers.except(last) : answers
+    def asked
+      Runner.new(run.pinned_definition).steps.map(&:id)
     end
   end
 end

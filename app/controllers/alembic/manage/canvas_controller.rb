@@ -93,7 +93,7 @@ module Alembic
       end
 
       def details_params
-        params.require(:flow).permit(:title, :summary, :start_label)
+        params.require(:flow).permit(:title, :summary, :start_label, :persists)
       end
 
       def recorded(action, edited, steps, before)

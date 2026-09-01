@@ -2,6 +2,10 @@ require "test_helper"
 
 module Alembic
   class DiagnosticTest < ActiveSupport::TestCase
+    test "keeps nothing of a run until it is told to" do
+      assert_predicate Flow::Definition.create!(slug: "fresh"), :unsaved?
+    end
+
     test "begins with a step that starts the flow and one that ends it" do
       diagnostic = Flow::Definition.create!(slug: "fresh")
 

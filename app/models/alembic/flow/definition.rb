@@ -5,6 +5,7 @@ module Alembic
 
       enum :status, { active: "active", hidden: "hidden", inactive: "inactive" }
       enum :kind, { scored: "scored", guide: "guide" }
+      enum :persists, { unsaved: "unsaved", each_step: "each_step", on_finish: "on_finish" }
 
       validates :slug, presence: true
 
