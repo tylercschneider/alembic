@@ -9,6 +9,9 @@ Alembic ships a builder for authoring flows and a small runtime for walking
 them. The flow layer knows nothing about diagnostics — it is step-typed, and a
 host application registers whatever step types it needs.
 
+**[docs/vocabulary.md](docs/vocabulary.md)** defines every word the flow layer
+uses, and says which word to use where two could mean the same thing.
+
 **[docs/consuming.md](docs/consuming.md)** documents that interface: the flow
 document format, the step-type DSL, driving a run, validation, and the summary
 layer. Read it if you are embedding Alembic, or writing your own step types.
