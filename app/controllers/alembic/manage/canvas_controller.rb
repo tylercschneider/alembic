@@ -76,9 +76,7 @@ module Alembic
 
       def apply(action = nil, *steps)
         before = document.to_h
-        edited = yield(document)
-        diagnostic.update!(document: edited.to_h, undone_changes: [],
-          changes_since_version: recorded(action, edited, steps, before))
+        diagnostic.edit_history.record(yield(document), action, steps, before)
         head :no_content
       rescue Flow::InvalidEdit => invalid
         render json: { error: invalid.message }, status: :unprocessable_entity
@@ -94,18 +92,6 @@ module Alembic
 
       def details_params
         params.require(:flow).permit(:title, :summary, :start_label, :persists)
-      end
-
-      def recorded(action, edited, steps, before)
-        return diagnostic.changes_since_version.to_a unless action
-
-        diagnostic.changes_since_version.to_a +
-          [ { "action" => action.to_s, "steps" => steps.map(&:to_s),
-              "named" => steps.map { |id| named(edited, id) }, "before" => before } ]
-      end
-
-      def named(edited, id)
-        Flow::Name.of(edited.node(id.to_s) || document.node(id.to_s))
       end
 
       def new_step
