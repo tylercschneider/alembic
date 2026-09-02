@@ -8,6 +8,9 @@ This document describes the interface a consuming application talks to. It is
 written against the code as it stands, so that the layer can be extracted into
 its own gem without the contract changing.
 
+**[vocabulary.md](vocabulary.md)** defines every word used here. Read it first
+if a term below is unfamiliar.
+
 ## The three artifacts
 
 A flow separates what to ask, what was said, and what it means. Each is a
@@ -15,12 +18,13 @@ distinct artifact, and a host may implement any one without the others.
 
 | Artifact | What it is | Who owns it |
 |---|---|---|
-| **Template** | the flow document — typed nodes joined by edges | the builder writes it |
-| **Run** | `state` — a hash of node id to recorded value | the host's runner |
+| **Document** | typed nodes joined by edges | the builder writes it |
+| **Run** | `state` — a hash of node id to recorded value | the runner |
 | **Summary** | outputs computed from a finished run | the summary layer |
 
-The template is data. The runner is a loop the host writes. The summary is a
-separate registry that reads a finished run.
+The document is data. The flow layer ships a runner that walks it, and a host
+may drive the walk itself instead. The summary is a separate registry that reads
+a finished run.
 
 ## 1. The flow document
 
