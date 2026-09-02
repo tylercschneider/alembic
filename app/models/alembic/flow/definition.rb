@@ -47,28 +47,8 @@ module Alembic
           .tap { |version| update!(summary_cursor: version.number) }
       end
 
-      def undoable?
-        undoable.any?
-      end
-
-      def redoable?
-        undone_changes.to_a.any?
-      end
-
-      def undo_change
-        undone = undoable.last
-        return unless undone
-
-        update!(document: undone["before"], undone_changes: undone_changes.to_a + [ undone.merge("after" => document) ],
-          undo_history: undo_history.to_a[0...-1], changes_since_version: changes_since_version.to_a[0...-1])
-      end
-
-      def redo_change
-        redone = undone_changes.to_a.last
-        return unless redone
-
-        update!(document: redone["after"], undone_changes: undone_changes.to_a[0...-1],
-          changes_since_version: changes_since_version.to_a + [ redone.except("after") ])
+      def edit_history
+        @edit_history ||= EditHistory.new(self)
       end
 
       def publish
@@ -88,11 +68,7 @@ module Alembic
       def create_version
         record_definition(document, changes_since_version.to_a) unless versioned?
 
-        update!(undo_history: undoable, changes_since_version: [], undone_changes: [])
-      end
-
-      def undoable
-        undo_history.to_a + changes_since_version.to_a
+        update!(undo_history: edit_history.undoable, changes_since_version: [], undone_changes: [])
       end
 
       def returning_to(version)
@@ -102,11 +78,6 @@ module Alembic
 
       def versioned?
         document == definition
-      end
-
-      def edit_document(payload)
-        update!(document: payload, undone_changes: [],
-          changes_since_version: changes_since_version.to_a + [ edited_by_hand ])
       end
 
       def record_definition(payload, captured = [])
@@ -157,16 +128,10 @@ module Alembic
 
       private
 
-      def edited_by_hand
-        { "action" => "edited", "steps" => [], "named" => [ "the definition" ], "before" => document }
-      end
-
-
       def begin_the_flow
         self.document ||= { "nodes" => [ { "id" => "start", "type" => "start" }, { "id" => "end", "type" => "terminal" } ],
                             "edges" => [ { "from" => "start", "to" => "end" } ] }
       end
-
 
       def steps_by_id
         Array(definition.to_h["nodes"]).index_by { |node| node["id"] }

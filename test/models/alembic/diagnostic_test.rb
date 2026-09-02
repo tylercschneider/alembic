@@ -67,7 +67,7 @@ module Alembic
       diagnostic = Flow::Definition.create!(slug: "undo", document: { "entry" => "one" })
       edited(diagnostic, "two", { "entry" => "one" })
 
-      diagnostic.undo_change
+      diagnostic.edit_history.undo_change
 
       assert_equal({ "entry" => "one" }, diagnostic.reload.document)
     end
@@ -75,9 +75,9 @@ module Alembic
     test "redoing puts the change back" do
       diagnostic = Flow::Definition.create!(slug: "undo", document: { "entry" => "one" })
       edited(diagnostic, "two", { "entry" => "one" })
-      diagnostic.undo_change
+      diagnostic.edit_history.undo_change
 
-      diagnostic.redo_change
+      diagnostic.edit_history.redo_change
 
       assert_equal({ "entry" => "two" }, diagnostic.reload.document)
     end
@@ -87,27 +87,27 @@ module Alembic
       edited(diagnostic, "two", { "entry" => "one" })
 
       assert_no_difference -> { diagnostic.definition_versions.count } do
-        diagnostic.undo_change
+        diagnostic.edit_history.undo_change
       end
     end
 
     test "there is nothing to undo before anything is changed" do
       diagnostic = Flow::Definition.create!(slug: "undo", document: { "entry" => "one" })
 
-      assert_not diagnostic.undoable?
+      assert_not diagnostic.edit_history.undoable?
     end
 
     test "there is nothing to redo until something is undone" do
       diagnostic = Flow::Definition.create!(slug: "undo", document: { "entry" => "one" })
       edited(diagnostic, "two", { "entry" => "one" })
 
-      assert_not diagnostic.redoable?
+      assert_not diagnostic.edit_history.redoable?
     end
 
     test "undoing with nothing behind it leaves the document alone" do
       diagnostic = Flow::Definition.create!(slug: "undo", document: { "entry" => "one" })
 
-      diagnostic.undo_change
+      diagnostic.edit_history.undo_change
 
       assert_equal({ "entry" => "one" }, diagnostic.reload.document)
     end
@@ -115,11 +115,11 @@ module Alembic
     test "creating a version leaves nothing to redo but keeps what can be undone" do
       diagnostic = Flow::Definition.create!(slug: "undo", document: { "entry" => "one" })
       edited(diagnostic, "two", { "entry" => "one" })
-      diagnostic.undo_change
+      diagnostic.edit_history.undo_change
 
       diagnostic.create_version
 
-      assert_not diagnostic.redoable?
+      assert_not diagnostic.edit_history.redoable?
     end
 
     test "creating a version leaves the author able to undo past it" do
@@ -128,7 +128,7 @@ module Alembic
 
       diagnostic.create_version
 
-      assert_predicate diagnostic, :undoable?
+      assert_predicate diagnostic.edit_history, :undoable?
     end
 
     test "reports its current definition as the highest-numbered version" do
@@ -349,7 +349,7 @@ module Alembic
       diagnostic = returnable
       diagnostic.return_to(diagnostic.definition_versions.order(:number).first)
 
-      diagnostic.undo_change
+      diagnostic.edit_history.undo_change
 
       assert_equal({ "entry" => "second" }, diagnostic.reload.document)
     end

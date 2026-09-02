@@ -4,7 +4,7 @@ module Alembic
   class PreviewTest < ActionDispatch::IntegrationTest
     def unpublished
       @unpublished ||= Flow::Definition.create!(slug: "unpublished").tap do |diagnostic|
-        diagnostic.edit_document(flowing(
+        diagnostic.edit_history.edit_document(flowing(
           "slug" => "unpublished", "entry" => "budget",
           "nodes" => [ { "id" => "budget", "type" => "question", "question" => "Budget?",
                          "answers" => [ { "value" => "high", "label" => "Generous" } ] },

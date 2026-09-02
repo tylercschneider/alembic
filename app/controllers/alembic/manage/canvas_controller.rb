@@ -32,12 +32,12 @@ module Alembic
       end
 
       def undo
-        diagnostic.undo_change
+        diagnostic.edit_history.undo_change
         head :no_content
       end
 
       def redo
-        diagnostic.redo_change
+        diagnostic.edit_history.redo_change
         head :no_content
       end
 

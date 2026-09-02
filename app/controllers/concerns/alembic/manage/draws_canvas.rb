@@ -7,7 +7,7 @@ module Alembic
 
       def canvas_payload(diagnostic)
         Flow::Canvas.new(canvas_document(diagnostic)).to_h
-          .merge("undoable" => diagnostic.undoable?, "redoable" => diagnostic.redoable?,
+          .merge("undoable" => diagnostic.edit_history.undoable?, "redoable" => diagnostic.edit_history.redoable?,
                  "changes" => listed_changes(diagnostic), "flow" => flow_details(diagnostic))
       end
 
