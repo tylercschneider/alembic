@@ -24,7 +24,7 @@ module Alembic
 
     def summarised
       flowed.tap do |diagnostic|
-        diagnostic.record_summary(
+        diagnostic.summaries.record(
           "outputs" => [
             { "id" => "score", "type" => "weighted_sum", "label" => "Your score" },
             { "id" => "band", "type" => "band", "label" => "Where that puts you", "of" => "score",

@@ -175,25 +175,25 @@ module Alembic
     test "records a summary template as a numbered version" do
       diagnostic = Flow::Definition.create!(slug: "demo")
 
-      diagnostic.record_summary("outputs" => [ { "id" => "score" } ])
+      diagnostic.summaries.record("outputs" => [ { "id" => "score" } ])
 
       assert_equal 1, diagnostic.summary_versions.sole.number
     end
 
     test "numbers a second summary template after the first" do
       diagnostic = Flow::Definition.create!(slug: "demo")
-      diagnostic.record_summary("outputs" => [])
+      diagnostic.summaries.record("outputs" => [])
 
-      diagnostic.record_summary("outputs" => [ { "id" => "score" } ])
+      diagnostic.summaries.record("outputs" => [ { "id" => "score" } ])
 
       assert_equal 2, diagnostic.summary_versions.maximum(:number)
     end
 
     test "reads back the summary template at its cursor" do
       diagnostic = Flow::Definition.create!(slug: "demo")
-      diagnostic.record_summary("outputs" => [ { "id" => "score" } ])
+      diagnostic.summaries.record("outputs" => [ { "id" => "score" } ])
 
-      assert_equal({ "outputs" => [ { "id" => "score" } ] }, diagnostic.summary_document)
+      assert_equal({ "outputs" => [ { "id" => "score" } ] }, diagnostic.summaries.document)
     end
 
     test "recording a summary leaves the flow version untouched" do
@@ -201,22 +201,22 @@ module Alembic
       diagnostic.record_definition("slug" => "demo")
 
       assert_no_changes -> { diagnostic.reload.definition_cursor } do
-        diagnostic.record_summary("outputs" => [])
+        diagnostic.summaries.record("outputs" => [])
       end
     end
 
     test "reports no summary document when none has been recorded" do
       diagnostic = Flow::Definition.create!(slug: "demo")
 
-      assert_nil diagnostic.summary_document
+      assert_nil diagnostic.summaries.document
     end
 
     test "summarises from the recorded summary version" do
       diagnostic = Flow::Definition.create!(slug: "demo")
 
-      diagnostic.record_summary("outputs" => [ { "id" => "score", "type" => "weighted_sum" } ])
+      diagnostic.summaries.record("outputs" => [ { "id" => "score", "type" => "weighted_sum" } ])
 
-      assert diagnostic.summarises?
+      assert diagnostic.summaries.any?
     end
 
     test "holds a live document that can be edited" do

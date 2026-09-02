@@ -34,21 +34,12 @@ module Alembic
         definition_versions.find_by(number: cursor)
       end
 
-      def summary_document
-        current_summary_version&.summary
-      end
-
-      def current_summary_version
-        summary_versions.find_by(number: summary_cursor_number)
-      end
-
-      def record_summary(payload)
-        summary_versions.create!(number: next_summary_number, summary: payload)
-          .tap { |version| update!(summary_cursor: version.number) }
-      end
-
       def edit_history
         @edit_history ||= EditHistory.new(self)
+      end
+
+      def summaries
+        @summaries ||= Summaries.new(self)
       end
 
       def publish
@@ -118,23 +109,11 @@ module Alembic
         Runner.new(live_definition)
       end
 
-      def summarises?
-        summary_document.present?
-      end
-
-      def summary_of(state)
-        Summary::Report.new(summary_document).results(Summary::Run.new(state: state, steps: steps_by_id))
-      end
-
       private
 
       def begin_the_flow
         self.document ||= { "nodes" => [ { "id" => "start", "type" => "start" }, { "id" => "end", "type" => "terminal" } ],
                             "edges" => [ { "from" => "start", "to" => "end" } ] }
-      end
-
-      def steps_by_id
-        Array(definition.to_h["nodes"]).index_by { |node| node["id"] }
       end
 
       def cursor
@@ -147,14 +126,6 @@ module Alembic
 
       def next_definition_number
         (definition_versions.maximum(:number) || 0) + 1
-      end
-
-      def summary_cursor_number
-        summary_cursor || summary_versions.pluck(:number).max
-      end
-
-      def next_summary_number
-        (summary_versions.maximum(:number) || 0) + 1
       end
     end
   end

@@ -19,16 +19,16 @@ module Alembic
 
       test "a kept run summarises from the summary its run was pinned to" do
         built = flow(:each_step)
-        built.record_summary("outputs" => [ { "id" => "answered", "type" => "tally", "label" => "Steps answered" } ])
+        built.summaries.record("outputs" => [ { "id" => "answered", "type" => "tally", "label" => "Steps answered" } ])
         run = Flow::Run.start(built)
-        built.record_summary("outputs" => [ { "id" => "other", "type" => "tally", "label" => "Something else" } ])
+        built.summaries.record("outputs" => [ { "id" => "other", "type" => "tally", "label" => "Something else" } ])
 
         assert_equal [ "Steps answered" ], Progress.for(built, run: run).summary_of({ "a" => "yes" }).map(&:label)
       end
 
       test "a loose run summarises from the flow's live summary" do
         built = flow(:unsaved)
-        built.record_summary("outputs" => [ { "id" => "answered", "type" => "tally", "label" => "Steps answered" } ])
+        built.summaries.record("outputs" => [ { "id" => "answered", "type" => "tally", "label" => "Steps answered" } ])
 
         assert_equal [ "Steps answered" ], Progress.for(built, answers: {}).summary_of({ "a" => "yes" }).map(&:label)
       end

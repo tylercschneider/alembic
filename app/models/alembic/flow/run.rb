@@ -10,7 +10,7 @@ module Alembic
 
       def self.start(flow)
         create!(flow: flow, definition_version: flow.live_version,
-          summary_version: flow.current_summary_version)
+          summary_version: flow.summaries.current_version)
       end
 
       def record(step_id, value)

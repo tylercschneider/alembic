@@ -102,11 +102,11 @@ module Alembic
     end
 
     test "a completed saved session shows its pinned summary's outputs" do
-      saved.record_summary("outputs" => [ { "id" => "answered", "type" => "tally", "label" => "Steps answered" } ])
+      saved.summaries.record("outputs" => [ { "id" => "answered", "type" => "tally", "label" => "Steps answered" } ])
       run = Flow::Run.start(saved)
       run.record(:budget, "low")
       run.record(:plain, "bronze")
-      saved.record_summary("outputs" => [ { "id" => "other", "type" => "tally", "label" => "Something else" } ])
+      saved.summaries.record("outputs" => [ { "id" => "other", "type" => "tally", "label" => "Something else" } ])
 
       get alembic.run_path(run)
 
