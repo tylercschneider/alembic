@@ -120,9 +120,9 @@ module Alembic
         diagnostic = Definition.create!(slug: "demo")
         diagnostic.record_definition("slug" => "demo")
         diagnostic.publish
-        diagnostic.record_summary("outputs" => [])
+        diagnostic.summaries.record("outputs" => [])
 
-        assert_equal diagnostic.current_summary_version, Run.start(diagnostic).summary_version
+        assert_equal diagnostic.summaries.current_version, Run.start(diagnostic).summary_version
       end
 
       test "starts without a summary version when the diagnostic has no summary" do
@@ -137,18 +137,18 @@ module Alembic
         diagnostic = Definition.create!(slug: "demo")
         diagnostic.record_definition("slug" => "demo")
         diagnostic.publish
-        diagnostic.record_summary("outputs" => [])
+        diagnostic.summaries.record("outputs" => [])
         response = Run.start(diagnostic)
 
         assert_no_changes -> { response.reload.summary_version_id } do
-          diagnostic.record_summary("outputs" => [ { "id" => "score" } ])
+          diagnostic.summaries.record("outputs" => [ { "id" => "score" } ])
         end
       end
 
       test "stays on the summary it was pinned to when a newer one is recorded" do
         diagnostic = scored_diagnostic
         run = Run.start(diagnostic)
-        diagnostic.record_summary("outputs" => [ { "id" => "score", "type" => "tally" } ])
+        diagnostic.summaries.record("outputs" => [ { "id" => "score", "type" => "tally" } ])
 
         assert_equal "weighted_sum", run.reload.pinned_summary["outputs"].first["type"]
       end
@@ -176,7 +176,7 @@ module Alembic
           diagnostic.record_definition("slug" => "scored", "entry" => "budget", "edges" => [],
             "nodes" => [ { "id" => "budget", "type" => "question", "text" => "Budget?",
                            "options" => [ { "value" => "high", "weight" => 5 } ] } ])
-          diagnostic.record_summary("outputs" => [ { "id" => "score", "type" => "weighted_sum" } ])
+          diagnostic.summaries.record("outputs" => [ { "id" => "score", "type" => "weighted_sum" } ])
           diagnostic.publish
         end
       end
@@ -227,7 +227,7 @@ module Alembic
                          "answers" => [ { "value" => "yes" } ] }, { "id" => "end", "type" => "terminal" } ],
           "edges" => [ { "from" => "a", "to" => "end" } ]))
         diagnostic.publish
-        diagnostic.record_summary("outputs" => [ { "id" => "counted", "type" => "tally" } ])
+        diagnostic.summaries.record("outputs" => [ { "id" => "counted", "type" => "tally" } ])
 
         assert_equal "counted", Run.start(diagnostic).pinned_summary["outputs"].first["id"]
       end

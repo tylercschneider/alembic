@@ -13,9 +13,9 @@ module Alembic
         end
 
         def summary_of(state)
-          return [] unless @flow.summarises?
+          return [] unless @flow.summaries.any?
 
-          @flow.summary_of(state)
+          @flow.summaries.of(state)
         end
 
         def recorded
