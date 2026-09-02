@@ -59,7 +59,7 @@ module Alembic
       end
 
       def remove_step
-        return render json: { error: refusal_to_remove }, status: :unprocessable_entity if fixed?(params[:step])
+        return render json: { error: refusal_to_remove }, status: :unprocessable_entity if begins_the_flow?(params[:step])
 
         apply(:removed, params[:step]) { |flow| flow.remove(params[:step]) }
       end
@@ -76,9 +76,7 @@ module Alembic
 
       def apply(action = nil, *steps)
         before = document.to_h
-        edited = yield(document)
-        diagnostic.update!(document: edited.to_h, undone_changes: [],
-          changes_since_version: recorded(action, edited, steps, before))
+        diagnostic.edit_history.record(yield(document), action, steps, before)
         head :no_content
       rescue Flow::InvalidEdit => invalid
         render json: { error: invalid.message }, status: :unprocessable_entity
@@ -94,18 +92,6 @@ module Alembic
 
       def details_params
         params.require(:flow).permit(:title, :summary, :start_label, :persists)
-      end
-
-      def recorded(action, edited, steps, before)
-        return diagnostic.changes_since_version.to_a unless action
-
-        diagnostic.changes_since_version.to_a +
-          [ { "action" => action.to_s, "steps" => steps.map(&:to_s),
-              "named" => steps.map { |id| named(edited, id) }, "before" => before } ]
-      end
-
-      def named(edited, id)
-        Flow::Name.of(edited.node(id.to_s) || document.node(id.to_s))
       end
 
       def new_step
@@ -127,6 +113,12 @@ module Alembic
         return unless step_type.routes?
 
         step_type.outputs.flat_map { |output| output.values_for(node) }.first&.fetch("value", nil)&.to_s
+      end
+
+      def begins_the_flow?(id)
+        node = document.node(id)
+
+        node.present? && document.begins_here?(node)
       end
 
       def placed_on_edge?
@@ -157,12 +149,6 @@ module Alembic
         return "Visitors already run version #{now_at}." if now_at == ran
 
         "Published version #{now_at}. Visitors run it now."
-      end
-
-      def fixed?(id)
-        step_type = document.node(id)&.then { |node| Flow.registry.fetch(node.type) if Flow.registry.registered?(node.type) }
-
-        step_type&.begins_here? || false
       end
 
       def refusal_to_remove
