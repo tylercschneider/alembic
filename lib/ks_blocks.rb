@@ -4,8 +4,8 @@ require "ks_blocks/registry"
 
 module KsBlocks
   class << self
-    def block(key, name:, width:, height:, kind: :blocks)
-      registry.register(BlockType.new(key: key, name: name, width: width, height: height), kind: kind)
+    def block(key, name:, width:, height:, kind: :blocks, **limits)
+      registry.register(BlockType.new(key: key, name: name, width: width, height: height, **limits), kind: kind)
     end
 
     def layout_data(blocks, kind: :blocks, grid: {})

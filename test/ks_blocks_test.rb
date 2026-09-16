@@ -17,7 +17,9 @@ class KsBlocksTest < ActiveSupport::TestCase
   test "layout data lists each registered block type's key, name and starting size" do
     KsBlocks.block(:layout_data_probe, name: "Layout probe", width: 3, height: 1)
 
-    assert_includes KsBlocks.layout_data([])[:block_types], { key: :layout_data_probe, name: "Layout probe", width: 3, height: 1 }
+    listed = KsBlocks.layout_data([])[:block_types].find { |block_type| block_type[:key] == :layout_data_probe }
+
+    assert_equal({ key: :layout_data_probe, name: "Layout probe", width: 3, height: 1 }, listed.slice(:key, :name, :width, :height))
   end
 
   test "layout data's version changes when the blocks change" do
@@ -37,5 +39,13 @@ class KsBlocksTest < ActiveSupport::TestCase
     KsBlocks.block(:layout_data_dashboard_probe, name: "Dashboard probe", width: 3, height: 1, kind: :dashboards)
 
     assert_equal [], KsBlocks.layout_data([], kind: :pages)[:block_types].select { |block_type| block_type[:key] == :layout_data_dashboard_probe }
+  end
+
+  test "a block type carries the sizes it may be resized between" do
+    KsBlocks.block(:limited_probe, name: "Limited", width: 6, height: 2, kind: :limits_probe, min_width: 3, max_width: 9, min_height: 1, max_height: 4)
+
+    limited = KsBlocks.registry.block_types(kind: :limits_probe).first
+
+    assert_equal [ 3, 9, 1, 4 ], [ limited.min_width, limited.max_width, limited.min_height, limited.max_height ]
   end
 end

@@ -15,16 +15,19 @@ module KsBlocks
     def add(blocks, block_type, x: nil, y: nil, columns: COLUMNS)
       x, y = first_open_place(blocks, block_type, columns) if x.nil? || y.nil?
       added = { "id" => SecureRandom.uuid, "type" => block_type.key.to_s, "x" => x, "y" => y, "w" => block_type.width, "h" => block_type.height }
-      (blocks + [ added ]).tap { |arranged| refuse_unfit(arranged, [ added["id"] ], columns) }
+      (blocks + [ added ]).tap { |arranged| refuse_unfit(arranged, [ added["id"] ], columns, []) }
     end
 
-    def place(blocks, positions, columns: COLUMNS)
+    def place(blocks, positions, columns: COLUMNS, types: [])
       placed = positions.index_by { |position| position["id"] }
-      blocks.map { |block| block.merge(placed.fetch(block["id"], {}).slice("x", "y", "w", "h")) }.tap { |arranged| refuse_unfit(arranged, placed.keys, columns) }
+      blocks.map { |block| block.merge(placed.fetch(block["id"], {}).slice("x", "y", "w", "h")) }.tap { |arranged| refuse_unfit(arranged, placed.keys, columns, types, blocks.index_by { |block| block["id"] }) }
     end
 
-    def refuse_unfit(blocks, moved_ids, columns)
+    def refuse_unfit(blocks, moved_ids, columns, types = [], blocks_before = {})
       blocks.select { |block| moved_ids.include?(block["id"]) }.each do |moved|
+        block_type = types.find { |registered| registered.key.to_s == moved["type"] }
+        refuse_resizing(moved, block_type, blocks_before[moved["id"]])
+        refuse_outside_limits(moved, block_type)
         raise InvalidLayout, "#{named(moved)} must be at least one column wide and one row tall" if moved["w"] < 1 || moved["h"] < 1
         raise InvalidLayout, "#{named(moved)} runs past the grid's last column" if moved["x"] + moved["w"] > columns
       end
@@ -36,6 +39,22 @@ module KsBlocks
         covered = blocks.find { |other| other["id"] != moved["id"] && overlaps?(other, moved["x"], moved["y"], moved["w"], moved["h"]) }
         raise InvalidLayout, "#{named(moved)} overlaps #{named(covered)}" if covered
       end
+    end
+
+    def refuse_resizing(block, block_type, before)
+      return if block_type.nil? || block_type.resizable || before.nil?
+      return if block["w"] == before["w"] && block["h"] == before["h"]
+
+      raise InvalidLayout, "#{named(block)} cannot be resized"
+    end
+
+    def refuse_outside_limits(block, block_type)
+      return unless block_type
+
+      raise InvalidLayout, "#{named(block)} cannot be narrower than #{block_type.min_width} columns" if block["w"] < block_type.min_width
+      raise InvalidLayout, "#{named(block)} cannot be shorter than #{block_type.min_height} rows" if block["h"] < block_type.min_height
+      raise InvalidLayout, "#{named(block)} cannot be wider than #{block_type.max_width} columns" if block_type.max_width && block["w"] > block_type.max_width
+      raise InvalidLayout, "#{named(block)} cannot be taller than #{block_type.max_height} rows" if block_type.max_height && block["h"] > block_type.max_height
     end
 
     def named(block)

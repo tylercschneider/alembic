@@ -5,7 +5,7 @@ import Button from "../keystone_ui/react/Button"
 import Panel from "../keystone_ui/react/Panel"
 import Section from "../keystone_ui/react/Section"
 import useLayout from "./useLayout"
-import { addBlock, dropBlock, placeBlocks, removeBlock } from "./blocks"
+import { addBlock, dropBlock, gridItems, placeBlocks, removeBlock } from "./blocks"
 
 const SHAPE = { columns: 12, row_height: 60, gap: 10 }
 const RESIZE_HANDLES = [ "e", "s", "se" ]
@@ -17,7 +17,7 @@ export default function BlockGrid({ base, token, emptyMessage, ...initial }) {
   const { block_types = [], blocks = [], grid = {} } = current
   const { columns, row_height: rowHeight, gap } = { ...SHAPE, ...grid }
   const { width, containerRef, mounted } = useContainerWidth({ measureBeforeMount: true })
-  const layout = blocks.map(({ id, x, y, w, h }) => ({ i: id, x, y, w, h }))
+  const layout = gridItems(blocks, block_types)
   const dragged = useRef(null)
 
   const startDragging = (blockType) => (event) => {

@@ -78,5 +78,14 @@ module KsBlocks
 
       assert_equal({ columns: 6, row_height: 40, gap: 4 }, host.layout_data[:grid])
     end
+
+    test "a host record refuses a block resized below its type's smallest width" do
+      KsBlocks.block(:narrow_limit_probe, name: "Limited", width: 6, height: 2, kind: :dashboards, min_width: 4)
+      limited = KsBlocks.registry.block_types(kind: :dashboards).find { |block_type| block_type.key == :narrow_limit_probe }
+      host = Host.create!(name: "Dashboard")
+      host.add_block(limited, x: 0, y: 0)
+
+      assert_raises(InvalidLayout) { host.place_blocks([ { "id" => host.blocks.first["id"], "x" => 0, "y" => 0, "w" => 3, "h" => 2 } ]) }
+    end
   end
 end

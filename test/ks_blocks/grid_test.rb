@@ -103,6 +103,20 @@ module KsBlocks
       assert_raises(InvalidLayout) { Grid.place(blocks, [ { "id" => blocks.first["id"], "x" => 2, "y" => 0, "w" => 6, "h" => 2 } ], columns: 6) }
     end
 
+    test "a block resized below its type's smallest width is refused" do
+      limited = BlockType.new(key: :text, name: "Text", width: 6, height: 2, min_width: 4)
+      blocks = Grid.add([], limited, x: 0, y: 0)
+
+      assert_raises(InvalidLayout) { Grid.place(blocks, [ { "id" => blocks.first["id"], "x" => 0, "y" => 0, "w" => 3, "h" => 2 } ], types: [ limited ]) }
+    end
+
+    test "a block of a type that cannot be resized is refused a new size" do
+      fixed = BlockType.new(key: :text, name: "Text", width: 6, height: 2, resizable: false)
+      blocks = Grid.add([], fixed, x: 0, y: 0)
+
+      assert_raises(InvalidLayout) { Grid.place(blocks, [ { "id" => blocks.first["id"], "x" => 0, "y" => 0, "w" => 8, "h" => 2 } ], types: [ fixed ]) }
+    end
+
     private
 
     def refusal

@@ -15,7 +15,7 @@ module KsBlocks
         define_method(:place_blocks) do |positions, version: nil|
           raise InvalidLayout, "This layout changed since it was last drawn" if version && version != KsBlocks.version_of(public_send(column))
 
-          update!(column => Grid.place(public_send(column), positions, columns: columns))
+          update!(column => Grid.place(public_send(column), positions, columns: columns, types: KsBlocks.registry.block_types(kind: kind)))
         end
 
         define_method(:remove_block) do |id|

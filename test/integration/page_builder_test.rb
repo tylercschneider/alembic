@@ -81,7 +81,9 @@ module Alembic
 
       get alembic.manage_page_path(Page.create!(name: "Welcome"))
 
-      assert_includes page_builder_props["block_types"], { "key" => "payload_probe", "name" => "Payload probe", "width" => 6, "height" => 2 }
+      listed = page_builder_props["block_types"].find { |block_type| block_type["key"] == "payload_probe" }
+
+      assert_equal({ "key" => "payload_probe", "name" => "Payload probe", "width" => 6, "height" => 2 }, listed.slice("key", "name", "width", "height"))
     end
 
     test "adding a block puts a block of that type at the given place" do
